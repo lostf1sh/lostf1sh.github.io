@@ -17,20 +17,6 @@ const routes = [
     meta: { title: "Blog | f1sh.dev" },
   },
   {
-    path: "/github",
-    name: "GitHubRedirect",
-    beforeEnter() {
-      window.location.href = "https://github.com/lostf1sh";
-    },
-  },
-  {
-    path: "/instagram",
-    name: "InstagramRedirect",
-    beforeEnter() {
-      window.location.href = "https://www.instagram.com/kawaiimoli";
-    },
-  },
-  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: NotFound,

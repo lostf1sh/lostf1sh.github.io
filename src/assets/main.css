@@ -9,8 +9,9 @@ html,
 body {
     min-height: 100vh;
     overflow-x: hidden;
-    overflow-y: hidden;
+    overflow-y: auto;
     overscroll-behavior: none;
+    touch-action: pan-y;
 }
 
 html {
@@ -49,8 +50,8 @@ body {
             transparent 1px,
             transparent 40px
         );
-    background-attachment: fixed, fixed, fixed, scroll, scroll;
-    background-repeat: no-repeat;
+    background-attachment: fixed;
+        background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
     min-height: 100vh;
     font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
     font-size: 14px;
@@ -69,23 +70,6 @@ body {
 ::selection {
     background: theme("colors.catppuccin-mauve");
     color: theme("colors.catppuccin-base");
-}
-
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: theme("colors.catppuccin-base");
-}
-
-::-webkit-scrollbar-thumb {
-    background: theme("colors.catppuccin-surface");
-    border-radius: 0;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: theme("colors.catppuccin-overlay");
 }
 
 /* Thin scrollbar for contribution graph */

@@ -255,18 +255,20 @@ updateTime();
                         >
                             [blog]
                         </router-link>
-                        <router-link
-                            to="/github"
+                        <a
+                            href="https://github.com/lostf1sh"
+                            target="_blank"
                             class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
                         >
                             [github]
-                        </router-link>
-                        <router-link
-                            to="/instagram"
+                        </a>
+                        <a
+                            href="https://www.instagram.com/kawaiimoli"
+                            target="_blank"
                             class="text-catppuccin-subtle hover:text-catppuccin-pink transition-colors"
                         >
                             [instagram]
-                        </router-link>
+                        </a>
                         <a
                             href="https://open.spotify.com/user/31q6jft6qtkzisve7zu2o2mytyry?si=1c9f27a30d25435b"
                             target="_blank"

@@ -26,12 +26,12 @@ body {
 }
 
 ::-webkit-scrollbar {
-    width: 14px;
+    width: 16px;
 }
 
 html {
-    scrollbar-width: thin;
-    scrollbar-color: #313244 #1e1e2e;
+    scrollbar-width: auto;
+    scrollbar-color: #45475a #1e1e2e;
 }
 
 ::-webkit-scrollbar-track {
@@ -39,13 +39,13 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #313244;
-    border: 4px solid #1e1e2e;
-    border-radius: 99px;
+    background-color: #45475a;
+    border: 3px solid #1e1e2e;
+    border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #45475a;
+    background-color: #585b70;
 }
 
 @media (min-width: 1024px) {

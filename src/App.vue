@@ -48,17 +48,13 @@ html {
     background-color: #585b70;
 }
 
+/* Desktop: Centered layout */
 @media (min-width: 1024px) {
     body {
         display: flex;
         justify-content: center;
         align-items: flex-start;
         min-height: 100vh;
-        overflow: hidden;
-    }
-
-    body.allow-scroll {
-        overflow-y: auto;
     }
 
     #app {

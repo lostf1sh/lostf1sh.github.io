@@ -185,7 +185,6 @@ const monthLabels = computed(() => {
 });
 
 onMounted(() => {
-    document.body.classList.add("allow-scroll");
     fetchProjects();
     fetchSongs();
     fetchContributions();
@@ -193,7 +192,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-    document.body.classList.remove("allow-scroll");
     if (updateInterval) clearInterval(updateInterval);
 });
 

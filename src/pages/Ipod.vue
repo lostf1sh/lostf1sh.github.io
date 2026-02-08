@@ -1,12 +1,28 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import localLibraryData from "@/data/ipod-library.json";
-import localPlaysData from "@/data/ipod-plays.json";
 import remoteConfig from "@/data/ipod-remote.json";
 
-const libraryData = ref(localLibraryData);
-const playsData = ref(localPlaysData);
-const dataSource = ref("local");
+const EMPTY_LIBRARY_DATA = {
+    generatedAt: null,
+    summary: {
+        trackCount: 0,
+        uniqueArtists: 0,
+        uniqueAlbums: 0,
+        totalDurationFormatted: "00:00",
+        topArtists: [],
+    },
+};
+
+const EMPTY_PLAYS_DATA = {
+    generatedAt: null,
+    sourceType: null,
+    topTracks: [],
+    recentPlays: [],
+};
+
+const libraryData = ref(EMPTY_LIBRARY_DATA);
+const playsData = ref(EMPTY_PLAYS_DATA);
+const dataSource = ref("fallback");
 
 const stats = computed(() => {
     return [
@@ -69,7 +85,7 @@ onMounted(async () => {
         playsData.value = remotePlays;
         dataSource.value = "remote";
     } catch (error) {
-        console.error("Failed to load remote iPod data, falling back to local JSON.", error);
+        console.error("Failed to load remote iPod data, falling back to empty state.", error);
     }
 });
 </script>

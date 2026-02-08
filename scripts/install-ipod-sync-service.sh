@@ -2,6 +2,7 @@
 set -euo pipefail
 
 MOUNT_PATH="${1:-/run/media/$USER/FIPOD}"
+MOUNT_PARENT="$(dirname "$MOUNT_PATH")"
 REPO_DIR="${2:-$(cd "$(dirname "$0")/.." && pwd)}"
 ENV_FILE="${3:-$HOME/.config/lostf1sh-ipod-sync.env}"
 BUN_BIN="${BUN_BIN:-$(command -v bun)}"
@@ -53,9 +54,10 @@ EOF
 
 cat > "$HOME/.config/systemd/user/ipod-sync-publish.path" <<EOF
 [Unit]
-Description=Trigger iPod sync when Rockbox playback log changes
+Description=Trigger iPod sync on mount and playback log changes
 
 [Path]
+PathChanged=$MOUNT_PARENT
 PathChanged=$MOUNT_PATH/.rockbox/playback.log
 Unit=ipod-sync-publish.service
 

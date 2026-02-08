@@ -67,6 +67,8 @@ the site then fetches remote json from gist on `/ipod`.
 
 this installs a user-level systemd path/service.
 when `/run/media/$USER/FIPOD/.rockbox/playback.log` changes, it auto-runs publish.
+it also watches `/run/media/$USER` so remount events can trigger a sync check.
+if `playback.log` mtime did not change since the last successful run, publish is skipped.
 
 recommended order:
 1. do one manual bootstrap publish first (creates gist id):

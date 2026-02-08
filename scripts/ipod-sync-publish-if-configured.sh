@@ -3,6 +3,9 @@ set -euo pipefail
 
 MOUNT_PATH="${IPOD_MOUNT:-${1:-}}"
 BUN_BIN="${BUN_BIN:-}"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/lostf1sh-ipod-sync"
+STATE_FILE="${STATE_DIR}/last_playback_mtime"
+PLAYBACK_LOG=""
 
 if [[ -z "$BUN_BIN" ]]; then
     BUN_BIN="$(command -v bun || true)"
@@ -18,8 +21,10 @@ if [[ ! -d "${MOUNT_PATH}" ]]; then
     exit 0
 fi
 
-if [[ ! -f "${MOUNT_PATH}/.rockbox/playback.log" ]]; then
-    echo "Skipping publish: playback log not found (${MOUNT_PATH}/.rockbox/playback.log)."
+PLAYBACK_LOG="${MOUNT_PATH}/.rockbox/playback.log"
+
+if [[ ! -f "${PLAYBACK_LOG}" ]]; then
+    echo "Skipping publish: playback log not found (${PLAYBACK_LOG})."
     exit 0
 fi
 
@@ -38,4 +43,32 @@ if [[ -z "${IPOD_GIST_ID:-}" ]]; then
     exit 0
 fi
 
-"$BUN_BIN" run ipod:sync:publish --require-gist-id -- --source "$MOUNT_PATH"
+CURRENT_MTIME="$(stat -c %Y "${PLAYBACK_LOG}" 2>/dev/null || true)"
+if [[ -z "${CURRENT_MTIME}" ]]; then
+    echo "Skipping publish: could not read playback.log mtime."
+    exit 0
+fi
+
+if [[ -f "${STATE_FILE}" ]]; then
+    LAST_MTIME="$(cat "${STATE_FILE}" 2>/dev/null || true)"
+    if [[ -n "${LAST_MTIME}" && "${CURRENT_MTIME}" -le "${LAST_MTIME}" ]]; then
+        echo "Skipping publish: playback.log not changed since last successful sync."
+        exit 0
+    fi
+fi
+
+mkdir -p "${STATE_DIR}"
+
+for attempt in 1 2 3; do
+    if "$BUN_BIN" run ipod:sync:publish --require-gist-id -- --source "$MOUNT_PATH"; then
+        echo "${CURRENT_MTIME}" > "${STATE_FILE}"
+        exit 0
+    fi
+    if [[ "${attempt}" -lt 3 ]]; then
+        echo "Publish attempt ${attempt} failed, retrying..."
+        sleep $((attempt * 2))
+    fi
+done
+
+echo "Publish failed after retries."
+exit 1

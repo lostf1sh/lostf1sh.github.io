@@ -1,25 +1,22 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Home from "@/pages/Home.vue";
-import Blog from "@/pages/Blog.vue";
-import NotFound from "@/pages/NotFound.vue";
 
 const routes = [
   {
     path: "/",
     name: "Home",
-    component: Home,
+    component: () => import("@/pages/Home.vue"),
     meta: { title: "Personal Website | f1sh.dev" },
   },
   {
     path: "/blog",
     name: "Blog",
-    component: Blog,
+    component: () => import("@/pages/Blog.vue"),
     meta: { title: "Blog | f1sh.dev" },
   },
   {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
-    component: NotFound,
+    component: () => import("@/pages/NotFound.vue"),
     meta: { title: "404 Not Found | f1sh.dev" },
   },
 ];

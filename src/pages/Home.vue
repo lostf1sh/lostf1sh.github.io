@@ -63,6 +63,8 @@ const songsError = ref(null);
 const contributions = ref([]);
 const contributionsLoading = ref(true);
 let updateInterval = null;
+let ageInterval = null;
+let timeInterval = null;
 
 const currentTrack = computed(() =>
     allTracks.value.find((track) => track["@attr"]?.nowplaying),
@@ -120,7 +122,8 @@ const fetchSongs = async () => {
         songsLoading.value = true;
         allTracks.value = await getRecentTracks();
         songsError.value = null;
-    } catch {
+    } catch (error) {
+        console.error("Failed to load recent tracks:", error);
         songsError.value = "couldn't load tracks";
     } finally {
         songsLoading.value = false;
@@ -132,9 +135,14 @@ const fetchProjects = async () => {
     try {
         reposLoading.value = true;
         const res = await fetch("https://api.github.com/users/lostf1sh/repos");
+        if (!res.ok) {
+            throw new Error(`GitHub repos request failed with ${res.status}`);
+        }
         const data = await res.json();
         repos.value = Array.isArray(data) ? data : [];
-    } catch {
+    } catch (error) {
+        console.error("Failed to load repositories:", error);
+        repos.value = [];
     } finally {
         reposLoading.value = false;
     }
@@ -144,7 +152,9 @@ const fetchContributions = async () => {
     try {
         contributionsLoading.value = true;
         contributions.value = await getContributionData();
-    } catch {
+    } catch (error) {
+        console.error("Failed to load contribution data:", error);
+        contributions.value = [];
     } finally {
         contributionsLoading.value = false;
     }
@@ -162,37 +172,21 @@ const totalContributions = computed(() => {
     return contributions.value.reduce((sum, day) => sum + day.count, 0);
 });
 
-const monthLabels = computed(() => {
-    if (!contributions.value.length) return [];
-    
-    const months = [];
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    let lastMonth = -1;
-    
-    contributionWeeks.value.forEach((week, weekIndex) => {
-        const firstDay = week[0];
-        if (firstDay) {
-            const date = new Date(firstDay.date);
-            const month = date.getMonth();
-            if (month !== lastMonth) {
-                months.push({ name: monthNames[month], weekIndex });
-                lastMonth = month;
-            }
-        }
-    });
-    
-    return months;
-});
-
 onMounted(() => {
     fetchProjects();
     fetchSongs();
     fetchContributions();
+    updateAge();
+    updateTime();
     updateInterval = setInterval(fetchSongs, 30000);
+    ageInterval = setInterval(updateAge, 50);
+    timeInterval = setInterval(updateTime, 1000);
 });
 
 onBeforeUnmount(() => {
     if (updateInterval) clearInterval(updateInterval);
+    if (ageInterval) clearInterval(ageInterval);
+    if (timeInterval) clearInterval(timeInterval);
 });
 
 const BIRTH_DATE = new Date("2008-06-06T00:00:00");
@@ -205,7 +199,6 @@ const updateAge = () => {
     const diffMs = now - BIRTH_DATE;
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
     currentAge.value = diffDays / 365.25;
-    requestAnimationFrame(updateAge);
 };
 
 const updateTime = () => {
@@ -216,11 +209,7 @@ const updateTime = () => {
         minute: "2-digit",
         second: "2-digit",
     });
-    requestAnimationFrame(updateTime);
 };
-
-updateAge();
-updateTime();
 </script>
 
 <template>
@@ -256,6 +245,7 @@ updateTime();
                         <a
                             href="https://github.com/lostf1sh"
                             target="_blank"
+                            rel="noopener noreferrer"
                             class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
                         >
                             [github]
@@ -263,6 +253,7 @@ updateTime();
                         <a
                             href="https://www.instagram.com/kawaiimoli"
                             target="_blank"
+                            rel="noopener noreferrer"
                             class="text-catppuccin-subtle hover:text-catppuccin-pink transition-colors"
                         >
                             [instagram]
@@ -270,6 +261,7 @@ updateTime();
                         <a
                             href="https://open.spotify.com/user/31q6jft6qtkzisve7zu2o2mytyry?si=1c9f27a30d25435b"
                             target="_blank"
+                            rel="noopener noreferrer"
                             class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors"
                         >
                             [spotify]
@@ -409,6 +401,7 @@ updateTime();
                             :key="repo.id"
                             :href="repo.html_url"
                             target="_blank"
+                            rel="noopener noreferrer"
                             :style="{ transitionDelay: `${index * 50}ms` }"
                             class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
                         >
@@ -503,6 +496,7 @@ updateTime();
                             v-if="currentTrack"
                             :href="currentTrack.url"
                             target="_blank"
+                            rel="noopener noreferrer"
                             :key="`current-${currentTrack.name}-${currentTrack.artist['#text']}`"
                             class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
                         >
@@ -544,6 +538,7 @@ updateTime();
                             :key="`${track.name}-${track.artist['#text']}-${track.date}`"
                             :href="track.url"
                             target="_blank"
+                            rel="noopener noreferrer"
                             :style="{
                                 transitionDelay: `${(index + (currentTrack ? 1 : 0)) * 50}ms`,
                             }"

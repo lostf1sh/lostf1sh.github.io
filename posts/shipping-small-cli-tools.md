@@ -27,9 +27,9 @@ with rules in place, i avoid feature creep and focus on the happy path.
 
 ## tooling
 
-- language: go for binaries, bun for scripts.
+- language: go for binaries, node for scripts.
 - tests: snapshot helpers with `@vitest/ui` for quick feedback.
-- packaging: `goreleaser` for go, `bun build` for js.
+- packaging: `goreleaser` for go, `bun run build` for js.
 
 ## releasing
 

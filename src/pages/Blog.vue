@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import "prismjs/themes/prism-tomorrow.css";
 import {
     getAllPosts,
     getPostBySlug,
@@ -10,6 +11,10 @@ import {
 const view = ref("list");
 const currentPost = ref(null);
 const posts = ref([]);
+const articleContentRef = ref(null);
+let clipboard = null;
+let PrismInstance = null;
+let ClipboardConstructor = null;
 
 const route = useRoute();
 const router = useRouter();
@@ -29,6 +34,7 @@ const openPost = (slug) => {
                 query: { ...route.query, post: slug },
             });
         }
+        void highlightCodeBlocks();
     } else if (route.query.post) {
         const newQuery = { ...route.query };
         delete newQuery.post;
@@ -40,6 +46,10 @@ const goBack = ({ skipQueryUpdate = false } = {}) => {
     view.value = "list";
     currentPost.value = null;
     window.scrollTo({ top: 0, behavior: "smooth" });
+    if (clipboard) {
+        clipboard.destroy();
+        clipboard = null;
+    }
     if (!skipQueryUpdate && "post" in route.query) {
         const newQuery = { ...route.query };
         delete newQuery.post;
@@ -54,6 +64,67 @@ const calculateReadingTime = (text) => {
     return minutes;
 };
 
+const escapeHtml = (text = "") => {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+};
+
+const sanitizeExternalUrl = (url = "") => {
+    const trimmedUrl = url.trim();
+    if (/^(https?:\/\/|mailto:|\/)/i.test(trimmedUrl)) {
+        return trimmedUrl;
+    }
+    return "#";
+};
+
+const ensurePostEnhancers = async () => {
+    if (PrismInstance && ClipboardConstructor) return;
+    const [prismModule, clipboardModule] = await Promise.all([
+        import("prismjs"),
+        import("clipboard"),
+        import("prismjs/components/prism-javascript"),
+        import("prismjs/components/prism-python"),
+        import("prismjs/components/prism-bash"),
+        import("prismjs/components/prism-css"),
+        import("prismjs/components/prism-markup"),
+    ]);
+    PrismInstance = prismModule.default;
+    ClipboardConstructor = clipboardModule.default;
+};
+
+const setupClipboard = () => {
+    if (clipboard) {
+        clipboard.destroy();
+        clipboard = null;
+    }
+    if (!ClipboardConstructor) return;
+    clipboard = new ClipboardConstructor("[data-clipboard-target]");
+    clipboard.on("success", (e) => {
+        const button = e.trigger;
+        const originalText = button.textContent;
+        button.textContent = "copied!";
+        button.classList.add("text-catppuccin-green");
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove("text-catppuccin-green");
+        }, 2000);
+        e.clearSelection();
+    });
+};
+
+const highlightCodeBlocks = async () => {
+    await ensurePostEnhancers();
+    await nextTick();
+    if (PrismInstance && articleContentRef.value) {
+        PrismInstance.highlightAllUnder(articleContentRef.value);
+    }
+    setupClipboard();
+};
+
 const parseMarkdown = (content) => {
     let html = content;
 
@@ -61,13 +132,9 @@ const parseMarkdown = (content) => {
     const codeBlocks = [];
     html = html.replace(/```(\w*)\s*\n?([\s\S]*?)```/g, (match, lang, code) => {
         const placeholder = `__CODEBLOCK_${codeBlocks.length}__`;
-        const escapedCode = code
-            .trim()
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+        const escapedCode = escapeHtml(code.trim());
 
-        const languageClass = lang ? `language-${lang.toLowerCase()}` : '';
+        const languageClass = lang ? `language-${lang.toLowerCase()}` : "";
         const blockId = `code-block-${codeBlocks.length}`;
 
         codeBlocks.push(
@@ -101,7 +168,7 @@ const parseMarkdown = (content) => {
         const headers = headerRow.split('|').filter(c => c.trim());
         tableHtml += '<thead><tr>';
         headers.forEach(h => {
-            tableHtml += `<th class="border border-catppuccin-surface px-3 py-2 text-left text-catppuccin-mauve bg-catppuccin-surface/30">${h.trim()}</th>`;
+            tableHtml += `<th class="border border-catppuccin-surface px-3 py-2 text-left text-catppuccin-mauve bg-catppuccin-surface/30">${escapeHtml(h.trim())}</th>`;
         });
         tableHtml += '</tr></thead>';
         
@@ -111,7 +178,7 @@ const parseMarkdown = (content) => {
                 const cells = row.split('|').filter(c => c.trim());
                 tableHtml += '<tr>';
                 cells.forEach(c => {
-                    tableHtml += `<td class="border border-catppuccin-surface px-3 py-2 text-catppuccin-text">${c.trim()}</td>`;
+                    tableHtml += `<td class="border border-catppuccin-surface px-3 py-2 text-catppuccin-text">${escapeHtml(c.trim())}</td>`;
                 });
                 tableHtml += '</tr>';
             }
@@ -121,6 +188,8 @@ const parseMarkdown = (content) => {
         tables.push(tableHtml);
         return placeholder;
     });
+
+    html = escapeHtml(html);
 
     html = html.replace(
         /^### (.*$)/gim,
@@ -143,10 +212,10 @@ const parseMarkdown = (content) => {
         /`([^`]+)`/g,
         '<code class="bg-catppuccin-surface/50 px-2 py-0.5 rounded text-catppuccin-pink text-sm">$1</code>',
     );
-    html = html.replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g,
-        '<a href="$2" target="_blank" class="text-catppuccin-blue hover:text-catppuccin-mauve underline transition-colors">$1</a>',
-    );
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+        const safeUrl = sanitizeExternalUrl(url);
+        return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-catppuccin-blue hover:text-catppuccin-mauve underline transition-colors">${label}</a>`;
+    });
     html = html.replace(
         /^\- (.*$)/gim,
         '<li class="ml-6 list-disc text-catppuccin-text mb-1">$1</li>',
@@ -188,28 +257,6 @@ onMounted(() => {
     document.documentElement.style.overflowY = "auto";
     document.body.style.overflowY = "auto";
 
-    // Initialize Clipboard.js
-    const clipboard = new ClipboardJS('[data-clipboard-target]');
-
-    clipboard.on('success', function(e) {
-        const button = e.trigger;
-        const originalText = button.textContent;
-        button.textContent = 'copied!';
-        button.classList.add('text-catppuccin-green');
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.classList.remove('text-catppuccin-green');
-        }, 2000);
-        e.clearSelection();
-    });
-
-    // Initialize Prism syntax highlighting
-    setTimeout(() => {
-        if (window.Prism) {
-            Prism.highlightAll();
-        }
-    }, 100);
-
     const slugFromQuery = route.query.post;
     if (slugFromQuery) {
         openPost(slugFromQuery);
@@ -219,6 +266,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
     document.documentElement.style.overflowY = "";
     document.body.style.overflowY = "";
+    if (clipboard) {
+        clipboard.destroy();
+        clipboard = null;
+    }
 });
 
 watch(
@@ -280,11 +331,12 @@ watch(
                         </div>
 
                         <div v-else class="space-y-3">
-                            <div
+                            <button
                                 v-for="post in posts"
                                 :key="post.id"
+                                type="button"
                                 @click="openPost(post.slug)"
-                                class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40 transition-all cursor-pointer"
+                                class="block w-full text-left group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-catppuccin-mauve transition-all cursor-pointer"
                             >
                                 <div class="px-4 py-3">
                                     <div
@@ -325,7 +377,7 @@ watch(
                                         </span>
                                     </div>
                                 </div>
-                            </div>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -372,6 +424,7 @@ watch(
                         class="border-l-2 border-catppuccin-surface pl-4 mb-8"
                     >
                         <div
+                            ref="articleContentRef"
                             class="prose prose-invert max-w-none text-catppuccin-text"
                             v-html="parseMarkdown(currentPost.content)"
                         ></div>

@@ -4,3 +4,4 @@ node_modules/
 dist/
 .env
 CLAUDE.md
+package-lock.json

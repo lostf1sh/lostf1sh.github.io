@@ -51,7 +51,9 @@ class LanyardService {
       this.ws.onmessage = (event) => {
         try {
           this.handleMessage(JSON.parse(event.data));
-        } catch (e) {}
+        } catch (error) {
+          console.error("Failed to parse Lanyard socket message:", error);
+        }
       };
 
       this.ws.onclose = (event) => {
@@ -75,6 +77,7 @@ class LanyardService {
     } catch (e) {
       this.isConnecting = false;
       lanyardData.isLoading = false;
+      console.error("Failed to initialize Lanyard socket connection:", e);
       this.scheduleReconnect();
     }
   }

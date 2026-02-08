@@ -18,7 +18,7 @@ i finally automated the thing i always complained about: moving notes from obsid
 ## the new flow
 
 1. tag a note with `#publish`.
-2. run `bun sync:notes`.
+2. run `bun run sync:notes`.
 3. script converts frontmatter, strips obsidian syntax, and drops the file into `posts/`.
 4. vite hot reloads and i get instant preview.
 
@@ -34,7 +34,7 @@ scripts/
 - default excerpt comes from the first paragraph.
 - preserves code blocks and inline formatting.
 
-## why bun
+## why this setup
 
 - fast fs operations.
 - typescript without extra config.

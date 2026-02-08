@@ -1,0 +1,8 @@
+{
+    "enabled": true,
+    "provider": "github-gist",
+    "gistId": "6899d7a1ee5165903dd96b482b0d8bd6",
+    "owner": "lostf1sh",
+    "libraryUrl": "https://gist.githubusercontent.com/lostf1sh/6899d7a1ee5165903dd96b482b0d8bd6/raw/ipod-library.json",
+    "playsUrl": "https://gist.githubusercontent.com/lostf1sh/6899d7a1ee5165903dd96b482b0d8bd6/raw/ipod-plays.json"
+}

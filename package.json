@@ -6,7 +6,7 @@
   "packageManager": "bun@1.3.8",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/copy-spa-fallback.mjs",
     "preview": "vite preview",
     "ipod:sync": "bun run scripts/ipod-sync.mjs",
     "ipod:sync:publish": "bun run scripts/ipod-sync.mjs --publish",

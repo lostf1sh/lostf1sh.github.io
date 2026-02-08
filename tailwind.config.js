@@ -18,6 +18,7 @@ export default {
       "catppuccin-mauve": "#cba6f7",
       "catppuccin-red": "#f38ba8",
       "catppuccin-yellow": "#f9e2af",
+      "catppuccin-peach": "#fab387",
       "catppuccin-green": "#a6e3a1",
       "catppuccin-blue": "#89b4fa",
       "catppuccin-gray": "#a6adc8",

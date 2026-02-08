@@ -11,8 +11,8 @@ vue 3 | tailwind | vite | catppuccin mocha
 ```bash
 git clone https://github.com/lostf1sh/website
 cd website
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ## features

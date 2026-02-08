@@ -17,7 +17,7 @@
                     <div class="space-y-1 text-catppuccin-text">
                         <div class="flex items-center gap-2">
                             <span class="text-catppuccin-red">bash:</span>
-                            <span class="text-catppuccin-text">cd: {{ $route.path }}: No such file or directory</span>
+                            <span class="text-catppuccin-text">cd: {{ route.path }}: No such file or directory</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-catppuccin-subtle">hint:</span>
@@ -28,7 +28,7 @@
 
                 <div class="border-l-2 border-catppuccin-surface pl-4">
                     <div class="text-catppuccin-subtle text-sm mb-3">
-                        ~$ ls valid_directories/
+                        ~$ ls useful_links/
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -48,22 +48,26 @@
                             <span class="text-catppuccin-subtle">→</span>
                             <span>blog posts</span>
                         </router-link>
-                        <router-link
-                            to="/github"
+                        <a
+                            href="https://github.com/lostf1sh"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
                         >
-                            <span class="text-catppuccin-blue">/github</span>
+                            <span class="text-catppuccin-blue">github.com/lostf1sh</span>
                             <span class="text-catppuccin-subtle">→</span>
                             <span>projects</span>
-                        </router-link>
-                        <router-link
-                            to="/instagram"
+                        </a>
+                        <a
+                            href="https://www.instagram.com/kawaiimoli"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
                         >
-                            <span class="text-catppuccin-blue">/instagram</span>
+                            <span class="text-catppuccin-blue">instagram.com/kawaiimoli</span>
                             <span class="text-catppuccin-subtle">→</span>
                             <span>photos</span>
-                        </router-link>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -72,7 +76,7 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router';
+import { useRoute } from "vue-router";
 
 const route = useRoute();
 </script>

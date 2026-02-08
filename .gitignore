@@ -5,3 +5,5 @@ dist/
 .env
 CLAUDE.md
 package-lock.json
+src/data/ipod-plays.json
+src/data/ipod-library.json

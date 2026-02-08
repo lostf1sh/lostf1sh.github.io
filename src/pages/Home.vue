@@ -266,6 +266,12 @@ const updateTime = () => {
                         >
                             [spotify]
                         </a>
+                        <router-link
+                            to="/ipod"
+                            class="text-catppuccin-subtle hover:text-catppuccin-blue transition-colors"
+                        >
+                            [ipod]
+                        </router-link>
                     </div>
                 </div>
 

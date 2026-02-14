@@ -451,6 +451,12 @@ const run = async () => {
     const librarySummary = buildLibrarySummary(tracks);
     const playsResult = await loadPlays(sourceRoot, tracks);
 
+    if (publish && !playsResult.sourceType) {
+        throw new Error(
+            "No playback history file detected (.scrobbler.log/playback.log). Aborting publish.",
+        );
+    }
+
     const generatedAt = new Date().toISOString();
     const libraryPayload = {
         generatedAt,

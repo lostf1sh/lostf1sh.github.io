@@ -6,27 +6,42 @@ BUN_BIN="${BUN_BIN:-}"
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/lostf1sh-ipod-sync"
 STATE_FILE="${STATE_DIR}/last_playback_mtime"
 PLAYBACK_LOG=""
+MOUNT_ROOT="${IPOD_MOUNT_ROOT:-/run/media/$USER}"
+WAIT_SECONDS="${IPOD_MOUNT_WAIT_SECONDS:-25}"
 
 if [[ -z "$BUN_BIN" ]]; then
     BUN_BIN="$(command -v bun || true)"
 fi
 
 if [[ -z "${MOUNT_PATH}" ]]; then
-    echo "Skipping publish: IPOD_MOUNT is not set."
+    MOUNT_PATH="$MOUNT_ROOT"
+fi
+
+FOUND_PATH=""
+for _ in $(seq 1 "${WAIT_SECONDS}"); do
+    if [[ -f "${MOUNT_PATH}/.rockbox/playback.log" ]]; then
+        FOUND_PATH="${MOUNT_PATH}"
+        break
+    fi
+    for candidate in "$MOUNT_ROOT"/*; do
+        if [[ -f "${candidate}/.rockbox/playback.log" ]]; then
+            FOUND_PATH="$candidate"
+            break
+        fi
+    done
+    if [[ -n "${FOUND_PATH}" ]]; then
+        break
+    fi
+    sleep 1
+done
+
+if [[ -z "${FOUND_PATH}" ]]; then
+    echo "Skipping publish: playback log not found under ${MOUNT_ROOT}."
     exit 0
 fi
 
-if [[ ! -d "${MOUNT_PATH}" ]]; then
-    echo "Skipping publish: mount path does not exist (${MOUNT_PATH})."
-    exit 0
-fi
-
+MOUNT_PATH="${FOUND_PATH}"
 PLAYBACK_LOG="${MOUNT_PATH}/.rockbox/playback.log"
-
-if [[ ! -f "${PLAYBACK_LOG}" ]]; then
-    echo "Skipping publish: playback log not found (${PLAYBACK_LOG})."
-    exit 0
-fi
 
 if [[ -z "${BUN_BIN}" ]]; then
     echo "Skipping publish: bun binary not found."

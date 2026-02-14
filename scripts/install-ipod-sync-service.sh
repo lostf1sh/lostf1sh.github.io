@@ -47,6 +47,7 @@ Wants=network-online.target
 Type=oneshot
 WorkingDirectory=$REPO_DIR
 Environment=IPOD_MOUNT=$MOUNT_PATH
+Environment=IPOD_MOUNT_ROOT=/run/media/$USER
 Environment=BUN_BIN=$BUN_BIN
 EnvironmentFile=$ENV_FILE
 ExecStart=$RUNNER_SCRIPT
@@ -57,7 +58,7 @@ cat > "$HOME/.config/systemd/user/ipod-sync-publish.path" <<EOF
 Description=Trigger iPod sync on mount and playback log changes
 
 [Path]
-PathChanged=$MOUNT_PARENT
+PathChanged=/proc/self/mountinfo
 PathChanged=$MOUNT_PATH/.rockbox/playback.log
 Unit=ipod-sync-publish.service
 
@@ -65,13 +66,29 @@ Unit=ipod-sync-publish.service
 WantedBy=default.target
 EOF
 
+cat > "$HOME/.config/systemd/user/ipod-sync-publish.timer" <<EOF
+[Unit]
+Description=Periodic fallback trigger for iPod sync publish
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+AccuracySec=2s
+Unit=ipod-sync-publish.service
+
+[Install]
+WantedBy=timers.target
+EOF
+
 systemctl --user daemon-reload
 systemctl --user reset-failed ipod-sync-publish.service ipod-sync-publish.path >/dev/null 2>&1 || true
 systemctl --user enable --now ipod-sync-publish.path
+systemctl --user enable --now ipod-sync-publish.timer
 
 if [[ -f "$MOUNT_PATH/.rockbox/playback.log" ]]; then
     systemctl --user start ipod-sync-publish.service || true
 fi
 
 echo "Installed and enabled ipod-sync-publish.path"
+echo "Installed and enabled ipod-sync-publish.timer"
 echo "Check status with: systemctl --user status ipod-sync-publish.path"

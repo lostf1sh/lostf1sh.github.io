@@ -67,8 +67,13 @@ the site then fetches remote json from gist on `/ipod`.
 
 this installs a user-level systemd path/service.
 when `/run/media/$USER/FIPOD/.rockbox/playback.log` changes, it auto-runs publish.
-it also watches `/run/media/$USER` so remount events can trigger a sync check.
+it also watches `/proc/self/mountinfo`, so mount/unmount events trigger a sync check.
 if `playback.log` mtime did not change since the last successful run, publish is skipped.
+as a fallback, a user timer runs every 30s and performs the same check.
+if your device remounts under a different directory name, the script auto-detects
+any `/run/media/$USER/*/.rockbox/playback.log` path.
+the sync wrapper waits up to ~25 seconds for the mount to stabilize before skipping.
+if playback history is missing during a run, publish is aborted to avoid sending empty play stats.
 
 recommended order:
 1. do one manual bootstrap publish first (creates gist id):
@@ -121,6 +126,7 @@ check:
 
 ```bash
 systemctl --user status ipod-sync-publish.path
+systemctl --user status ipod-sync-publish.timer
 journalctl --user -u ipod-sync-publish.service -f
 ```
 

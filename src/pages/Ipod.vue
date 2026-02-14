@@ -147,7 +147,7 @@ const getRankColor = (index) => {
                     <span class="text-catppuccin-mauve">rockbox</span>
                 </h1>
                 <p class="text-sm text-catppuccin-gray leading-relaxed">
-                    music archive snapshot from a modded rockbox ipod classic.
+                    my music archive from my modded ipod classic.
                 </p>
 
                 <div class="flex items-center flex-wrap gap-4 text-sm mt-4">

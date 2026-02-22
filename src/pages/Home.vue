@@ -272,6 +272,12 @@ const updateTime = () => {
                         >
                             [ipod]
                         </router-link>
+                        <router-link
+                            to="/stats"
+                            class="text-catppuccin-subtle hover:text-catppuccin-red transition-colors"
+                        >
+                            [last.fm]
+                        </router-link>
                     </div>
                 </div>
 

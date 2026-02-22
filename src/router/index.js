@@ -20,6 +20,12 @@ const routes = [
     meta: { title: "iPod | f1sh.dev" },
   },
   {
+    path: "/stats",
+    name: "Stats",
+    component: () => import("@/pages/Stats.vue"),
+    meta: { title: "Stats | f1sh.dev" },
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/pages/NotFound.vue"),

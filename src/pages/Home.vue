@@ -3,6 +3,7 @@ import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { lanyardData } from "@/services/lanyardService";
 import { getRecentTracks } from "@/services/lastfmService";
 import {
+    getAllReposWithLanguages,
     getContributionData,
     getContributionLevel,
     getGitHubContributionUrl,
@@ -107,12 +108,18 @@ const consolidatedTracks = computed(() => {
 });
 
 
+const pinnedExternal = ["theovilardo/PixelPlayer"];
+const pinnedFullNames = new Set(pinnedExternal);
+
 const displayedRepos = computed(() => {
     if (!repos.value.length) return [];
 
-    return [...repos.value]
-        .sort((a, b) => b.stargazers_count - a.stargazers_count)
-        .slice(0, 6);
+    const pinned = repos.value.filter((r) => pinnedFullNames.has(r.full_name));
+    const rest = repos.value
+        .filter((r) => !pinnedFullNames.has(r.full_name))
+        .sort((a, b) => b.stargazers_count - a.stargazers_count);
+
+    return [...pinned, ...rest].slice(0, 6);
 });
 
 
@@ -134,12 +141,16 @@ const fetchSongs = async () => {
 const fetchProjects = async () => {
     try {
         reposLoading.value = true;
-        const res = await fetch("https://api.github.com/users/lostf1sh/repos");
-        if (!res.ok) {
-            throw new Error(`GitHub repos request failed with ${res.status}`);
-        }
-        const data = await res.json();
-        repos.value = Array.isArray(data) ? data : [];
+        const [{ repos: ownRepos }, ...pinnedResults] = await Promise.all([
+            getAllReposWithLanguages(),
+            ...pinnedExternal.map((r) =>
+                fetch(`https://api.github.com/repos/${r}`)
+                    .then((res) => (res.ok ? res.json() : null))
+                    .catch(() => null),
+            ),
+        ]);
+        const pinned = pinnedResults.filter(Boolean);
+        repos.value = [...pinned, ...ownRepos];
     } catch (error) {
         console.error("Failed to load repositories:", error);
         repos.value = [];
@@ -258,14 +269,12 @@ const updateTime = () => {
                         >
                             [instagram]
                         </a>
-                        <a
-                            href="https://open.spotify.com/user/31q6jft6qtkzisve7zu2o2mytyry?si=1c9f27a30d25435b"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors"
+                        <router-link
+                            to="/uses"
+                            class="text-catppuccin-subtle hover:text-catppuccin-peach transition-colors"
                         >
-                            [spotify]
-                        </a>
+                            [uses]
+                        </router-link>
                     </div>
                 </div>
 

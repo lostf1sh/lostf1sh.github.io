@@ -48,6 +48,14 @@
                             <span class="text-catppuccin-subtle">→</span>
                             <span>blog posts</span>
                         </router-link>
+                        <router-link
+                            to="/uses"
+                            class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
+                        >
+                            <span class="text-catppuccin-blue">/uses</span>
+                            <span class="text-catppuccin-subtle">→</span>
+                            <span>tools & setup</span>
+                        </router-link>
                         <a
                             href="https://github.com/lostf1sh"
                             target="_blank"

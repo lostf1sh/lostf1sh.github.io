@@ -27,6 +27,17 @@ const posts = ref([]);
 const articleContentRef = ref(null);
 let PrismInstance = null;
 
+const readingProgress = ref(0);
+let rafId = null;
+
+const updateReadingProgress = () => {
+    rafId = requestAnimationFrame(() => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        readingProgress.value = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+    });
+};
+
 const route = useRoute();
 const router = useRouter();
 
@@ -236,11 +247,15 @@ onMounted(() => {
     if (slugFromQuery) {
         openPost(slugFromQuery);
     }
+
+    window.addEventListener("scroll", updateReadingProgress, { passive: true });
 });
 
 onBeforeUnmount(() => {
     document.documentElement.style.overflowY = "";
     document.body.style.overflowY = "";
+    window.removeEventListener("scroll", updateReadingProgress);
+    if (rafId) cancelAnimationFrame(rafId);
 });
 
 watch(articleContentRef, (el, _, onCleanup) => {
@@ -275,6 +290,18 @@ const viewExit = { opacity: 0, y: -20 };
 </script>
 
 <template>
+    <Teleport to="body">
+        <div
+            v-if="view === 'post' && currentPost"
+            class="fixed top-0 left-0 w-full h-[3px] z-[9998]"
+        >
+            <div
+                class="h-full bg-catppuccin-mauve"
+                :style="{ width: readingProgress + '%', transition: 'width 0.1s ease-out' }"
+            ></div>
+        </div>
+    </Teleport>
+
     <div
         class="w-full min-h-screen overflow-x-hidden overflow-y-auto font-mono"
     >

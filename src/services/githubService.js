@@ -136,3 +136,27 @@ export const getGitHubContributionUrl = (date) => {
   // Format: https://github.com/USERNAME?tab=overview&from=YYYY-MM-DD&to=YYYY-MM-DD
   return `https://github.com/${GITHUB_USERNAME}?tab=overview&from=${date}&to=${date}`;
 };
+
+export const getRecentEvents = async () => {
+    try {
+        const response = await fetch(
+            `https://api.github.com/users/${GITHUB_USERNAME}/events?per_page=10`
+        );
+
+        if (!response.ok) return [];
+
+        const events = await response.json();
+
+        return events
+            .filter(e => e.type === "PushEvent")
+            .slice(0, 5)
+            .map(e => ({
+                repo: e.repo.name.replace(`${GITHUB_USERNAME}/`, ""),
+                message: e.payload.commits?.[e.payload.commits.length - 1]?.message?.split("\n")[0] || "push",
+                date: e.created_at,
+                repoUrl: `https://github.com/${e.repo.name}`,
+            }));
+    } catch {
+        return [];
+    }
+};

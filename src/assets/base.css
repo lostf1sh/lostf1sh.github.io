@@ -1,3 +1,43 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        /* Catppuccin Mocha (dark - default) */
+        --color-crust: 17 17 27;
+        --color-base: 30 30 46;
+        --color-surface: 49 50 68;
+        --color-overlay: 69 71 90;
+        --color-subtle: 147 153 178;
+        --color-text: 205 214 244;
+        --color-gold: 250 189 47;
+        --color-pink: 245 194 231;
+        --color-mauve: 203 166 247;
+        --color-red: 243 139 168;
+        --color-yellow: 249 226 175;
+        --color-peach: 250 179 135;
+        --color-green: 166 227 161;
+        --color-blue: 137 180 250;
+        --color-gray: 166 173 200;
+    }
+
+    [data-theme="light"] {
+        /* Catppuccin Latte */
+        --color-crust: 220 224 232;
+        --color-base: 239 241 245;
+        --color-surface: 204 208 218;
+        --color-overlay: 156 160 176;
+        --color-subtle: 108 111 133;
+        --color-text: 76 79 105;
+        --color-gold: 223 142 29;
+        --color-pink: 234 118 203;
+        --color-mauve: 136 57 239;
+        --color-red: 210 15 57;
+        --color-yellow: 223 142 29;
+        --color-peach: 254 100 11;
+        --color-green: 64 160 43;
+        --color-blue: 30 102 245;
+        --color-gray: 124 127 147;
+    }
+}

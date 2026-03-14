@@ -30,6 +30,15 @@ const routes = [
     },
   },
   {
+    path: "/projects",
+    name: "Projects",
+    component: () => import("@/pages/Projects.vue"),
+    meta: {
+      title: "Projects | f1sh.dev",
+      description: "Open source projects and experiments by duhan.",
+    },
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/pages/NotFound.vue"),

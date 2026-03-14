@@ -125,9 +125,9 @@ onBeforeUnmount(() => {
             class="fixed inset-0 z-[9997] flex items-start justify-center pt-[20vh] font-mono"
             @click.self="close"
         >
-            <div class="fixed inset-0 bg-catppuccin-crust/80 backdrop-blur-sm" @click="close"></div>
+            <div class="fixed inset-0 bg-catppuccin-crust/80 backdrop-blur-sm palette-backdrop" @click="close"></div>
 
-            <div class="relative z-10 w-full max-w-lg mx-4 rounded-md border border-catppuccin-surface bg-catppuccin-base shadow-2xl overflow-hidden">
+            <div class="relative z-10 w-full max-w-lg mx-4 rounded-md border border-catppuccin-surface bg-catppuccin-base shadow-2xl overflow-hidden palette-modal">
                 <div class="flex items-center gap-2 px-4 py-3 border-b border-catppuccin-surface">
                     <span class="text-catppuccin-subtle text-sm">~$</span>
                     <input
@@ -180,3 +180,29 @@ onBeforeUnmount(() => {
         </div>
     </Teleport>
 </template>
+
+<style scoped>
+.palette-backdrop {
+    animation: backdrop-in 0.15s ease-out;
+}
+
+.palette-modal {
+    animation: modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modal-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+</style>

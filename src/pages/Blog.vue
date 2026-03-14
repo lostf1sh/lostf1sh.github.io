@@ -327,10 +327,6 @@ onMounted(() => {
     document.documentElement.style.overflowY = "auto";
     document.body.style.overflowY = "auto";
 
-    if (articleContentRef.value) {
-        articleContentRef.value.addEventListener("click", handleCopyClick);
-    }
-
     const slugFromQuery = route.query.post;
     if (slugFromQuery) {
         openPost(slugFromQuery);
@@ -340,14 +336,14 @@ onMounted(() => {
 onBeforeUnmount(() => {
     document.documentElement.style.overflowY = "";
     document.body.style.overflowY = "";
-    if (articleContentRef.value) {
-        articleContentRef.value.removeEventListener("click", handleCopyClick);
-    }
 });
 
-watch(articleContentRef, (el) => {
+watch(articleContentRef, (el, _, onCleanup) => {
     if (el) {
         el.addEventListener("click", handleCopyClick);
+        onCleanup(() => {
+            el.removeEventListener("click", handleCopyClick);
+        });
     }
 });
 

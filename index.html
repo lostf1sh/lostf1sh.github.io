@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" prefix="og: https://ogp.me/ns#">
+<html lang="en" prefix="og: https://ogp.me/ns#" data-theme="dark">
     <head>
         <title>Personal Website | f1sh.dev</title>
         <meta charset="UTF-8" />
@@ -50,10 +50,19 @@
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
         <!-- Accessibility -->
         <meta name="theme-color" content="#11111b" />
+
+        <script>
+            (function() {
+                var t = localStorage.getItem('theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', t);
+                var colors = { dark: '#11111b', light: '#dce0e8' };
+                document.querySelector('meta[name="theme-color"]').setAttribute('content', colors[t]);
+            })();
+        </script>
     </head>
     <body
         class="overflow-x-hidden bg-catppuccin-crust text-catppuccin-text font-mono antialiased"

@@ -1,0 +1,100 @@
+<script setup>
+import { computed } from "vue";
+import { motion } from "motion-v";
+import { springs } from "@/utils/motion";
+import {
+    getContributionLevel,
+    getGitHubContributionUrl,
+} from "@/services/githubService";
+
+const props = defineProps({
+    contributions: { type: Array, required: true },
+    loading: Boolean,
+});
+
+const contributionWeeks = computed(() => {
+    const weeks = [];
+    for (let i = 0; i < props.contributions.length; i += 7) {
+        weeks.push(props.contributions.slice(i, i + 7));
+    }
+    return weeks;
+});
+
+const totalContributions = computed(() => {
+    return props.contributions.reduce((sum, day) => sum + day.count, 0);
+});
+</script>
+
+<template>
+    <motion.div
+        class="mt-6 border-l-2 border-catppuccin-surface pl-4"
+        :whileInView="{ opacity: 1, y: 0 }"
+        :initial="{ opacity: 0, y: 20 }"
+        :transition="springs.default"
+        :inViewOptions="{ once: true }"
+    >
+        <div class="flex items-center justify-between mb-3">
+            <div class="text-catppuccin-subtle text-sm">
+                ~$ git log --oneline --since="1.year.ago" | wc -l
+            </div>
+            <div v-if="!loading" class="flex items-center gap-1 text-[10px] text-catppuccin-subtle">
+                <span>less</span>
+                <div class="flex gap-[1px]">
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-surface/50"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/30"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/50"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/70"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green"></div>
+                </div>
+                <span>more</span>
+            </div>
+        </div>
+
+        <div
+            v-if="loading"
+        >
+            <div class="h-[60px] bg-catppuccin-surface/30 rounded cursor-blink"></div>
+        </div>
+
+        <div v-else>
+            <div class="overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-thin">
+                <div class="inline-flex md:flex gap-[3px] md:gap-1" style="min-width: max-content;">
+                    <div
+                        v-for="(week, weekIndex) in contributionWeeks"
+                        :key="weekIndex"
+                        class="flex flex-col gap-[3px] md:gap-1 md:flex-1"
+                    >
+                        <template v-for="(day, dayIndex) in week" :key="dayIndex">
+                            <a
+                                v-if="day.count > 0"
+                                :href="getGitHubContributionUrl(day.date)"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-all hover:ring-1 hover:ring-catppuccin-green hover:scale-110 cursor-pointer"
+                                :class="[
+                                    getContributionLevel(day.count) === 1
+                                        ? 'bg-catppuccin-green/30 hover:bg-catppuccin-green/40'
+                                        : getContributionLevel(day.count) === 2
+                                          ? 'bg-catppuccin-green/50 hover:bg-catppuccin-green/60'
+                                          : getContributionLevel(day.count) === 3
+                                            ? 'bg-catppuccin-green/70 hover:bg-catppuccin-green/80'
+                                            : 'bg-catppuccin-green hover:bg-catppuccin-green',
+                                ]"
+                                :title="`${day.date}: ${day.count} contributions - Click to view on GitHub`"
+                            ></a>
+                            <div
+                                v-else
+                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm bg-catppuccin-surface/50"
+                                :title="`${day.date}: ${day.count} contributions`"
+                            ></div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs text-catppuccin-gray mt-2">
+                {{ totalContributions }} contributions in the last year
+            </div>
+        </div>
+    </motion.div>
+</template>

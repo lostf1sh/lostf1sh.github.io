@@ -1,0 +1,259 @@
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { motion } from "motion-v";
+import { getAllReposWithLanguages } from "@/services/githubService";
+import {
+    springs,
+    staggerContainer,
+    fadeUp,
+    fadeLeft,
+    scaleFade,
+    cardHover,
+    cardPress,
+} from "@/utils/motion";
+
+const repos = ref([]);
+const loading = ref(true);
+const activeLanguage = ref(null);
+
+const pinnedSlugs = ["lostf1sh.github.io", "PixelPlayer"];
+const pinnedExternal = ["theovilardo/PixelPlayer"];
+
+const fetchRepos = async () => {
+    try {
+        loading.value = true;
+        const [{ repos: ownRepos }, ...pinnedResults] = await Promise.all([
+            getAllReposWithLanguages(),
+            ...pinnedExternal.map((r) =>
+                fetch(`https://api.github.com/repos/${r}`)
+                    .then((res) => (res.ok ? res.json() : null))
+                    .catch(() => null),
+            ),
+        ]);
+        const pinned = pinnedResults.filter(Boolean);
+        repos.value = [...pinned, ...ownRepos];
+    } catch {
+        repos.value = [];
+    } finally {
+        loading.value = false;
+    }
+};
+
+const languages = computed(() => {
+    const counts = {};
+    repos.value.forEach((r) => {
+        if (r.language) counts[r.language] = (counts[r.language] || 0) + 1;
+    });
+    return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([lang, count]) => ({ lang, count }));
+});
+
+const pinnedRepos = computed(() =>
+    repos.value.filter((r) => pinnedSlugs.includes(r.name)),
+);
+
+const filteredRepos = computed(() => {
+    let list = repos.value
+        .filter((r) => !pinnedSlugs.includes(r.name))
+        .sort((a, b) => b.stargazers_count - a.stargazers_count);
+
+    if (activeLanguage.value) {
+        list = list.filter((r) => r.language === activeLanguage.value);
+    }
+    return list;
+});
+
+const toggleLanguage = (lang) => {
+    activeLanguage.value = activeLanguage.value === lang ? null : lang;
+};
+
+const formatDate = (dateStr) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
+};
+
+onMounted(fetchRepos);
+
+const headerContainer = staggerContainer(0.06);
+const repoContainer = staggerContainer(0.04);
+
+const langColors = {
+    JavaScript: "text-catppuccin-yellow",
+    TypeScript: "text-catppuccin-blue",
+    Python: "text-catppuccin-green",
+    Dart: "text-catppuccin-blue",
+    Rust: "text-catppuccin-peach",
+    Vue: "text-catppuccin-green",
+    HTML: "text-catppuccin-red",
+    CSS: "text-catppuccin-mauve",
+    Shell: "text-catppuccin-green",
+};
+</script>
+
+<template>
+    <div class="w-full min-h-screen overflow-x-hidden font-mono">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+            <motion.div
+                class="mb-12"
+                :variants="headerContainer"
+                initial="hidden"
+                animate="visible"
+            >
+                <motion.div :variants="fadeUp" class="text-catppuccin-subtle text-sm mb-2">
+                    ~$ ls ~/projects
+                </motion.div>
+                <motion.h1
+                    :variants="fadeUp"
+                    class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-4"
+                >
+                    <span class="text-catppuccin-mauve">projects</span>
+                </motion.h1>
+                <motion.p :variants="fadeUp" class="text-sm text-catppuccin-gray leading-relaxed mb-6">
+                    open source projects and experiments.
+                </motion.p>
+
+                <motion.div :variants="fadeUp" class="flex items-center gap-4 text-sm mb-6">
+                    <router-link
+                        to="/"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                    >
+                        [← home]
+                    </router-link>
+                </motion.div>
+
+                <motion.div
+                    v-if="!loading && languages.length"
+                    :variants="fadeUp"
+                    class="flex flex-wrap gap-2"
+                >
+                    <button
+                        v-for="{ lang, count } in languages"
+                        :key="lang"
+                        @click="toggleLanguage(lang)"
+                        class="px-2 py-0.5 rounded text-xs border transition-colors cursor-pointer"
+                        :class="activeLanguage === lang
+                            ? 'bg-catppuccin-mauve/20 border-catppuccin-mauve text-catppuccin-mauve'
+                            : 'bg-catppuccin-surface/30 border-catppuccin-surface text-catppuccin-subtle hover:text-catppuccin-text hover:border-catppuccin-overlay'"
+                    >
+                        {{ lang }} ({{ count }})
+                    </button>
+                </motion.div>
+            </motion.div>
+
+            <div v-if="loading" class="text-sm text-catppuccin-subtle">
+                loading repositories...
+            </div>
+
+            <template v-else>
+                <div v-if="pinnedRepos.length && !activeLanguage" class="mb-8">
+                    <motion.div
+                        :variants="fadeLeft"
+                        class="border-l-2 border-catppuccin-surface pl-4"
+                    >
+                        <div class="text-catppuccin-subtle text-sm mb-3">
+                            ~$ cat pinned.txt
+                        </div>
+                        <motion.div
+                            :variants="repoContainer"
+                            initial="hidden"
+                            animate="visible"
+                            class="grid md:grid-cols-2 gap-3"
+                        >
+                            <motion.a
+                                v-for="repo in pinnedRepos"
+                                :key="repo.id"
+                                :href="repo.html_url"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                :variants="scaleFade"
+                                :whileHover="cardHover"
+                                :whilePress="cardPress"
+                                class="block group rounded-md border border-catppuccin-mauve/30 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/60"
+                            >
+                                <div class="px-4 py-3">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span class="text-catppuccin-mauve text-xs">★</span>
+                                        <span class="text-catppuccin-text font-medium group-hover:text-catppuccin-mauve transition-colors">
+                                            {{ repo.name }}
+                                        </span>
+                                        <span v-if="repo.stargazers_count > 0" class="text-catppuccin-yellow text-xs ml-auto">
+                                            ★{{ repo.stargazers_count }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-catppuccin-gray mb-2">
+                                        {{ repo.description || "no description" }}
+                                    </p>
+                                    <div class="flex items-center gap-3 text-xs">
+                                        <span v-if="repo.language" :class="langColors[repo.language] || 'text-catppuccin-subtle'">
+                                            {{ repo.language }}
+                                        </span>
+                                        <span v-if="repo.forks_count > 0" class="text-catppuccin-subtle">
+                                            ⑂ {{ repo.forks_count }}
+                                        </span>
+                                        <span class="text-catppuccin-subtle ml-auto">
+                                            {{ formatDate(repo.updated_at) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </motion.a>
+                        </motion.div>
+                    </motion.div>
+                </div>
+
+                <motion.div
+                    :variants="fadeLeft"
+                    class="border-l-2 border-catppuccin-surface pl-4"
+                >
+                    <div class="text-catppuccin-subtle text-sm mb-3">
+                        ~$ find ~/projects -type d {{ activeLanguage ? `| grep ${activeLanguage}` : '' }}
+                    </div>
+
+                    <div v-if="!filteredRepos.length" class="text-sm text-catppuccin-subtle">
+                        no projects found{{ activeLanguage ? ` for ${activeLanguage}` : '' }}
+                    </div>
+
+                    <motion.div
+                        v-else
+                        :variants="repoContainer"
+                        initial="hidden"
+                        animate="visible"
+                        class="space-y-2"
+                    >
+                        <motion.a
+                            v-for="repo in filteredRepos"
+                            :key="repo.id"
+                            :href="repo.html_url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            :variants="scaleFade"
+                            :whileHover="cardHover"
+                            :whilePress="cardPress"
+                            class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
+                        >
+                            <div class="flex items-start gap-3 text-sm px-3 py-2">
+                                <span class="text-catppuccin-subtle group-hover:text-catppuccin-mauve transition-colors">></span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors font-medium truncate">
+                                            {{ repo.name }}
+                                        </span>
+                                        <span v-if="repo.stargazers_count > 0" class="text-catppuccin-yellow text-xs flex-shrink-0">
+                                            ★{{ repo.stargazers_count }}
+                                        </span>
+                                        <span v-if="repo.language" :class="langColors[repo.language] || 'text-catppuccin-subtle'" class="text-xs flex-shrink-0 ml-auto">
+                                            {{ repo.language }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-catppuccin-gray truncate">
+                                        {{ repo.description || "no description" }}
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.a>
+                    </motion.div>
+                </motion.div>
+            </template>
+        </div>
+    </div>
+</template>

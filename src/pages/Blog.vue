@@ -3,11 +3,13 @@ import { nextTick, onBeforeUnmount, onMounted, ref, computed, watch } from "vue"
 import { useRoute, useRouter } from "vue-router";
 import { motion, AnimatePresence } from "motion-v";
 import "prismjs/themes/prism-tomorrow.css";
+import { renderMarkdown } from "@/utils/markdown";
 import {
     getAllPosts,
     getPostBySlug,
     formatDate,
 } from "@/services/blogService";
+import TableOfContents from "@/components/TableOfContents.vue";
 import { updateMeta } from "@/utils/seo";
 import {
     springs,
@@ -24,7 +26,19 @@ const view = ref("list");
 const currentPost = ref(null);
 const posts = ref([]);
 const articleContentRef = ref(null);
+const headings = ref([]);
 let PrismInstance = null;
+
+const readingProgress = ref(0);
+let rafId = null;
+
+const updateReadingProgress = () => {
+    rafId = requestAnimationFrame(() => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        readingProgress.value = docHeight > 0 ? Math.min((scrollTop / docHeight) * 100, 100) : 0;
+    });
+};
 
 const route = useRoute();
 const router = useRouter();
@@ -61,6 +75,7 @@ const openPost = (slug) => {
             url: `https://f1sh.dev/blog?post=${slug}`,
         });
         void highlightCodeBlocks();
+        extractHeadings();
     } else if (route.query.post) {
         const newQuery = { ...route.query };
         delete newQuery.post;
@@ -71,6 +86,7 @@ const openPost = (slug) => {
 const goBack = ({ skipQueryUpdate = false } = {}) => {
     view.value = "list";
     currentPost.value = null;
+    headings.value = [];
     window.scrollTo({ top: 0, behavior: "smooth" });
     updateMeta({
         title: "Blog | f1sh.dev",
@@ -91,22 +107,6 @@ const calculateReadingTime = (text) => {
     return minutes;
 };
 
-const escapeHtml = (text = "") => {
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-};
-
-const sanitizeExternalUrl = (url = "") => {
-    const trimmedUrl = url.trim();
-    if (/^(https?:\/\/|mailto:|\/)/i.test(trimmedUrl)) {
-        return trimmedUrl;
-    }
-    return "#";
-};
 
 const ensurePostEnhancers = async () => {
     if (PrismInstance) return;
@@ -149,169 +149,19 @@ const highlightCodeBlocks = async () => {
     }
 };
 
-const parseMarkdown = (content) => {
-    let html = content;
-
-    // Store code blocks temporarily to prevent other replacements from affecting them
-    const codeBlocks = [];
-    html = html.replace(/```(\w*)\s*\n?([\s\S]*?)```/g, (match, lang, code) => {
-        const placeholder = `__CODEBLOCK_${codeBlocks.length}__`;
-        const escapedCode = escapeHtml(code.trim());
-
-        const languageClass = lang ? `language-${lang.toLowerCase()}` : "";
-        const blockId = `code-block-${codeBlocks.length}`;
-
-        codeBlocks.push(
-            `<div class="relative group">
-                <button data-copy-target="${blockId}" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-catppuccin-subtle hover:text-catppuccin-mauve px-2 py-1 bg-catppuccin-crust border border-catppuccin-surface rounded hover:bg-catppuccin-mauve/10 cursor-pointer z-10">
-                    copy
-                </button>
-                <pre class="bg-catppuccin-surface/50 border border-catppuccin-overlay/30 rounded p-4 overflow-x-auto my-4"><code id="${blockId}" class="${languageClass}">${escapedCode}</code></pre>
-            </div>`
-        );
-        return placeholder;
+const extractHeadings = () => {
+    nextTick(() => {
+        if (!articleContentRef.value) {
+            headings.value = [];
+            return;
+        }
+        const els = articleContentRef.value.querySelectorAll("h2, h3");
+        headings.value = Array.from(els).map(el => ({
+            id: el.id,
+            text: el.textContent,
+            level: parseInt(el.tagName[1]),
+        }));
     });
-
-    // Parse tables
-    const tables = [];
-    html = html.replace(/((?:\|[^\n]+\|\r?\n?)+)/g, (match) => {
-        const lines = match.trim().split(/\r?\n/);
-        if (lines.length < 2) return match;
-
-        const hasSeparator = /^\|[\s\-:|]+\|$/.test(lines[1]);
-        if (!hasSeparator) return match;
-
-        const placeholder = `__TABLE_${tables.length}__`;
-        const headerRow = lines[0];
-        const dataRows = lines.slice(2);
-
-        let tableHtml = '<table class="w-full my-4 text-sm border-collapse">';
-
-        const headers = headerRow.split('|').filter(c => c.trim());
-        tableHtml += '<thead><tr>';
-        headers.forEach(h => {
-            tableHtml += `<th class="border border-catppuccin-surface px-3 py-2 text-left text-catppuccin-mauve bg-catppuccin-surface/30">${escapeHtml(h.trim())}</th>`;
-        });
-        tableHtml += '</tr></thead>';
-
-        tableHtml += '<tbody>';
-        dataRows.forEach(row => {
-            if (row.trim() && !/^\|[\s\-:|]+\|$/.test(row)) {
-                const cells = row.split('|').filter(c => c.trim());
-                tableHtml += '<tr>';
-                cells.forEach(c => {
-                    tableHtml += `<td class="border border-catppuccin-surface px-3 py-2 text-catppuccin-text">${escapeHtml(c.trim())}</td>`;
-                });
-                tableHtml += '</tr>';
-            }
-        });
-        tableHtml += '</tbody></table>';
-
-        tables.push(tableHtml);
-        return placeholder;
-    });
-
-    // Extract blockquotes before escaping
-    const blockquotes = [];
-    html = html.replace(/(?:^|\n)((?:> .*(?:\n|$))+)/g, (match) => {
-        const placeholder = `__BLOCKQUOTE_${blockquotes.length}__`;
-        const text = match
-            .trim()
-            .split("\n")
-            .map((l) => escapeHtml(l.replace(/^> ?/, "")))
-            .join("<br>");
-        blockquotes.push(
-            `<blockquote class="border-l-2 border-catppuccin-mauve pl-4 my-4 text-catppuccin-subtle italic">${text}</blockquote>`
-        );
-        return `\n${placeholder}\n`;
-    });
-
-    html = escapeHtml(html);
-
-    // Horizontal rules
-    html = html.replace(/^---$/gm, '<hr class="border-catppuccin-surface my-6">');
-
-    // Headings
-    html = html.replace(
-        /^### (.*$)/gim,
-        '<h3 class="text-lg font-semibold text-catppuccin-mauve mt-6 mb-3">$1</h3>',
-    );
-    html = html.replace(
-        /^## (.*$)/gim,
-        '<h2 class="text-xl font-semibold text-catppuccin-blue mt-8 mb-4">$1</h2>',
-    );
-    html = html.replace(
-        /^# (.*$)/gim,
-        '<h1 class="text-2xl font-bold text-catppuccin-text mt-8 mb-4">$1</h1>',
-    );
-
-    // Images (before links)
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
-        const safeSrc = sanitizeExternalUrl(src);
-        return `<img src="${safeSrc}" alt="${alt}" class="rounded border border-catppuccin-surface my-4 max-w-full">`;
-    });
-
-    // Bold
-    html = html.replace(
-        /\*\*(.*?)\*\*/g,
-        '<strong class="text-catppuccin-mauve font-semibold">$1</strong>',
-    );
-
-    // Italic (single asterisk, after bold is processed)
-    html = html.replace(
-        /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,
-        '<em class="text-catppuccin-peach italic">$1</em>',
-    );
-
-    // Inline code
-    html = html.replace(
-        /`([^`]+)`/g,
-        '<code class="bg-catppuccin-surface/50 px-2 py-0.5 rounded text-catppuccin-pink text-sm">$1</code>',
-    );
-
-    // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
-        const safeUrl = sanitizeExternalUrl(url);
-        return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-catppuccin-blue hover:text-catppuccin-mauve underline transition-colors">${label}</a>`;
-    });
-
-    // Bullet lists
-    html = html.replace(
-        /^\- (.*$)/gim,
-        '<li class="ml-6 list-disc text-catppuccin-text mb-1">$1</li>',
-    );
-
-    // Numbered lists
-    html = html.replace(
-        /^\d+\. (.*$)/gim,
-        '<li class="ml-6 list-decimal text-catppuccin-text mb-1">$1</li>',
-    );
-
-    // Paragraphs
-    html = html
-        .split("\n\n")
-        .map((p) => {
-            const trimmed = p.trim();
-            if (!trimmed) return "";
-            if (trimmed.startsWith("<") || trimmed.startsWith("__CODEBLOCK_") || trimmed.startsWith("__TABLE_") || trimmed.startsWith("__BLOCKQUOTE_")) {
-                return p;
-            }
-            return `<p class="text-catppuccin-text leading-relaxed mb-4">${p}</p>`;
-        })
-        .join("\n");
-
-    // Restore placeholders
-    codeBlocks.forEach((block, i) => {
-        html = html.replace(`__CODEBLOCK_${i}__`, block);
-    });
-    tables.forEach((table, i) => {
-        html = html.replace(`__TABLE_${i}__`, table);
-    });
-    blockquotes.forEach((bq, i) => {
-        html = html.replace(`__BLOCKQUOTE_${i}__`, bq);
-    });
-
-    return html;
 };
 
 const readingTime = (content) => {
@@ -327,27 +177,27 @@ onMounted(() => {
     document.documentElement.style.overflowY = "auto";
     document.body.style.overflowY = "auto";
 
-    if (articleContentRef.value) {
-        articleContentRef.value.addEventListener("click", handleCopyClick);
-    }
-
     const slugFromQuery = route.query.post;
     if (slugFromQuery) {
         openPost(slugFromQuery);
     }
+
+    window.addEventListener("scroll", updateReadingProgress, { passive: true });
 });
 
 onBeforeUnmount(() => {
     document.documentElement.style.overflowY = "";
     document.body.style.overflowY = "";
-    if (articleContentRef.value) {
-        articleContentRef.value.removeEventListener("click", handleCopyClick);
-    }
+    window.removeEventListener("scroll", updateReadingProgress);
+    if (rafId) cancelAnimationFrame(rafId);
 });
 
-watch(articleContentRef, (el) => {
+watch(articleContentRef, (el, _, onCleanup) => {
     if (el) {
         el.addEventListener("click", handleCopyClick);
+        onCleanup(() => {
+            el.removeEventListener("click", handleCopyClick);
+        });
     }
 });
 
@@ -374,10 +224,22 @@ const viewExit = { opacity: 0, y: -20 };
 </script>
 
 <template>
+    <Teleport to="body">
+        <div
+            v-if="view === 'post' && currentPost"
+            class="fixed top-0 left-0 w-full h-[3px] z-[9998]"
+        >
+            <div
+                class="h-full bg-catppuccin-mauve"
+                :style="{ width: readingProgress + '%', transition: 'width 0.1s ease-out' }"
+            ></div>
+        </div>
+    </Teleport>
+
     <div
         class="w-full min-h-screen overflow-x-hidden overflow-y-auto font-mono"
     >
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
             <AnimatePresence mode="wait">
                 <motion.div
                     v-if="view === 'list'"
@@ -547,57 +409,62 @@ const viewExit = { opacity: 0, y: -20 };
                         </motion.div>
                     </motion.div>
 
-                    <motion.article
-                        class="border-l-2 border-catppuccin-surface pl-4 mb-8"
-                        :initial="{ opacity: 0, y: 15 }"
-                        :animate="{ opacity: 1, y: 0 }"
-                        :transition="{ ...springs.gentle, delay: 0.2 }"
-                    >
-                        <div
-                            ref="articleContentRef"
-                            class="prose prose-invert max-w-none text-catppuccin-text"
-                            v-html="parseMarkdown(currentPost.content)"
-                        ></div>
-                    </motion.article>
-
-                    <div class="border-l-2 border-catppuccin-surface pl-4 mb-4">
-                        <div class="flex items-center justify-between gap-4">
-                            <motion.button
-                                v-if="adjacentPosts.prev"
-                                @click="openPost(adjacentPosts.prev.slug)"
-                                class="group text-left min-w-0 flex-1"
-                                :whileHover="linkHover"
+                    <div class="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
+                        <div>
+                            <motion.article
+                                class="border-l-2 border-catppuccin-surface pl-4 mb-8"
+                                :initial="{ opacity: 0, y: 15 }"
+                                :animate="{ opacity: 1, y: 0 }"
+                                :transition="{ ...springs.gentle, delay: 0.2 }"
                             >
-                                <span class="text-xs text-catppuccin-subtle">← older</span>
-                                <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
-                                    {{ adjacentPosts.prev.title }}
-                                </div>
-                            </motion.button>
-                            <div v-else class="flex-1"></div>
+                                <div
+                                    ref="articleContentRef"
+                                    class="prose prose-invert max-w-none text-catppuccin-text"
+                                    v-html="renderMarkdown(currentPost.content)"
+                                ></div>
+                            </motion.article>
 
-                            <motion.button
-                                v-if="adjacentPosts.next"
-                                @click="openPost(adjacentPosts.next.slug)"
-                                class="group text-right min-w-0 flex-1"
-                                :whileHover="{ x: -3, transition: springs.snappy }"
-                            >
-                                <span class="text-xs text-catppuccin-subtle">newer →</span>
-                                <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
-                                    {{ adjacentPosts.next.title }}
+                            <div class="border-l-2 border-catppuccin-surface pl-4 mb-4">
+                                <div class="flex items-center justify-between gap-4">
+                                    <motion.button
+                                        v-if="adjacentPosts.prev"
+                                        @click="openPost(adjacentPosts.prev.slug)"
+                                        class="group text-left min-w-0 flex-1"
+                                        :whileHover="linkHover"
+                                    >
+                                        <span class="text-xs text-catppuccin-subtle">← older</span>
+                                        <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
+                                            {{ adjacentPosts.prev.title }}
+                                        </div>
+                                    </motion.button>
+                                    <div v-else class="flex-1"></div>
+
+                                    <motion.button
+                                        v-if="adjacentPosts.next"
+                                        @click="openPost(adjacentPosts.next.slug)"
+                                        class="group text-right min-w-0 flex-1"
+                                        :whileHover="{ x: -3, transition: springs.snappy }"
+                                    >
+                                        <span class="text-xs text-catppuccin-subtle">newer →</span>
+                                        <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
+                                            {{ adjacentPosts.next.title }}
+                                        </div>
+                                    </motion.button>
+                                    <div v-else class="flex-1"></div>
                                 </div>
-                            </motion.button>
-                            <div v-else class="flex-1"></div>
+                            </div>
+
+                            <div class="border-l-2 border-catppuccin-surface pl-4">
+                                <motion.button
+                                    @click="goBack"
+                                    :whileHover="linkHover"
+                                    class="text-sm text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors inline-flex items-center gap-1"
+                                >
+                                    ← back to all posts
+                                </motion.button>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="border-l-2 border-catppuccin-surface pl-4">
-                        <motion.button
-                            @click="goBack"
-                            :whileHover="linkHover"
-                            class="text-sm text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors inline-flex items-center gap-1"
-                        >
-                            ← back to all posts
-                        </motion.button>
+                        <TableOfContents :headings="headings" />
                     </div>
                 </motion.div>
             </AnimatePresence>

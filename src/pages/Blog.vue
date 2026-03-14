@@ -1,6 +1,7 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { motion, AnimatePresence } from "motion-v";
 import "prismjs/themes/prism-tomorrow.css";
 import {
     getAllPosts,
@@ -8,6 +9,16 @@ import {
     formatDate,
 } from "@/services/blogService";
 import { updateMeta } from "@/utils/seo";
+import {
+    springs,
+    staggerContainer,
+    fadeUp,
+    fadeLeft,
+    scaleFade,
+    cardHover,
+    cardPress,
+    linkHover,
+} from "@/utils/motion";
 
 const view = ref("list");
 const currentPost = ref(null);
@@ -350,6 +361,16 @@ watch(
         }
     },
 );
+
+// Variant definitions
+const listHeaderContainer = staggerContainer(0.06);
+const postListContainer = staggerContainer(0.05);
+const postDetailContainer = staggerContainer(0.06);
+
+// AnimatePresence view transition presets
+const viewEnter = { opacity: 0, y: 20 };
+const viewAnimate = { opacity: 1, y: 0 };
+const viewExit = { opacity: 0, y: -20 };
 </script>
 
 <template>
@@ -357,34 +378,48 @@ watch(
         class="w-full min-h-screen overflow-x-hidden overflow-y-auto font-mono"
     >
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
-            <Transition name="fade" mode="out-in">
-                <div v-if="view === 'list'" key="list">
-                    <div class="mb-12">
-                        <div class="text-catppuccin-subtle text-sm mb-2">
+            <AnimatePresence mode="wait">
+                <motion.div
+                    v-if="view === 'list'"
+                    key="list"
+                    :initial="viewEnter"
+                    :animate="viewAnimate"
+                    :exit="viewExit"
+                    :transition="springs.default"
+                >
+                    <motion.div
+                        class="mb-12"
+                        :variants="listHeaderContainer"
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <motion.div :variants="fadeUp" class="text-catppuccin-subtle text-sm mb-2">
                             ~$ cd ~/blog
-                        </div>
-                        <h1
+                        </motion.div>
+                        <motion.h1
+                            :variants="fadeUp"
                             class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-4"
                         >
                             <span class="text-catppuccin-mauve">blog</span>
-                        </h1>
-                        <p
+                        </motion.h1>
+                        <motion.p
+                            :variants="fadeUp"
                             class="text-sm text-catppuccin-gray leading-relaxed mb-6"
                         >
                             thoughts on code, tools, and random stuff i find
                             interesting.
-                        </p>
+                        </motion.p>
 
-                        <div class="flex items-center gap-4 text-sm mb-6">
+                        <motion.div :variants="fadeUp" class="flex items-center gap-4 text-sm mb-6">
                             <router-link
                                 to="/"
                                 class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
                             >
                                 [← home]
                             </router-link>
-                        </div>
+                        </motion.div>
 
-                    </div>
+                    </motion.div>
 
                     <div class="border-l-2 border-catppuccin-surface pl-4">
                         <div class="text-catppuccin-subtle text-sm mb-3">
@@ -398,13 +433,22 @@ watch(
                             no posts found
                         </div>
 
-                        <div v-else class="space-y-3">
-                            <button
+                        <motion.div
+                            v-else
+                            class="space-y-3"
+                            :variants="postListContainer"
+                            initial="hidden"
+                            animate="visible"
+                        >
+                            <motion.button
                                 v-for="post in posts"
                                 :key="post.id"
                                 type="button"
                                 @click="openPost(post.slug)"
-                                class="block w-full text-left group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-catppuccin-mauve transition-all cursor-pointer"
+                                :variants="scaleFade"
+                                :whileHover="cardHover"
+                                :whilePress="cardPress"
+                                class="block w-full text-left group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40 focus-visible:outline focus-visible:outline-1 focus-visible:outline-catppuccin-mauve cursor-pointer"
                             >
                                 <div class="px-4 py-3">
                                     <div
@@ -445,31 +489,46 @@ watch(
                                         </span>
                                     </div>
                                 </div>
-                            </button>
-                        </div>
+                            </motion.button>
+                        </motion.div>
                     </div>
-                </div>
+                </motion.div>
 
-                <div v-else-if="view === 'post' && currentPost" key="post">
-                    <div class="mb-8">
-                        <div class="text-catppuccin-subtle text-sm mb-2">
+                <motion.div
+                    v-else-if="view === 'post' && currentPost"
+                    key="post"
+                    :initial="viewEnter"
+                    :animate="viewAnimate"
+                    :exit="viewExit"
+                    :transition="springs.default"
+                >
+                    <motion.div
+                        class="mb-8"
+                        :variants="postDetailContainer"
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <motion.div :variants="fadeUp" class="text-catppuccin-subtle text-sm mb-2">
                             ~$ cat {{ currentPost.slug }}.md
-                        </div>
+                        </motion.div>
 
-                        <button
+                        <motion.button
+                            :variants="fadeUp"
                             @click="goBack"
                             class="text-sm text-catppuccin-subtle hover:text-catppuccin-text transition-colors mb-6 inline-flex items-center gap-1"
                         >
                             ← back to posts
-                        </button>
+                        </motion.button>
 
-                        <h1
+                        <motion.h1
+                            :variants="fadeUp"
                             class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-3"
                         >
                             {{ currentPost.title }}
-                        </h1>
+                        </motion.h1>
 
-                        <div
+                        <motion.div
+                            :variants="fadeUp"
                             class="flex items-center gap-4 text-sm text-catppuccin-subtle mb-4"
                         >
                             <span>{{ formatDate(currentPost.date) }}</span>
@@ -485,80 +544,68 @@ watch(
                                     #{{ tag }}
                                 </span>
                             </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
 
-                    <article
+                    <motion.article
                         class="border-l-2 border-catppuccin-surface pl-4 mb-8"
+                        :initial="{ opacity: 0, y: 15 }"
+                        :animate="{ opacity: 1, y: 0 }"
+                        :transition="{ ...springs.gentle, delay: 0.2 }"
                     >
                         <div
                             ref="articleContentRef"
                             class="prose prose-invert max-w-none text-catppuccin-text"
                             v-html="parseMarkdown(currentPost.content)"
                         ></div>
-                    </article>
+                    </motion.article>
 
                     <div class="border-l-2 border-catppuccin-surface pl-4 mb-4">
                         <div class="flex items-center justify-between gap-4">
-                            <button
+                            <motion.button
                                 v-if="adjacentPosts.prev"
                                 @click="openPost(adjacentPosts.prev.slug)"
                                 class="group text-left min-w-0 flex-1"
+                                :whileHover="linkHover"
                             >
                                 <span class="text-xs text-catppuccin-subtle">← older</span>
                                 <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
                                     {{ adjacentPosts.prev.title }}
                                 </div>
-                            </button>
+                            </motion.button>
                             <div v-else class="flex-1"></div>
 
-                            <button
+                            <motion.button
                                 v-if="adjacentPosts.next"
                                 @click="openPost(adjacentPosts.next.slug)"
                                 class="group text-right min-w-0 flex-1"
+                                :whileHover="{ x: -3, transition: springs.snappy }"
                             >
                                 <span class="text-xs text-catppuccin-subtle">newer →</span>
                                 <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
                                     {{ adjacentPosts.next.title }}
                                 </div>
-                            </button>
+                            </motion.button>
                             <div v-else class="flex-1"></div>
                         </div>
                     </div>
 
                     <div class="border-l-2 border-catppuccin-surface pl-4">
-                        <button
+                        <motion.button
                             @click="goBack"
+                            :whileHover="linkHover"
                             class="text-sm text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors inline-flex items-center gap-1"
                         >
                             ← back to all posts
-                        </button>
+                        </motion.button>
                     </div>
-                </div>
-            </Transition>
+                </motion.div>
+            </AnimatePresence>
         </div>
     </div>
 </template>
 
 <style scoped>
-.fade-enter-active {
-    transition: all 0.3s ease-out;
-}
-
-.fade-leave-active {
-    transition: all 0.2s ease-in;
-}
-
-.fade-enter-from {
-    opacity: 0;
-    transform: translateY(20px);
-}
-
-.fade-leave-to {
-    opacity: 0;
-    transform: translateY(-20px);
-}
-
 article :deep(a) {
     word-break: break-word;
 }

@@ -1,7 +1,15 @@
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { motion, AnimatePresence } from "motion-v";
+import {
+    pageEnter,
+    pageAnimate,
+    pageExit,
+    pageTransition,
+} from "@/utils/motion";
 
+const route = useRoute();
 const router = useRouter();
 const isInitialLoad = ref(true);
 
@@ -14,9 +22,17 @@ router.isReady().then(() => {
 
 <template>
     <router-view v-slot="{ Component, route }">
-        <Transition :name="isInitialLoad ? '' : 'page'" mode="out-in">
-            <component v-if="Component" :is="Component" :key="route.path" />
-        </Transition>
+        <AnimatePresence mode="wait">
+            <motion.div
+                :key="route.path"
+                :initial="isInitialLoad ? false : pageEnter"
+                :animate="pageAnimate"
+                :exit="pageExit"
+                :transition="pageTransition"
+            >
+                <component v-if="Component" :is="Component" />
+            </motion.div>
+        </AnimatePresence>
     </router-view>
 </template>
 
@@ -62,25 +78,5 @@ html {
         transform-origin: center center;
         margin-top: -5vh;
     }
-}
-</style>
-
-<style>
-.page-enter-active {
-    transition: all 0.3s ease-out;
-}
-
-.page-leave-active {
-    transition: all 0.25s ease-in;
-}
-
-.page-enter-from {
-    opacity: 0;
-    transform: translateX(20px);
-}
-
-.page-leave-to {
-    opacity: 0;
-    transform: translateX(-20px);
 }
 </style>

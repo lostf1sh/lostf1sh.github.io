@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
+import { motion } from "motion-v";
 import { lanyardData } from "@/services/lanyardService";
 import { getRecentTracks } from "@/services/lastfmService";
 import {
@@ -8,6 +9,15 @@ import {
     getContributionLevel,
     getGitHubContributionUrl,
 } from "@/services/githubService";
+import {
+    springs,
+    staggerContainer,
+    fadeUp,
+    fadeLeft,
+    scaleFade,
+    cardHover,
+    cardPress,
+} from "@/utils/motion";
 
 const discordStatusColor = computed(() => lanyardData.discordStatusColor);
 const spotify = computed(() => lanyardData.spotify);
@@ -221,32 +231,59 @@ const updateTime = () => {
         second: "2-digit",
     });
 };
+
+// Variant definitions
+const heroContainer = staggerContainer(0.06);
+const repoContainer = staggerContainer(0.05);
+const trackContainer = staggerContainer(0.05);
+
+const skeletonContainer = staggerContainer(0.04);
+const skeletonItem = {
+    hidden: { opacity: 0, y: 8 },
+    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
+};
 </script>
 
 <template>
     <div class="w-full min-h-screen overflow-x-hidden font-mono">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-            <div class="mb-12">
+            <!-- Hero section -->
+            <motion.div
+                class="mb-12"
+                :variants="heroContainer"
+                initial="hidden"
+                animate="visible"
+            >
                 <div class="mb-8">
-                    <div class="text-catppuccin-subtle text-sm mb-2">
+                    <motion.div
+                        :variants="fadeUp"
+                        class="text-catppuccin-subtle text-sm mb-2"
+                    >
                         ~$ whoami
-                    </div>
-                    <h1
+                    </motion.div>
+                    <motion.h1
+                        :variants="fadeUp"
                         class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-2"
                     >
                         <span class="text-catppuccin-mauve">duhan</span>
                         <span class="text-catppuccin-subtle">@</span>
                         <span class="text-catppuccin-blue">f1sh.dev</span>
-                    </h1>
-                    <div class="text-sm text-catppuccin-gray mb-4 flex items-center gap-2">
+                    </motion.h1>
+                    <motion.div
+                        :variants="fadeUp"
+                        class="text-sm text-catppuccin-gray mb-4 flex items-center gap-2"
+                    >
                         <span class="text-catppuccin-subtle">aka </span
                         ><span class="text-catppuccin-green">moli</span>
                         <span class="text-catppuccin-surface">|</span>
                         <span class="text-catppuccin-peach">{{ currentTime }}</span>
                         <span class="text-catppuccin-subtle text-xs">TRT</span>
-                    </div>
+                    </motion.div>
 
-                    <div class="flex items-center flex-wrap gap-4 text-sm">
+                    <motion.div
+                        :variants="fadeUp"
+                        class="flex items-center flex-wrap gap-4 text-sm"
+                    >
                         <router-link
                             to="/blog"
                             class="text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors"
@@ -275,10 +312,14 @@ const updateTime = () => {
                         >
                             [uses]
                         </router-link>
-                    </div>
+                    </motion.div>
                 </div>
 
-                <div class="border-l-2 border-catppuccin-surface pl-4 mb-4">
+                <!-- About section -->
+                <motion.div
+                    :variants="fadeLeft"
+                    class="border-l-2 border-catppuccin-surface pl-4 mb-4"
+                >
                     <div class="text-catppuccin-subtle text-sm mb-2">
                         ~$ cat about.txt
                     </div>
@@ -287,9 +328,13 @@ const updateTime = () => {
                         junior dev. building stuff and learning along the way.
                         code, table tennis, cooking. based in turkey.
                     </p>
-                </div>
+                </motion.div>
 
-                <div class="border-l-2 border-catppuccin-surface pl-4 mb-4">
+                <!-- Status section -->
+                <motion.div
+                    :variants="fadeLeft"
+                    class="border-l-2 border-catppuccin-surface pl-4 mb-4"
+                >
                     <div class="text-catppuccin-subtle text-sm mb-2">
                         ~$ ps aux | grep duhan
                     </div>
@@ -355,9 +400,13 @@ const updateTime = () => {
                             </span>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
-                <div class="border-l-2 border-catppuccin-surface pl-4 mb-4">
+                <!-- Tools section -->
+                <motion.div
+                    :variants="fadeLeft"
+                    class="border-l-2 border-catppuccin-surface pl-4 mb-4"
+                >
                     <div class="text-catppuccin-subtle text-sm mb-2">
                         ~$ ls ~/tools
                     </div>
@@ -365,32 +414,49 @@ const updateTime = () => {
                         vue | git | nextjs | dart | python | js/ts | docker |
                         bash |
                     </div>
-                </div>
+                </motion.div>
 
-            </div>
+            </motion.div>
 
+            <!-- Projects & Tracks grid -->
             <div class="grid lg:grid-cols-2 gap-6">
-                <div class="border-l-2 border-catppuccin-surface pl-4 min-w-0">
+                <!-- Projects column -->
+                <motion.div
+                    class="border-l-2 border-catppuccin-surface pl-4 min-w-0"
+                    :whileInView="{ opacity: 1, x: 0 }"
+                    :initial="{ opacity: 0, x: -15 }"
+                    :transition="springs.default"
+                    :inViewOptions="{ once: true }"
+                >
                     <div class="text-catppuccin-subtle text-sm mb-3">
                         ~$ ls ~/projects
                     </div>
 
-
-                    <div v-if="reposLoading" class="space-y-2">
-                        <div
+                    <motion.div
+                        v-if="reposLoading"
+                        :variants="skeletonContainer"
+                        initial="hidden"
+                        animate="visible"
+                        class="space-y-2"
+                    >
+                        <motion.div
                             v-for="i in 6"
                             :key="`repo-loading-${i}`"
-                            class="rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 p-3"
+                            :variants="skeletonItem"
+                            class="rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 px-3 py-2"
                         >
                             <div class="flex items-start gap-3">
-                                <span class="text-catppuccin-subtle">></span>
-                                <div class="flex-1 min-w-0">
-                                    <div class="h-3 bg-catppuccin-surface/70 rounded w-2/3 mb-2 cursor-blink"></div>
-                                    <div class="h-2 bg-catppuccin-surface/50 rounded w-1/3 cursor-blink"></div>
+                                <div class="skeleton-pulse w-3 h-3 rounded-sm bg-catppuccin-surface/60 mt-0.5"></div>
+                                <div class="flex-1 min-w-0 space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="skeleton-pulse h-3.5 rounded bg-catppuccin-surface/60" :style="{ width: ['45%', '55%', '40%', '60%', '35%', '50%'][i - 1] }"></div>
+                                        <div v-if="i % 3 === 1" class="skeleton-pulse h-3 w-8 rounded bg-catppuccin-yellow/15"></div>
+                                    </div>
+                                    <div class="skeleton-pulse h-2.5 rounded bg-catppuccin-surface/40" :style="{ width: ['80%', '65%', '90%', '70%', '75%', '85%'][i - 1] }"></div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
 
                     <div
                         v-else-if="!repos.length"
@@ -399,19 +465,22 @@ const updateTime = () => {
                         no projects found
                     </div>
 
-                    <TransitionGroup
+                    <motion.div
                         v-else-if="displayedRepos.length"
-                        name="list"
-                        tag="div"
+                        :variants="repoContainer"
+                        initial="hidden"
+                        animate="visible"
                         class="space-y-2"
                     >
-                        <a
-                            v-for="(repo, index) in displayedRepos"
+                        <motion.a
+                            v-for="repo in displayedRepos"
                             :key="repo.id"
                             :href="repo.html_url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            :style="{ transitionDelay: `${index * 50}ms` }"
+                            :variants="scaleFade"
+                            :whileHover="cardHover"
+                            :whilePress="cardPress"
                             class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
                         >
                             <div
@@ -449,8 +518,8 @@ const updateTime = () => {
                                     </p>
                                 </div>
                             </div>
-                        </a>
-                    </TransitionGroup>
+                        </motion.a>
+                    </motion.div>
 
                     <div
                         v-else
@@ -458,28 +527,46 @@ const updateTime = () => {
                     >
                         no repositories found
                     </div>
-                </div>
+                </motion.div>
 
-                <div class="border-l-2 border-catppuccin-surface pl-4 min-w-0">
+                <!-- Tracks column -->
+                <motion.div
+                    class="border-l-2 border-catppuccin-surface pl-4 min-w-0"
+                    :whileInView="{ opacity: 1, x: 0 }"
+                    :initial="{ opacity: 0, x: -15 }"
+                    :transition="springs.default"
+                    :inViewOptions="{ once: true }"
+                >
                     <div class="text-catppuccin-subtle text-sm mb-3">
                         ~$ cat recent_tracks.log
                     </div>
 
-                    <div v-if="songsLoading" class="space-y-2">
-                        <div
+                    <motion.div
+                        v-if="songsLoading"
+                        :variants="skeletonContainer"
+                        initial="hidden"
+                        animate="visible"
+                        class="space-y-2"
+                    >
+                        <motion.div
                             v-for="i in 6"
                             :key="`loading-${i}`"
-                            class="rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 p-3"
+                            :variants="skeletonItem"
+                            class="rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 px-3 py-2"
                         >
                             <div class="flex items-start gap-3">
-                                <span class="text-catppuccin-subtle">></span>
-                                <div class="flex-1 min-w-0">
-                                    <div class="h-3 bg-catppuccin-surface/70 rounded w-2/3 mb-2 cursor-blink"></div>
-                                    <div class="h-2 bg-catppuccin-surface/50 rounded w-1/3 cursor-blink"></div>
+                                <div class="skeleton-pulse w-3 h-3 rounded-sm mt-0.5" :class="i === 1 ? 'bg-catppuccin-green/30' : 'bg-catppuccin-surface/60'"></div>
+                                <div class="flex-1 min-w-0 space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="skeleton-pulse h-3.5 rounded bg-catppuccin-surface/60" :style="{ width: ['50%', '60%', '40%', '55%', '45%', '65%'][i - 1] }"></div>
+                                        <div v-if="i === 1" class="skeleton-pulse h-3 w-10 rounded bg-catppuccin-green/15"></div>
+                                        <div v-else-if="i % 2 === 0" class="skeleton-pulse h-3 w-6 rounded bg-catppuccin-yellow/15"></div>
+                                    </div>
+                                    <div class="skeleton-pulse h-2.5 rounded bg-catppuccin-surface/40" :style="{ width: ['70%', '55%', '85%', '60%', '75%', '50%'][i - 1] }"></div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
 
                     <div
                         v-else-if="songsError"
@@ -495,18 +582,22 @@ const updateTime = () => {
                         no tracks found
                     </div>
 
-                    <TransitionGroup
+                    <motion.div
                         v-else
-                        :name="songsInitialLoad ? '' : 'list'"
-                        tag="div"
+                        :variants="trackContainer"
+                        initial="hidden"
+                        animate="visible"
                         class="space-y-2"
                     >
-                        <a
+                        <motion.a
                             v-if="currentTrack"
                             :href="currentTrack.url"
                             target="_blank"
                             rel="noopener noreferrer"
                             :key="`current-${currentTrack.name}-${currentTrack.artist['#text']}`"
+                            :variants="scaleFade"
+                            :whileHover="cardHover"
+                            :whilePress="cardPress"
                             class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
                         >
                             <div
@@ -537,10 +628,10 @@ const updateTime = () => {
                                     </p>
                                 </div>
                             </div>
-                        </a>
+                        </motion.a>
 
-                        <a
-                            v-for="(track, index) in consolidatedTracks.slice(
+                        <motion.a
+                            v-for="track in consolidatedTracks.slice(
                                 0,
                                 currentTrack ? 5 : 6,
                             )"
@@ -548,9 +639,9 @@ const updateTime = () => {
                             :href="track.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            :style="{
-                                transitionDelay: `${(index + (currentTrack ? 1 : 0)) * 50}ms`,
-                            }"
+                            :variants="fadeUp"
+                            :whileHover="cardHover"
+                            :whilePress="cardPress"
                             class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
                         >
                             <div
@@ -586,12 +677,19 @@ const updateTime = () => {
                                     </p>
                                 </div>
                             </div>
-                        </a>
-                    </TransitionGroup>
-                </div>
+                        </motion.a>
+                    </motion.div>
+                </motion.div>
             </div>
 
-            <div class="mt-6 border-l-2 border-catppuccin-surface pl-4">
+            <!-- Contribution graph -->
+            <motion.div
+                class="mt-6 border-l-2 border-catppuccin-surface pl-4"
+                :whileInView="{ opacity: 1, y: 0 }"
+                :initial="{ opacity: 0, y: 20 }"
+                :transition="springs.default"
+                :inViewOptions="{ once: true }"
+            >
                 <div class="flex items-center justify-between mb-3">
                     <div class="text-catppuccin-subtle text-sm">
                         ~$ git log --oneline --since="1.year.ago" | wc -l
@@ -616,7 +714,6 @@ const updateTime = () => {
                 </div>
 
                 <div v-else>
-                    <!-- Contribution grid - fixed on desktop, scrollable on mobile -->
                     <div class="overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-thin">
                         <div class="inline-flex md:flex gap-[3px] md:gap-1" style="min-width: max-content;">
                             <div
@@ -656,7 +753,7 @@ const updateTime = () => {
                         {{ totalContributions }} contributions in the last year
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
 
         </div>
@@ -664,26 +761,12 @@ const updateTime = () => {
 </template>
 
 <style scoped>
-.list-enter-active {
-    transition: all 0.4s ease-out;
+.skeleton-pulse {
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
 }
 
-.list-leave-active {
-    transition: all 0.3s ease-in;
-    position: absolute;
-}
-
-.list-enter-from {
-    opacity: 0;
-    transform: translateY(15px);
-}
-
-.list-leave-to {
-    opacity: 0;
-    transform: translateX(-10px);
-}
-
-.list-move {
-    transition: transform 0.4s ease;
+@keyframes skeleton-shimmer {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
 }
 </style>

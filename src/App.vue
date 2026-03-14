@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { motion, AnimatePresence } from "motion-v";
 import ThemeToggle from "@/components/ThemeToggle.vue";
+import BootSequence from "@/components/BootSequence.vue";
 import {
     pageEnter,
     pageAnimate,
@@ -22,6 +23,7 @@ router.isReady().then(() => {
 </script>
 
 <template>
+    <BootSequence />
     <ThemeToggle />
     <router-view v-slot="{ Component, route }">
         <AnimatePresence mode="wait">

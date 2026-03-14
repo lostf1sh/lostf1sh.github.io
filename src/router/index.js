@@ -39,6 +39,15 @@ const routes = [
     },
   },
   {
+    path: "/now",
+    name: "Now",
+    component: () => import("@/pages/Now.vue"),
+    meta: {
+        title: "Now | f1sh.dev",
+        description: "What duhan is currently working on.",
+    },
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/pages/NotFound.vue"),

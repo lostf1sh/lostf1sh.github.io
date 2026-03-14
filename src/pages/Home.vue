@@ -255,6 +255,12 @@ const heroContainer = staggerContainer(0.06);
                         >
                             [uses]
                         </router-link>
+                        <router-link
+                            to="/now"
+                            class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors"
+                        >
+                            [now]
+                        </router-link>
                     </motion.div>
                 </div>
 

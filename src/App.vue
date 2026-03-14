@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { motion, AnimatePresence } from "motion-v";
+import ThemeToggle from "@/components/ThemeToggle.vue";
 import {
     pageEnter,
     pageAnimate,
@@ -21,6 +22,7 @@ router.isReady().then(() => {
 </script>
 
 <template>
+    <ThemeToggle />
     <router-view v-slot="{ Component, route }">
         <AnimatePresence mode="wait">
             <motion.div
@@ -47,21 +49,21 @@ body {
 
 html {
     scrollbar-width: auto;
-    scrollbar-color: #45475a #1e1e2e;
+    scrollbar-color: rgb(var(--color-overlay)) rgb(var(--color-base));
 }
 
 ::-webkit-scrollbar-track {
-    background-color: #1e1e2e;
+    background-color: rgb(var(--color-base));
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #45475a;
-    border: 3px solid #1e1e2e;
+    background-color: rgb(var(--color-overlay));
+    border: 3px solid rgb(var(--color-base));
     border-radius: 8px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: #585b70;
+    background-color: rgb(var(--color-overlay));
 }
 
 /* Desktop: Centered layout */

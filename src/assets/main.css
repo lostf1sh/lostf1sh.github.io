@@ -17,50 +17,51 @@ html {
 }
 
 body {
-    background-color: #1e1e2e;
+    background-color: rgb(var(--color-base));
     background-image:
         radial-gradient(
             1200px circle at 10% 15%,
-            rgba(203, 166, 247, 0.08),
+            rgb(var(--color-mauve) / 0.08),
             transparent 40%
         ),
         radial-gradient(
             900px circle at 85% 10%,
-            rgba(148, 226, 213, 0.06),
+            rgb(var(--color-green) / 0.06),
             transparent 45%
         ),
         radial-gradient(
             1000px circle at 80% 80%,
-            rgba(180, 190, 254, 0.05),
+            rgb(var(--color-blue) / 0.05),
             transparent 40%
         ),
         repeating-linear-gradient(
             0deg,
-            rgba(147, 153, 178, 0.05) 0,
-            rgba(147, 153, 178, 0.05) 1px,
+            rgb(var(--color-subtle) / 0.05) 0,
+            rgb(var(--color-subtle) / 0.05) 1px,
             transparent 1px,
             transparent 40px
         ),
         repeating-linear-gradient(
             90deg,
-            rgba(147, 153, 178, 0.04) 0,
-            rgba(147, 153, 178, 0.04) 1px,
+            rgb(var(--color-subtle) / 0.04) 0,
+            rgb(var(--color-subtle) / 0.04) 1px,
             transparent 1px,
             transparent 40px
         );
     background-attachment: fixed;
-        background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
     min-height: 100vh;
     font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
     font-size: 14px;
     line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 
 
 ::selection {
-    background: theme("colors.catppuccin-mauve");
-    color: theme("colors.catppuccin-base");
+    background: rgb(var(--color-mauve));
+    color: rgb(var(--color-base));
 }
 
 /* Thin scrollbar for contribution graph */
@@ -73,7 +74,7 @@ body {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: theme("colors.catppuccin-surface");
+    background: rgb(var(--color-surface));
     border-radius: 2px;
 }
 
@@ -87,7 +88,7 @@ a:hover {
 }
 
 *:focus-visible {
-    outline: 1px solid theme("colors.catppuccin-mauve");
+    outline: 1px solid rgb(var(--color-mauve));
     outline-offset: 2px;
 }
 
@@ -107,7 +108,6 @@ a:hover {
 
 .cursor-blink::after {
     content: "_";
-    color: theme("colors.catppuccin-mauve");
+    color: rgb(var(--color-mauve));
     animation: cursor-blink 1.2s infinite;
 }
-

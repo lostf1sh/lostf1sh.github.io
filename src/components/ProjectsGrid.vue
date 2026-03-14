@@ -29,8 +29,17 @@ const skeletonItem = {
         :transition="springs.default"
         :inViewOptions="{ once: true }"
     >
-        <div class="text-catppuccin-subtle text-sm mb-3">
-            ~$ ls ~/projects
+        <div class="flex items-center justify-between mb-3">
+            <div class="text-catppuccin-subtle text-sm">
+                ~$ ls ~/projects
+            </div>
+            <router-link
+                v-if="!loading && repos.length"
+                to="/projects"
+                class="text-xs text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors"
+            >
+                see all →
+            </router-link>
         </div>
 
         <motion.div
@@ -41,7 +50,7 @@ const skeletonItem = {
             class="space-y-2"
         >
             <motion.div
-                v-for="i in 4"
+                v-for="i in 6"
                 :key="`repo-loading-${i}`"
                 :variants="skeletonItem"
                 class="rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 px-3 py-2"
@@ -50,10 +59,10 @@ const skeletonItem = {
                     <div class="skeleton-pulse w-3 h-3 rounded-sm bg-catppuccin-surface/60 mt-0.5"></div>
                     <div class="flex-1 min-w-0 space-y-2">
                         <div class="flex items-center gap-2">
-                            <div class="skeleton-pulse h-3.5 rounded bg-catppuccin-surface/60" :style="{ width: ['45%', '55%', '40%', '60%'][i - 1] }"></div>
+                            <div class="skeleton-pulse h-3.5 rounded bg-catppuccin-surface/60" :style="{ width: ['45%', '55%', '40%', '60%', '35%', '50%'][i - 1] }"></div>
                             <div v-if="i % 3 === 1" class="skeleton-pulse h-3 w-8 rounded bg-catppuccin-yellow/15"></div>
                         </div>
-                        <div class="skeleton-pulse h-2.5 rounded bg-catppuccin-surface/40" :style="{ width: ['80%', '65%', '90%', '70%'][i - 1] }"></div>
+                        <div class="skeleton-pulse h-2.5 rounded bg-catppuccin-surface/40" :style="{ width: ['80%', '65%', '90%', '70%', '75%', '85%'][i - 1] }"></div>
                     </div>
                 </div>
             </motion.div>
@@ -122,7 +131,6 @@ const skeletonItem = {
             </motion.a>
         </motion.div>
 
-        <slot name="footer" />
     </motion.div>
 </template>
 

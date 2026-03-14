@@ -17,6 +17,7 @@ import StatusSection from "@/components/StatusSection.vue";
 import ProjectsGrid from "@/components/ProjectsGrid.vue";
 import RecentTracks from "@/components/RecentTracks.vue";
 import ContributionGraph from "@/components/ContributionGraph.vue";
+import MatrixRain from "@/components/MatrixRain.vue";
 
 const discordStatusColor = computed(() => lanyardData.discordStatusColor);
 const spotify = computed(() => lanyardData.spotify);
@@ -182,8 +183,9 @@ const heroContainer = staggerContainer(0.06);
 </script>
 
 <template>
-    <div class="w-full min-h-screen overflow-x-hidden font-mono">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+    <div class="w-full min-h-screen overflow-x-hidden font-mono relative">
+        <MatrixRain />
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative" style="z-index: 1;">
             <!-- Hero section -->
             <motion.div
                 class="mb-12"

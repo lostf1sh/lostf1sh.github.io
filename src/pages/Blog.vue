@@ -3,6 +3,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref, computed, watch } from "vue"
 import { useRoute, useRouter } from "vue-router";
 import { motion, AnimatePresence } from "motion-v";
 import "prismjs/themes/prism-tomorrow.css";
+import { Marked } from "marked";
 import {
     getAllPosts,
     getPostBySlug,
@@ -91,21 +92,90 @@ const calculateReadingTime = (text) => {
     return minutes;
 };
 
-const escapeHtml = (text = "") => {
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-};
+let codeBlockCounter = 0;
 
-const sanitizeExternalUrl = (url = "") => {
-    const trimmedUrl = url.trim();
-    if (/^(https?:\/\/|mailto:|\/)/i.test(trimmedUrl)) {
-        return trimmedUrl;
-    }
-    return "#";
+const marked = new Marked({
+    renderer: {
+        heading({ tokens, depth }) {
+            const text = this.parser.parseInline(tokens);
+            const classes = {
+                1: "text-2xl font-bold text-catppuccin-text mt-8 mb-4",
+                2: "text-xl font-semibold text-catppuccin-blue mt-8 mb-4",
+                3: "text-lg font-semibold text-catppuccin-mauve mt-6 mb-3",
+            };
+            return `<h${depth} class="${classes[depth] || ''}">${text}</h${depth}>`;
+        },
+        paragraph({ tokens }) {
+            const text = this.parser.parseInline(tokens);
+            return `<p class="text-catppuccin-text leading-relaxed mb-4">${text}</p>`;
+        },
+        link({ href, tokens }) {
+            const text = this.parser.parseInline(tokens);
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-catppuccin-blue hover:text-catppuccin-mauve underline transition-colors">${text}</a>`;
+        },
+        image({ href, text }) {
+            return `<img src="${href}" alt="${text}" class="rounded border border-catppuccin-surface my-4 max-w-full">`;
+        },
+        code({ text, lang }) {
+            const id = `code-block-${codeBlockCounter++}`;
+            const languageClass = lang ? `language-${lang.toLowerCase()}` : "";
+            const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            return `<div class="relative group">
+                <button data-copy-target="${id}" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-catppuccin-subtle hover:text-catppuccin-mauve px-2 py-1 bg-catppuccin-crust border border-catppuccin-surface rounded hover:bg-catppuccin-mauve/10 cursor-pointer z-10">copy</button>
+                <pre class="bg-catppuccin-surface/50 border border-catppuccin-overlay/30 rounded p-4 overflow-x-auto my-4"><code id="${id}" class="${languageClass}">${escaped}</code></pre>
+            </div>`;
+        },
+        codespan({ text }) {
+            return `<code class="bg-catppuccin-surface/50 px-2 py-0.5 rounded text-catppuccin-pink text-sm">${text}</code>`;
+        },
+        blockquote({ tokens }) {
+            const body = this.parser.parse(tokens);
+            return `<blockquote class="border-l-2 border-catppuccin-mauve pl-4 my-4 text-catppuccin-subtle italic">${body}</blockquote>`;
+        },
+        list({ items, ordered }) {
+            const tag = ordered ? "ol" : "ul";
+            const listClass = ordered ? "list-decimal" : "list-disc";
+            const inner = items.map(item => {
+                const text = this.parser.parse(item.tokens);
+                return `<li class="ml-6 ${listClass} text-catppuccin-text mb-1">${text}</li>`;
+            }).join("");
+            return `<${tag} class="my-4">${inner}</${tag}>`;
+        },
+        table({ header, rows }) {
+            let html = '<table class="w-full my-4 text-sm border-collapse"><thead><tr>';
+            header.forEach(cell => {
+                const text = this.parser.parseInline(cell.tokens);
+                html += `<th class="border border-catppuccin-surface px-3 py-2 text-left text-catppuccin-mauve bg-catppuccin-surface/30">${text}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            rows.forEach(row => {
+                html += '<tr>';
+                row.forEach(cell => {
+                    const text = this.parser.parseInline(cell.tokens);
+                    html += `<td class="border border-catppuccin-surface px-3 py-2 text-catppuccin-text">${text}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody></table>';
+            return html;
+        },
+        hr() {
+            return '<hr class="border-catppuccin-surface my-6">';
+        },
+        strong({ tokens }) {
+            const text = this.parser.parseInline(tokens);
+            return `<strong class="text-catppuccin-mauve font-semibold">${text}</strong>`;
+        },
+        em({ tokens }) {
+            const text = this.parser.parseInline(tokens);
+            return `<em class="text-catppuccin-peach italic">${text}</em>`;
+        },
+    },
+});
+
+const renderMarkdown = (content) => {
+    codeBlockCounter = 0;
+    return marked.parse(content);
 };
 
 const ensurePostEnhancers = async () => {
@@ -147,171 +217,6 @@ const highlightCodeBlocks = async () => {
     if (PrismInstance && articleContentRef.value) {
         PrismInstance.highlightAllUnder(articleContentRef.value);
     }
-};
-
-const parseMarkdown = (content) => {
-    let html = content;
-
-    // Store code blocks temporarily to prevent other replacements from affecting them
-    const codeBlocks = [];
-    html = html.replace(/```(\w*)\s*\n?([\s\S]*?)```/g, (match, lang, code) => {
-        const placeholder = `__CODEBLOCK_${codeBlocks.length}__`;
-        const escapedCode = escapeHtml(code.trim());
-
-        const languageClass = lang ? `language-${lang.toLowerCase()}` : "";
-        const blockId = `code-block-${codeBlocks.length}`;
-
-        codeBlocks.push(
-            `<div class="relative group">
-                <button data-copy-target="${blockId}" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-catppuccin-subtle hover:text-catppuccin-mauve px-2 py-1 bg-catppuccin-crust border border-catppuccin-surface rounded hover:bg-catppuccin-mauve/10 cursor-pointer z-10">
-                    copy
-                </button>
-                <pre class="bg-catppuccin-surface/50 border border-catppuccin-overlay/30 rounded p-4 overflow-x-auto my-4"><code id="${blockId}" class="${languageClass}">${escapedCode}</code></pre>
-            </div>`
-        );
-        return placeholder;
-    });
-
-    // Parse tables
-    const tables = [];
-    html = html.replace(/((?:\|[^\n]+\|\r?\n?)+)/g, (match) => {
-        const lines = match.trim().split(/\r?\n/);
-        if (lines.length < 2) return match;
-
-        const hasSeparator = /^\|[\s\-:|]+\|$/.test(lines[1]);
-        if (!hasSeparator) return match;
-
-        const placeholder = `__TABLE_${tables.length}__`;
-        const headerRow = lines[0];
-        const dataRows = lines.slice(2);
-
-        let tableHtml = '<table class="w-full my-4 text-sm border-collapse">';
-
-        const headers = headerRow.split('|').filter(c => c.trim());
-        tableHtml += '<thead><tr>';
-        headers.forEach(h => {
-            tableHtml += `<th class="border border-catppuccin-surface px-3 py-2 text-left text-catppuccin-mauve bg-catppuccin-surface/30">${escapeHtml(h.trim())}</th>`;
-        });
-        tableHtml += '</tr></thead>';
-
-        tableHtml += '<tbody>';
-        dataRows.forEach(row => {
-            if (row.trim() && !/^\|[\s\-:|]+\|$/.test(row)) {
-                const cells = row.split('|').filter(c => c.trim());
-                tableHtml += '<tr>';
-                cells.forEach(c => {
-                    tableHtml += `<td class="border border-catppuccin-surface px-3 py-2 text-catppuccin-text">${escapeHtml(c.trim())}</td>`;
-                });
-                tableHtml += '</tr>';
-            }
-        });
-        tableHtml += '</tbody></table>';
-
-        tables.push(tableHtml);
-        return placeholder;
-    });
-
-    // Extract blockquotes before escaping
-    const blockquotes = [];
-    html = html.replace(/(?:^|\n)((?:> .*(?:\n|$))+)/g, (match) => {
-        const placeholder = `__BLOCKQUOTE_${blockquotes.length}__`;
-        const text = match
-            .trim()
-            .split("\n")
-            .map((l) => escapeHtml(l.replace(/^> ?/, "")))
-            .join("<br>");
-        blockquotes.push(
-            `<blockquote class="border-l-2 border-catppuccin-mauve pl-4 my-4 text-catppuccin-subtle italic">${text}</blockquote>`
-        );
-        return `\n${placeholder}\n`;
-    });
-
-    html = escapeHtml(html);
-
-    // Horizontal rules
-    html = html.replace(/^---$/gm, '<hr class="border-catppuccin-surface my-6">');
-
-    // Headings
-    html = html.replace(
-        /^### (.*$)/gim,
-        '<h3 class="text-lg font-semibold text-catppuccin-mauve mt-6 mb-3">$1</h3>',
-    );
-    html = html.replace(
-        /^## (.*$)/gim,
-        '<h2 class="text-xl font-semibold text-catppuccin-blue mt-8 mb-4">$1</h2>',
-    );
-    html = html.replace(
-        /^# (.*$)/gim,
-        '<h1 class="text-2xl font-bold text-catppuccin-text mt-8 mb-4">$1</h1>',
-    );
-
-    // Images (before links)
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
-        const safeSrc = sanitizeExternalUrl(src);
-        return `<img src="${safeSrc}" alt="${alt}" class="rounded border border-catppuccin-surface my-4 max-w-full">`;
-    });
-
-    // Bold
-    html = html.replace(
-        /\*\*(.*?)\*\*/g,
-        '<strong class="text-catppuccin-mauve font-semibold">$1</strong>',
-    );
-
-    // Italic (single asterisk, after bold is processed)
-    html = html.replace(
-        /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g,
-        '<em class="text-catppuccin-peach italic">$1</em>',
-    );
-
-    // Inline code
-    html = html.replace(
-        /`([^`]+)`/g,
-        '<code class="bg-catppuccin-surface/50 px-2 py-0.5 rounded text-catppuccin-pink text-sm">$1</code>',
-    );
-
-    // Links
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
-        const safeUrl = sanitizeExternalUrl(url);
-        return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="text-catppuccin-blue hover:text-catppuccin-mauve underline transition-colors">${label}</a>`;
-    });
-
-    // Bullet lists
-    html = html.replace(
-        /^\- (.*$)/gim,
-        '<li class="ml-6 list-disc text-catppuccin-text mb-1">$1</li>',
-    );
-
-    // Numbered lists
-    html = html.replace(
-        /^\d+\. (.*$)/gim,
-        '<li class="ml-6 list-decimal text-catppuccin-text mb-1">$1</li>',
-    );
-
-    // Paragraphs
-    html = html
-        .split("\n\n")
-        .map((p) => {
-            const trimmed = p.trim();
-            if (!trimmed) return "";
-            if (trimmed.startsWith("<") || trimmed.startsWith("__CODEBLOCK_") || trimmed.startsWith("__TABLE_") || trimmed.startsWith("__BLOCKQUOTE_")) {
-                return p;
-            }
-            return `<p class="text-catppuccin-text leading-relaxed mb-4">${p}</p>`;
-        })
-        .join("\n");
-
-    // Restore placeholders
-    codeBlocks.forEach((block, i) => {
-        html = html.replace(`__CODEBLOCK_${i}__`, block);
-    });
-    tables.forEach((table, i) => {
-        html = html.replace(`__TABLE_${i}__`, table);
-    });
-    blockquotes.forEach((bq, i) => {
-        html = html.replace(`__BLOCKQUOTE_${i}__`, bq);
-    });
-
-    return html;
 };
 
 const readingTime = (content) => {
@@ -552,7 +457,7 @@ const viewExit = { opacity: 0, y: -20 };
                         <div
                             ref="articleContentRef"
                             class="prose prose-invert max-w-none text-catppuccin-text"
-                            v-html="parseMarkdown(currentPost.content)"
+                            v-html="renderMarkdown(currentPost.content)"
                         ></div>
                     </motion.article>
 

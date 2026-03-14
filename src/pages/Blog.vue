@@ -9,6 +9,7 @@ import {
     getPostBySlug,
     formatDate,
 } from "@/services/blogService";
+import TableOfContents from "@/components/TableOfContents.vue";
 import { updateMeta } from "@/utils/seo";
 import {
     springs,
@@ -25,6 +26,7 @@ const view = ref("list");
 const currentPost = ref(null);
 const posts = ref([]);
 const articleContentRef = ref(null);
+const headings = ref([]);
 let PrismInstance = null;
 
 const readingProgress = ref(0);
@@ -73,6 +75,7 @@ const openPost = (slug) => {
             url: `https://f1sh.dev/blog?post=${slug}`,
         });
         void highlightCodeBlocks();
+        extractHeadings();
     } else if (route.query.post) {
         const newQuery = { ...route.query };
         delete newQuery.post;
@@ -83,6 +86,7 @@ const openPost = (slug) => {
 const goBack = ({ skipQueryUpdate = false } = {}) => {
     view.value = "list";
     currentPost.value = null;
+    headings.value = [];
     window.scrollTo({ top: 0, behavior: "smooth" });
     updateMeta({
         title: "Blog | f1sh.dev",
@@ -143,6 +147,21 @@ const highlightCodeBlocks = async () => {
     if (PrismInstance && articleContentRef.value) {
         PrismInstance.highlightAllUnder(articleContentRef.value);
     }
+};
+
+const extractHeadings = () => {
+    nextTick(() => {
+        if (!articleContentRef.value) {
+            headings.value = [];
+            return;
+        }
+        const els = articleContentRef.value.querySelectorAll("h2, h3");
+        headings.value = Array.from(els).map(el => ({
+            id: el.id,
+            text: el.textContent,
+            level: parseInt(el.tagName[1]),
+        }));
+    });
 };
 
 const readingTime = (content) => {
@@ -220,7 +239,7 @@ const viewExit = { opacity: 0, y: -20 };
     <div
         class="w-full min-h-screen overflow-x-hidden overflow-y-auto font-mono"
     >
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
             <AnimatePresence mode="wait">
                 <motion.div
                     v-if="view === 'list'"
@@ -390,57 +409,62 @@ const viewExit = { opacity: 0, y: -20 };
                         </motion.div>
                     </motion.div>
 
-                    <motion.article
-                        class="border-l-2 border-catppuccin-surface pl-4 mb-8"
-                        :initial="{ opacity: 0, y: 15 }"
-                        :animate="{ opacity: 1, y: 0 }"
-                        :transition="{ ...springs.gentle, delay: 0.2 }"
-                    >
-                        <div
-                            ref="articleContentRef"
-                            class="prose prose-invert max-w-none text-catppuccin-text"
-                            v-html="renderMarkdown(currentPost.content)"
-                        ></div>
-                    </motion.article>
-
-                    <div class="border-l-2 border-catppuccin-surface pl-4 mb-4">
-                        <div class="flex items-center justify-between gap-4">
-                            <motion.button
-                                v-if="adjacentPosts.prev"
-                                @click="openPost(adjacentPosts.prev.slug)"
-                                class="group text-left min-w-0 flex-1"
-                                :whileHover="linkHover"
+                    <div class="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
+                        <div>
+                            <motion.article
+                                class="border-l-2 border-catppuccin-surface pl-4 mb-8"
+                                :initial="{ opacity: 0, y: 15 }"
+                                :animate="{ opacity: 1, y: 0 }"
+                                :transition="{ ...springs.gentle, delay: 0.2 }"
                             >
-                                <span class="text-xs text-catppuccin-subtle">← older</span>
-                                <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
-                                    {{ adjacentPosts.prev.title }}
-                                </div>
-                            </motion.button>
-                            <div v-else class="flex-1"></div>
+                                <div
+                                    ref="articleContentRef"
+                                    class="prose prose-invert max-w-none text-catppuccin-text"
+                                    v-html="renderMarkdown(currentPost.content)"
+                                ></div>
+                            </motion.article>
 
-                            <motion.button
-                                v-if="adjacentPosts.next"
-                                @click="openPost(adjacentPosts.next.slug)"
-                                class="group text-right min-w-0 flex-1"
-                                :whileHover="{ x: -3, transition: springs.snappy }"
-                            >
-                                <span class="text-xs text-catppuccin-subtle">newer →</span>
-                                <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
-                                    {{ adjacentPosts.next.title }}
+                            <div class="border-l-2 border-catppuccin-surface pl-4 mb-4">
+                                <div class="flex items-center justify-between gap-4">
+                                    <motion.button
+                                        v-if="adjacentPosts.prev"
+                                        @click="openPost(adjacentPosts.prev.slug)"
+                                        class="group text-left min-w-0 flex-1"
+                                        :whileHover="linkHover"
+                                    >
+                                        <span class="text-xs text-catppuccin-subtle">← older</span>
+                                        <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
+                                            {{ adjacentPosts.prev.title }}
+                                        </div>
+                                    </motion.button>
+                                    <div v-else class="flex-1"></div>
+
+                                    <motion.button
+                                        v-if="adjacentPosts.next"
+                                        @click="openPost(adjacentPosts.next.slug)"
+                                        class="group text-right min-w-0 flex-1"
+                                        :whileHover="{ x: -3, transition: springs.snappy }"
+                                    >
+                                        <span class="text-xs text-catppuccin-subtle">newer →</span>
+                                        <div class="text-sm text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
+                                            {{ adjacentPosts.next.title }}
+                                        </div>
+                                    </motion.button>
+                                    <div v-else class="flex-1"></div>
                                 </div>
-                            </motion.button>
-                            <div v-else class="flex-1"></div>
+                            </div>
+
+                            <div class="border-l-2 border-catppuccin-surface pl-4">
+                                <motion.button
+                                    @click="goBack"
+                                    :whileHover="linkHover"
+                                    class="text-sm text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors inline-flex items-center gap-1"
+                                >
+                                    ← back to all posts
+                                </motion.button>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="border-l-2 border-catppuccin-surface pl-4">
-                        <motion.button
-                            @click="goBack"
-                            :whileHover="linkHover"
-                            class="text-sm text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors inline-flex items-center gap-1"
-                        >
-                            ← back to all posts
-                        </motion.button>
+                        <TableOfContents :headings="headings" />
                     </div>
                 </motion.div>
             </AnimatePresence>

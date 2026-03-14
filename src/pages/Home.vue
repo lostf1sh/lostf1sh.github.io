@@ -6,18 +6,17 @@ import { getRecentTracks } from "@/services/lastfmService";
 import {
     getAllReposWithLanguages,
     getContributionData,
-    getContributionLevel,
-    getGitHubContributionUrl,
 } from "@/services/githubService";
 import {
-    springs,
     staggerContainer,
     fadeUp,
     fadeLeft,
-    scaleFade,
-    cardHover,
-    cardPress,
 } from "@/utils/motion";
+
+import StatusSection from "@/components/StatusSection.vue";
+import ProjectsGrid from "@/components/ProjectsGrid.vue";
+import RecentTracks from "@/components/RecentTracks.vue";
+import ContributionGraph from "@/components/ContributionGraph.vue";
 
 const discordStatusColor = computed(() => lanyardData.discordStatusColor);
 const spotify = computed(() => lanyardData.spotify);
@@ -25,45 +24,6 @@ const discordStatus = computed(() => lanyardData.discordStatus);
 const discordUser = computed(() => lanyardData.discordUser);
 const editorActivity = computed(() => lanyardData.editorActivity);
 const isLoading = computed(() => lanyardData.isLoading);
-
-
-const editorStatus = computed(() => {
-    if (!editorActivity.value) return null;
-
-    if (
-        editorActivity.value.details &&
-        editorActivity.value.details.toLowerCase().includes("idling")
-    ) {
-        return "idling";
-    }
-
-    const editorName = editorActivity.value.name;
-    const isZed = editorName === "Zed";
-
-    let filename = isZed
-        ? editorActivity.value.state || ""
-        : editorActivity.value.details || "";
-
-    let workspace = isZed
-        ? editorActivity.value.details || ""
-        : editorActivity.value.state || "";
-
-    filename = filename
-        .replace(/editing /i, "")
-        .replace(/working on /i, "")
-        .trim();
-
-    workspace = workspace
-        .replace(/in /i, "")
-        .replace(/workspace: /i, "")
-        .trim();
-
-    return {
-        name: editorName,
-        workspace,
-        filename,
-    };
-});
 
 const repos = ref([]);
 const reposLoading = ref(true);
@@ -86,15 +46,15 @@ const consolidatedTracks = computed(() => {
         (track) => !track["@attr"]?.nowplaying,
     );
     const consolidated = [];
-    let currentTrack = null;
+    let currentKey = null;
     let count = 1;
 
     tracks.forEach((track, index) => {
         const key = `${track.name}-${track.artist["#text"]}`;
-        if (currentTrack === key) {
+        if (currentKey === key) {
             count++;
         } else {
-            if (currentTrack) {
+            if (currentKey) {
                 const prevTrack = tracks[index - 1];
                 consolidated.push({
                     ...prevTrack,
@@ -102,7 +62,7 @@ const consolidatedTracks = computed(() => {
                     date: prevTrack.date?.["#text"],
                 });
             }
-            currentTrack = key;
+            currentKey = key;
             count = 1;
         }
         if (index === tracks.length - 1) {
@@ -117,7 +77,6 @@ const consolidatedTracks = computed(() => {
     return consolidated.slice(0, 10);
 });
 
-
 const pinnedExternal = ["theovilardo/PixelPlayer"];
 const pinnedFullNames = new Set(pinnedExternal);
 
@@ -129,10 +88,8 @@ const displayedRepos = computed(() => {
         .filter((r) => !pinnedFullNames.has(r.full_name))
         .sort((a, b) => b.stargazers_count - a.stargazers_count);
 
-    return [...pinned, ...rest].slice(0, 6);
+    return [...pinned, ...rest].slice(0, 4);
 });
-
-
 
 const fetchSongs = async () => {
     try {
@@ -140,7 +97,7 @@ const fetchSongs = async () => {
         allTracks.value = await getRecentTracks();
         songsError.value = null;
     } catch (error) {
-        console.error("Failed to load recent tracks:", error);
+        if (import.meta.env.DEV) console.error("Failed to load recent tracks:", error);
         songsError.value = "couldn't load tracks";
     } finally {
         songsLoading.value = false;
@@ -162,7 +119,7 @@ const fetchProjects = async () => {
         const pinned = pinnedResults.filter(Boolean);
         repos.value = [...pinned, ...ownRepos];
     } catch (error) {
-        console.error("Failed to load repositories:", error);
+        if (import.meta.env.DEV) console.error("Failed to load repositories:", error);
         repos.value = [];
     } finally {
         reposLoading.value = false;
@@ -174,24 +131,12 @@ const fetchContributions = async () => {
         contributionsLoading.value = true;
         contributions.value = await getContributionData();
     } catch (error) {
-        console.error("Failed to load contribution data:", error);
+        if (import.meta.env.DEV) console.error("Failed to load contribution data:", error);
         contributions.value = [];
     } finally {
         contributionsLoading.value = false;
     }
 };
-
-const contributionWeeks = computed(() => {
-    const weeks = [];
-    for (let i = 0; i < contributions.value.length; i += 7) {
-        weeks.push(contributions.value.slice(i, i + 7));
-    }
-    return weeks;
-});
-
-const totalContributions = computed(() => {
-    return contributions.value.reduce((sum, day) => sum + day.count, 0);
-});
 
 onMounted(() => {
     fetchProjects();
@@ -200,7 +145,7 @@ onMounted(() => {
     updateAge();
     updateTime();
     updateInterval = setInterval(fetchSongs, 30000);
-    ageInterval = setInterval(updateAge, 50);
+    ageInterval = setInterval(updateAge, 1000);
     timeInterval = setInterval(updateTime, 1000);
 });
 
@@ -234,14 +179,6 @@ const updateTime = () => {
 
 // Variant definitions
 const heroContainer = staggerContainer(0.06);
-const repoContainer = staggerContainer(0.05);
-const trackContainer = staggerContainer(0.05);
-
-const skeletonContainer = staggerContainer(0.04);
-const skeletonItem = {
-    hidden: { opacity: 0, y: 8 },
-    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } },
-};
 </script>
 
 <template>
@@ -290,6 +227,12 @@ const skeletonItem = {
                         >
                             [blog]
                         </router-link>
+                        <router-link
+                            to="/projects"
+                            class="text-catppuccin-subtle hover:text-catppuccin-blue transition-colors"
+                        >
+                            [projects]
+                        </router-link>
                         <a
                             href="https://github.com/lostf1sh"
                             target="_blank"
@@ -331,76 +274,14 @@ const skeletonItem = {
                 </motion.div>
 
                 <!-- Status section -->
-                <motion.div
-                    :variants="fadeLeft"
-                    class="border-l-2 border-catppuccin-surface pl-4 mb-4"
-                >
-                    <div class="text-catppuccin-subtle text-sm mb-2">
-                        ~$ ps aux | grep duhan
-                    </div>
-                    <div class="space-y-1 text-sm">
-                        <div
-                            v-if="!isLoading && discordUser"
-                            class="flex items-center gap-2"
-                        >
-                            <span class="text-catppuccin-blue">discord</span>
-                            <span class="text-catppuccin-subtle">:</span>
-                            <span class="text-catppuccin-text">{{
-                                discordUser.username
-                            }}</span>
-                            <span :class="discordStatusColor"
-                                >[{{ discordStatus }}]</span
-                            >
-                        </div>
-
-                        <div class="flex items-center gap-2">
-                            <span class="text-catppuccin-green">spotify</span>
-                            <span class="text-catppuccin-subtle">:</span>
-                            <span
-                                v-if="!isLoading && spotify"
-                                class="text-catppuccin-text truncate"
-                            >
-                                {{ spotify.song }} - {{ spotify.artist }}
-                            </span>
-                            <span v-else class="text-catppuccin-subtle"
-                                >not playing</span
-                            >
-                        </div>
-
-                        <div
-                            v-if="
-                                !isLoading &&
-                                editorActivity &&
-                                editorStatus &&
-                                (editorStatus.workspace ||
-                                    editorStatus.filename)
-                            "
-                            class="flex items-center gap-2"
-                        >
-                            <span class="text-catppuccin-blue">{{
-                                editorStatus.name === "Zed" ? "zed" : "vscode"
-                            }}</span>
-                            <span class="text-catppuccin-subtle">:</span>
-                            <span class="text-catppuccin-text truncate">
-                                <span v-if="editorStatus.workspace">{{
-                                    editorStatus.workspace.toLowerCase()
-                                }}</span>
-                                <span
-                                    v-if="
-                                        editorStatus.workspace &&
-                                        editorStatus.filename
-                                    "
-                                    class="text-catppuccin-subtle"
-                                >
-                                    /
-                                </span>
-                                <span v-if="editorStatus.filename">{{
-                                    editorStatus.filename.toLowerCase()
-                                }}</span>
-                            </span>
-                        </div>
-                    </div>
-                </motion.div>
+                <StatusSection
+                    :isLoading="isLoading"
+                    :discordUser="discordUser"
+                    :discordStatus="discordStatus"
+                    :discordStatusColor="discordStatusColor"
+                    :spotify="spotify"
+                    :editorActivity="editorActivity"
+                />
 
                 <!-- Tools section -->
                 <motion.div
@@ -421,352 +302,36 @@ const skeletonItem = {
             <!-- Projects & Tracks grid -->
             <div class="grid lg:grid-cols-2 gap-6">
                 <!-- Projects column -->
-                <motion.div
-                    class="border-l-2 border-catppuccin-surface pl-4 min-w-0"
-                    :whileInView="{ opacity: 1, x: 0 }"
-                    :initial="{ opacity: 0, x: -15 }"
-                    :transition="springs.default"
-                    :inViewOptions="{ once: true }"
+                <ProjectsGrid
+                    :repos="displayedRepos"
+                    :loading="reposLoading"
                 >
-                    <div class="text-catppuccin-subtle text-sm mb-3">
-                        ~$ ls ~/projects
-                    </div>
-
-                    <motion.div
-                        v-if="reposLoading"
-                        :variants="skeletonContainer"
-                        initial="hidden"
-                        animate="visible"
-                        class="space-y-2"
-                    >
-                        <motion.div
-                            v-for="i in 6"
-                            :key="`repo-loading-${i}`"
-                            :variants="skeletonItem"
-                            class="rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 px-3 py-2"
+                    <template #footer>
+                        <router-link
+                            v-if="!reposLoading && displayedRepos.length"
+                            to="/projects"
+                            class="block text-sm text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors mt-3"
                         >
-                            <div class="flex items-start gap-3">
-                                <div class="skeleton-pulse w-3 h-3 rounded-sm bg-catppuccin-surface/60 mt-0.5"></div>
-                                <div class="flex-1 min-w-0 space-y-2">
-                                    <div class="flex items-center gap-2">
-                                        <div class="skeleton-pulse h-3.5 rounded bg-catppuccin-surface/60" :style="{ width: ['45%', '55%', '40%', '60%', '35%', '50%'][i - 1] }"></div>
-                                        <div v-if="i % 3 === 1" class="skeleton-pulse h-3 w-8 rounded bg-catppuccin-yellow/15"></div>
-                                    </div>
-                                    <div class="skeleton-pulse h-2.5 rounded bg-catppuccin-surface/40" :style="{ width: ['80%', '65%', '90%', '70%', '75%', '85%'][i - 1] }"></div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-
-                    <div
-                        v-else-if="!repos.length"
-                        class="text-sm text-catppuccin-subtle"
-                    >
-                        no projects found
-                    </div>
-
-                    <motion.div
-                        v-else-if="displayedRepos.length"
-                        :variants="repoContainer"
-                        initial="hidden"
-                        animate="visible"
-                        class="space-y-2"
-                    >
-                        <motion.a
-                            v-for="repo in displayedRepos"
-                            :key="repo.id"
-                            :href="repo.html_url"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            :variants="scaleFade"
-                            :whileHover="cardHover"
-                            :whilePress="cardPress"
-                            class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
-                        >
-                            <div
-                                class="flex items-start gap-3 text-sm hover:text-catppuccin-mauve transition-colors px-3 py-2"
-                            >
-                                <span
-                                    class="text-catppuccin-subtle group-hover:text-catppuccin-mauve transition-colors"
-                                    >></span
-                                >
-
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors font-medium truncate"
-                                            :title="repo.name"
-                                        >
-                                            {{ repo.name }}
-                                        </span>
-
-                                        <span
-                                            v-if="repo.stargazers_count > 0"
-                                            class="text-catppuccin-yellow text-xs flex-shrink-0"
-                                        >
-                                            ★{{ repo.stargazers_count }}
-                                        </span>
-                                    </div>
-
-                                    <p
-                                        class="text-xs text-catppuccin-gray truncate"
-                                        :title="repo.description"
-                                    >
-                                        {{
-                                            repo.description || "no description"
-                                        }}
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.a>
-                    </motion.div>
-
-                    <div
-                        v-else
-                        class="text-sm text-catppuccin-subtle"
-                    >
-                        no repositories found
-                    </div>
-                </motion.div>
+                            see all ~/projects →
+                        </router-link>
+                    </template>
+                </ProjectsGrid>
 
                 <!-- Tracks column -->
-                <motion.div
-                    class="border-l-2 border-catppuccin-surface pl-4 min-w-0"
-                    :whileInView="{ opacity: 1, x: 0 }"
-                    :initial="{ opacity: 0, x: -15 }"
-                    :transition="springs.default"
-                    :inViewOptions="{ once: true }"
-                >
-                    <div class="text-catppuccin-subtle text-sm mb-3">
-                        ~$ cat recent_tracks.log
-                    </div>
-
-                    <motion.div
-                        v-if="songsLoading"
-                        :variants="skeletonContainer"
-                        initial="hidden"
-                        animate="visible"
-                        class="space-y-2"
-                    >
-                        <motion.div
-                            v-for="i in 6"
-                            :key="`loading-${i}`"
-                            :variants="skeletonItem"
-                            class="rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 px-3 py-2"
-                        >
-                            <div class="flex items-start gap-3">
-                                <div class="skeleton-pulse w-3 h-3 rounded-sm mt-0.5" :class="i === 1 ? 'bg-catppuccin-green/30' : 'bg-catppuccin-surface/60'"></div>
-                                <div class="flex-1 min-w-0 space-y-2">
-                                    <div class="flex items-center gap-2">
-                                        <div class="skeleton-pulse h-3.5 rounded bg-catppuccin-surface/60" :style="{ width: ['50%', '60%', '40%', '55%', '45%', '65%'][i - 1] }"></div>
-                                        <div v-if="i === 1" class="skeleton-pulse h-3 w-10 rounded bg-catppuccin-green/15"></div>
-                                        <div v-else-if="i % 2 === 0" class="skeleton-pulse h-3 w-6 rounded bg-catppuccin-yellow/15"></div>
-                                    </div>
-                                    <div class="skeleton-pulse h-2.5 rounded bg-catppuccin-surface/40" :style="{ width: ['70%', '55%', '85%', '60%', '75%', '50%'][i - 1] }"></div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-
-                    <div
-                        v-else-if="songsError"
-                        class="text-sm text-catppuccin-red"
-                    >
-                        error: {{ songsError }}
-                    </div>
-
-                    <div
-                        v-else-if="!consolidatedTracks.length && !currentTrack"
-                        class="text-sm text-catppuccin-subtle"
-                    >
-                        no tracks found
-                    </div>
-
-                    <motion.div
-                        v-else
-                        :variants="trackContainer"
-                        initial="hidden"
-                        animate="visible"
-                        class="space-y-2"
-                    >
-                        <motion.a
-                            v-if="currentTrack"
-                            :href="currentTrack.url"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            :key="`current-${currentTrack.name}-${currentTrack.artist['#text']}`"
-                            :variants="scaleFade"
-                            :whileHover="cardHover"
-                            :whilePress="cardPress"
-                            class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
-                        >
-                            <div
-                                class="flex items-start gap-3 text-sm px-3 py-2"
-                            >
-                                <span class="text-catppuccin-green">♪</span>
-
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="text-catppuccin-text group-hover:text-catppuccin-green transition-colors truncate"
-                                            :title="currentTrack.name"
-                                        >
-                                            {{ currentTrack.name }}
-                                        </span>
-
-                                        <span
-                                            class="text-catppuccin-green text-xs flex-shrink-0"
-                                            >[now]</span
-                                        >
-                                    </div>
-
-                                    <p
-                                        class="text-xs text-catppuccin-gray truncate"
-                                        :title="currentTrack.artist['#text']"
-                                    >
-                                        {{ currentTrack.artist["#text"] }}
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.a>
-
-                        <motion.a
-                            v-for="track in consolidatedTracks.slice(
-                                0,
-                                currentTrack ? 5 : 6,
-                            )"
-                            :key="`${track.name}-${track.artist['#text']}-${track.date}`"
-                            :href="track.url"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            :variants="fadeUp"
-                            :whileHover="cardHover"
-                            :whilePress="cardPress"
-                            class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
-                        >
-                            <div
-                                class="flex items-start gap-3 text-sm px-3 py-2"
-                            >
-                                <span
-                                    class="text-catppuccin-subtle group-hover:text-catppuccin-green transition-colors"
-                                    >></span
-                                >
-
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="text-catppuccin-text group-hover:text-catppuccin-green transition-colors truncate"
-                                            :title="track.name"
-                                        >
-                                            {{ track.name }}
-                                        </span>
-
-                                        <span
-                                            v-if="track.playcount > 1"
-                                            class="text-catppuccin-yellow text-xs flex-shrink-0"
-                                        >
-                                            ×{{ track.playcount }}
-                                        </span>
-                                    </div>
-
-                                    <p
-                                        class="text-xs text-catppuccin-gray truncate"
-                                        :title="track.artist['#text']"
-                                    >
-                                        {{ track.artist["#text"] }}
-                                    </p>
-                                </div>
-                            </div>
-                        </motion.a>
-                    </motion.div>
-                </motion.div>
+                <RecentTracks
+                    :currentTrack="currentTrack"
+                    :tracks="consolidatedTracks"
+                    :loading="songsLoading"
+                    :error="songsError"
+                />
             </div>
 
             <!-- Contribution graph -->
-            <motion.div
-                class="mt-6 border-l-2 border-catppuccin-surface pl-4"
-                :whileInView="{ opacity: 1, y: 0 }"
-                :initial="{ opacity: 0, y: 20 }"
-                :transition="springs.default"
-                :inViewOptions="{ once: true }"
-            >
-                <div class="flex items-center justify-between mb-3">
-                    <div class="text-catppuccin-subtle text-sm">
-                        ~$ git log --oneline --since="1.year.ago" | wc -l
-                    </div>
-                    <div v-if="!contributionsLoading" class="flex items-center gap-1 text-[10px] text-catppuccin-subtle">
-                        <span>less</span>
-                        <div class="flex gap-[1px]">
-                            <div class="w-2 h-2 rounded-[2px] bg-catppuccin-surface/50"></div>
-                            <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/30"></div>
-                            <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/50"></div>
-                            <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/70"></div>
-                            <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green"></div>
-                        </div>
-                        <span>more</span>
-                    </div>
-                </div>
-
-                <div
-                    v-if="contributionsLoading"
-                >
-                    <div class="h-[60px] bg-catppuccin-surface/30 rounded cursor-blink"></div>
-                </div>
-
-                <div v-else>
-                    <div class="overflow-x-auto md:overflow-visible pb-2 md:pb-0 scrollbar-thin">
-                        <div class="inline-flex md:flex gap-[3px] md:gap-1" style="min-width: max-content;">
-                            <div
-                                v-for="(week, weekIndex) in contributionWeeks"
-                                :key="weekIndex"
-                                class="flex flex-col gap-[3px] md:gap-1 md:flex-1"
-                            >
-                                <template v-for="(day, dayIndex) in week" :key="dayIndex">
-                                    <a
-                                        v-if="day.count > 0"
-                                        :href="getGitHubContributionUrl(day.date)"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-all hover:ring-1 hover:ring-catppuccin-green hover:scale-110 cursor-pointer"
-                                        :class="[
-                                            getContributionLevel(day.count) === 1
-                                                ? 'bg-catppuccin-green/30 hover:bg-catppuccin-green/40'
-                                                : getContributionLevel(day.count) === 2
-                                                  ? 'bg-catppuccin-green/50 hover:bg-catppuccin-green/60'
-                                                  : getContributionLevel(day.count) === 3
-                                                    ? 'bg-catppuccin-green/70 hover:bg-catppuccin-green/80'
-                                                    : 'bg-catppuccin-green hover:bg-catppuccin-green',
-                                        ]"
-                                        :title="`${day.date}: ${day.count} contributions - Click to view on GitHub`"
-                                    ></a>
-                                    <div
-                                        v-else
-                                        class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm bg-catppuccin-surface/50"
-                                        :title="`${day.date}: ${day.count} contributions`"
-                                    ></div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="text-xs text-catppuccin-gray mt-2">
-                        {{ totalContributions }} contributions in the last year
-                    </div>
-                </div>
-            </motion.div>
-
+            <ContributionGraph
+                :contributions="contributions"
+                :loading="contributionsLoading"
+            />
 
         </div>
     </div>
 </template>
-
-<style scoped>
-.skeleton-pulse {
-    animation: skeleton-shimmer 1.8s ease-in-out infinite;
-}
-
-@keyframes skeleton-shimmer {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.8; }
-}
-</style>

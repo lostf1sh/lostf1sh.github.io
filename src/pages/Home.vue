@@ -17,7 +17,6 @@ import StatusSection from "@/components/StatusSection.vue";
 import ProjectsGrid from "@/components/ProjectsGrid.vue";
 import RecentTracks from "@/components/RecentTracks.vue";
 import ContributionGraph from "@/components/ContributionGraph.vue";
-import MatrixRain from "@/components/MatrixRain.vue";
 
 const discordStatusColor = computed(() => lanyardData.discordStatusColor);
 const spotify = computed(() => lanyardData.spotify);
@@ -89,7 +88,7 @@ const displayedRepos = computed(() => {
         .filter((r) => !pinnedFullNames.has(r.full_name))
         .sort((a, b) => b.stargazers_count - a.stargazers_count);
 
-    return [...pinned, ...rest].slice(0, 4);
+    return [...pinned, ...rest].slice(0, 6);
 });
 
 const fetchSongs = async () => {
@@ -183,9 +182,8 @@ const heroContainer = staggerContainer(0.06);
 </script>
 
 <template>
-    <div class="w-full min-h-screen overflow-x-hidden font-mono relative">
-        <MatrixRain />
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 relative" style="z-index: 1;">
+    <div class="w-full min-h-screen overflow-x-hidden font-mono">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             <!-- Hero section -->
             <motion.div
                 class="mb-12"
@@ -307,17 +305,7 @@ const heroContainer = staggerContainer(0.06);
                 <ProjectsGrid
                     :repos="displayedRepos"
                     :loading="reposLoading"
-                >
-                    <template #footer>
-                        <router-link
-                            v-if="!reposLoading && displayedRepos.length"
-                            to="/projects"
-                            class="block text-sm text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors mt-3"
-                        >
-                            see all ~/projects →
-                        </router-link>
-                    </template>
-                </ProjectsGrid>
+                />
 
                 <!-- Tracks column -->
                 <RecentTracks

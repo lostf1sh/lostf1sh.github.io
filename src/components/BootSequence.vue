@@ -40,7 +40,7 @@ onMounted(() => {
             <div class="text-sm space-y-1 px-6 max-w-md w-full">
                 <div class="boot-line" style="animation-delay: 0s">
                     <span class="text-catppuccin-blue">[BIOS]</span>
-                    <span class="text-catppuccin-text"> f1sh.dev v2.0</span>
+                    <span class="text-catppuccin-text"> f1sh.v.recipes v2.0</span>
                 </div>
                 <div class="boot-line" style="animation-delay: 0.3s">
                     <span class="text-catppuccin-yellow">[INIT]</span>

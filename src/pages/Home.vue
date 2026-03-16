@@ -202,9 +202,9 @@ const heroContainer = staggerContainer(0.06);
                         :variants="fadeUp"
                         class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-2"
                     >
-                        <span class="text-catppuccin-mauve">duhan</span>
-                        <span class="text-catppuccin-subtle">@</span>
-                        <span class="text-catppuccin-blue">f1sh.dev</span>
+                        <span class="text-catppuccin-mauve">f1sh.</span>
+                        <span class="text-catppuccin-subtle">v</span>
+                        <span class="text-catppuccin-blue">.recipes</span>
                     </motion.h1>
                     <motion.div
                         :variants="fadeUp"

@@ -80,9 +80,9 @@ html {
     }
 
     #app {
-        transform: scale(0.9);
+        zoom: 0.9;
         transform-origin: center center;
-        margin-top: -5vh;
+        margin-top: 2vh;
     }
 }
 </style>

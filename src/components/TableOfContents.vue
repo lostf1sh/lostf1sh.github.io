@@ -6,7 +6,28 @@ const props = defineProps({
 });
 
 const activeId = ref("");
+const navRef = ref(null);
+const fixedStyle = ref({});
 let observer = null;
+let rafId = null;
+
+const updateFixedPosition = () => {
+    if (!navRef.value) return;
+    const wrapper = navRef.value.parentElement;
+    if (!wrapper) return;
+    const rect = wrapper.getBoundingClientRect();
+    fixedStyle.value = {
+        position: "fixed",
+        top: "2rem",
+        left: `${rect.left}px`,
+        width: `${rect.width}px`,
+    };
+};
+
+const onScroll = () => {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(updateFixedPosition);
+};
 
 const setupObserver = () => {
     if (observer) observer.disconnect();
@@ -25,7 +46,6 @@ const setupObserver = () => {
                 }
             });
 
-            // Fallback: if nothing is intersecting, find the last heading above viewport
             const allAbove = entries
                 .filter(e => e.boundingClientRect.top < 0)
                 .sort((a, b) => b.boundingClientRect.top - a.boundingClientRect.top);
@@ -55,17 +75,28 @@ onMounted(() => {
     if (props.headings.length) {
         nextTick(setupObserver);
     }
+    updateFixedPosition();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", updateFixedPosition, { passive: true });
 });
 
 onBeforeUnmount(() => {
     if (observer) observer.disconnect();
+    if (rafId) cancelAnimationFrame(rafId);
+    window.removeEventListener("scroll", onScroll);
+    window.removeEventListener("resize", updateFixedPosition);
 });
 </script>
 
 <template>
-    <nav v-if="headings.length" class="hidden lg:block sticky top-8">
+    <nav
+        v-if="headings.length"
+        ref="navRef"
+        class="hidden lg:block max-h-[calc(100vh-4rem)] overflow-y-auto z-50"
+        :style="fixedStyle"
+    >
         <div class="text-catppuccin-subtle text-xs mb-3">~$ toc</div>
-        <ul class="space-y-1.5 text-xs">
+        <ul class="space-y-1 text-xs">
             <li
                 v-for="heading in headings"
                 :key="heading.id"
@@ -74,12 +105,19 @@ onBeforeUnmount(() => {
                     @click="scrollTo(heading.id)"
                     class="text-left w-full truncate transition-colors cursor-pointer py-0.5"
                     :class="[
-                        heading.level === 3 ? 'pl-3' : '',
-                        activeId === heading.id
-                            ? 'text-catppuccin-mauve border-l-2 border-catppuccin-mauve pl-2'
-                            : 'text-catppuccin-subtle hover:text-catppuccin-text border-l-2 border-transparent pl-2',
-                        heading.level === 3 && activeId === heading.id ? 'pl-5' : '',
-                        heading.level === 3 && activeId !== heading.id ? 'pl-5' : '',
+                        heading.level === 3 ? 'pl-5' : 'pl-2',
+                        activeId === heading.id && heading.level === 2
+                            ? 'text-catppuccin-blue border-l-2 border-catppuccin-blue'
+                            : '',
+                        activeId === heading.id && heading.level === 3
+                            ? 'text-catppuccin-mauve border-l-2 border-catppuccin-mauve'
+                            : '',
+                        activeId !== heading.id && heading.level === 2
+                            ? 'text-catppuccin-subtle hover:text-catppuccin-blue border-l-2 border-transparent'
+                            : '',
+                        activeId !== heading.id && heading.level === 3
+                            ? 'text-catppuccin-overlay hover:text-catppuccin-mauve border-l-2 border-transparent'
+                            : '',
                     ]"
                 >
                     {{ heading.text }}

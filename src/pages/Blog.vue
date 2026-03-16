@@ -9,7 +9,6 @@ import {
     getPostBySlug,
     formatDate,
 } from "@/services/blogService";
-import TableOfContents from "@/components/TableOfContents.vue";
 import { updateMeta } from "@/utils/seo";
 import {
     springs,
@@ -195,6 +194,8 @@ onBeforeUnmount(() => {
 watch(articleContentRef, (el, _, onCleanup) => {
     if (el) {
         el.addEventListener("click", handleCopyClick);
+        extractHeadings();
+        void highlightCodeBlocks();
         onCleanup(() => {
             el.removeEventListener("click", handleCopyClick);
         });
@@ -237,7 +238,7 @@ const viewExit = { opacity: 0, y: -20 };
     </Teleport>
 
     <div
-        class="w-full min-h-screen overflow-x-hidden overflow-y-auto font-mono"
+        class="w-full min-h-screen font-mono"
     >
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-2 md:py-4">
             <AnimatePresence mode="wait">
@@ -409,7 +410,7 @@ const viewExit = { opacity: 0, y: -20 };
                         </motion.div>
                     </motion.div>
 
-                    <div class="lg:grid lg:grid-cols-[1fr_200px] lg:gap-8">
+                    <div>
                         <div>
                             <motion.article
                                 class="border-l-2 border-catppuccin-surface pl-4 mb-8"
@@ -464,7 +465,6 @@ const viewExit = { opacity: 0, y: -20 };
                                 </motion.button>
                             </div>
                         </div>
-                        <TableOfContents :headings="headings" />
                     </div>
                 </motion.div>
             </AnimatePresence>

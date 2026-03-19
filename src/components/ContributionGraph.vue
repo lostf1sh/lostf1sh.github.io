@@ -10,6 +10,7 @@ import {
 const props = defineProps({
     contributions: { type: Array, required: true },
     loading: Boolean,
+    revalidating: Boolean,
 });
 
 const contributionWeeks = computed(() => {
@@ -33,9 +34,15 @@ const totalContributions = computed(() => {
         :transition="springs.default"
         :inViewOptions="{ once: true }"
     >
-        <div class="flex items-center justify-between mb-3">
-            <div class="text-catppuccin-subtle text-sm">
-                ~$ git log --oneline --since="1.year.ago" | wc -l
+        <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <div class="text-catppuccin-subtle text-sm">
+                    ~$ git log --oneline --since="1.year.ago" | wc -l
+                </div>
+                <span
+                    v-if="revalidating && !loading"
+                    class="text-[10px] text-catppuccin-subtle"
+                >refreshing…</span>
             </div>
             <div v-if="!loading" class="flex items-center gap-1 text-[10px] text-catppuccin-subtle">
                 <span>less</span>

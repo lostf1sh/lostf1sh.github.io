@@ -4,6 +4,11 @@ import { motion } from "motion-v";
 import { lanyardData } from "@/services/lanyardService";
 import { getAllPosts, formatDate as formatBlogDate } from "@/services/blogService";
 import { getRecentEvents } from "@/services/githubService";
+import {
+    CACHE_KEYS,
+    readLocalCache,
+    writeLocalCache,
+} from "@/utils/apiLocalCache";
 import { parseFrontmatter, renderMarkdown } from "@/utils/markdown";
 import StatusSection from "@/components/StatusSection.vue";
 import {
@@ -20,9 +25,18 @@ const discordStatus = computed(() => lanyardData.discordStatus);
 const discordUser = computed(() => lanyardData.discordUser);
 const editorActivity = computed(() => lanyardData.editorActivity);
 const isLoading = computed(() => lanyardData.isLoading);
+const lanyardConnected = computed(() => lanyardData.isConnected);
+const lanyardReconnecting = computed(() => lanyardData.isReconnecting);
+const lanyardUnavailable = computed(() => lanyardData.presenceUnavailable);
+const lanyardStalePresence = computed(() => lanyardData.usingCachedPresence);
 
 const events = ref([]);
-const eventsLoading = ref(true);
+const eventsCached = readLocalCache(CACHE_KEYS.GITHUB_EVENTS);
+if (eventsCached?.value?.length) {
+    events.value = eventsCached.value;
+}
+const eventsLoading = ref(!events.value.length);
+const eventsRevalidating = ref(false);
 
 const recentPosts = computed(() => getAllPosts().slice(0, 3));
 
@@ -47,12 +61,20 @@ const formatRelativeTime = (dateStr) => {
 };
 
 onMounted(async () => {
+    const hadCache = events.value.length > 0;
+    if (hadCache) eventsRevalidating.value = true;
+    else eventsLoading.value = true;
     try {
-        events.value = await getRecentEvents();
+        const fresh = await getRecentEvents();
+        if (fresh.length) {
+            events.value = fresh;
+            writeLocalCache(CACHE_KEYS.GITHUB_EVENTS, fresh);
+        }
     } catch {
-        events.value = [];
+        if (!events.value.length) events.value = [];
     } finally {
         eventsLoading.value = false;
+        eventsRevalidating.value = false;
     }
 });
 
@@ -99,6 +121,10 @@ const sectionContainer = staggerContainer(0.04);
             <!-- Status (real-time) -->
             <StatusSection
                 :isLoading="isLoading"
+                :isConnected="lanyardConnected"
+                :isReconnecting="lanyardReconnecting"
+                :presenceUnavailable="lanyardUnavailable"
+                :usingCachedPresence="lanyardStalePresence"
                 :discordUser="discordUser"
                 :discordStatus="discordStatus"
                 :discordStatusColor="discordStatusColor"
@@ -165,12 +191,20 @@ const sectionContainer = staggerContainer(0.04);
                     :transition="springs.default"
                     :inViewOptions="{ once: true }"
                 >
-                    <div class="text-catppuccin-subtle text-sm mb-3">
-                        ~$ git log --oneline --all
+                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1 mb-3">
+                        <div class="text-catppuccin-subtle text-sm">
+                            ~$ git log --oneline --all
+                        </div>
+                        <span
+                            v-if="eventsRevalidating"
+                            class="text-[10px] text-catppuccin-subtle"
+                        >refreshing…</span>
                     </div>
 
-                    <div v-if="eventsLoading" class="text-sm text-catppuccin-subtle">
-                        loading...
+                    <div v-if="eventsLoading" class="text-sm text-catppuccin-subtle space-y-2">
+                        <div class="h-3 w-full max-w-[220px] rounded bg-catppuccin-surface/40 animate-pulse"></div>
+                        <div class="h-3 w-full max-w-[180px] rounded bg-catppuccin-surface/30 animate-pulse"></div>
+                        <div class="h-3 w-full max-w-[200px] rounded bg-catppuccin-surface/25 animate-pulse"></div>
                     </div>
 
                     <div v-else-if="!events.length" class="text-sm text-catppuccin-subtle">

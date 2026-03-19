@@ -1,23 +1,47 @@
 import { ref, watch } from "vue";
 import { lanyardData } from "@/services/lanyardService";
 import { markReady } from "@/services/preloader";
+import { readLocalCache, writeLocalCache, CACHE_KEYS } from "@/utils/apiLocalCache";
 
 const API_KEY = import.meta.env.VITE_LASTFM_API_KEY || "c9ee964e5a0bffdb2aba28397f852bbf";
 const USER = "molishu";
 const BASE_URL = "https://ws.audioscrobbler.com/2.0/";
-const POLL_INTERVAL = 60_000; // 60s background poll
+const POLL_INTERVAL = 60_000;
 
-// Reactive state
 export const tracks = ref([]);
 export const isLoading = ref(true);
+export const isRevalidating = ref(false);
 export const error = ref(null);
-let initialLoad = true;
+export const revalidateFailed = ref(false);
+
+let initialHydrated = false;
 let pollTimer = null;
 
-const fetchTracks = async () => {
-  try {
-    if (initialLoad) isLoading.value = true;
+function normalizeTrackList(data) {
+  const raw = data?.recenttracks?.track;
+  if (!raw) return [];
+  return Array.isArray(raw) ? raw : [raw];
+}
 
+function hydrateFromCache() {
+  const row = readLocalCache(CACHE_KEYS.LASTFM_TRACKS);
+  if (!row?.value?.length) return false;
+  tracks.value = row.value;
+  isLoading.value = false;
+  initialHydrated = true;
+  markReady("songs");
+  return true;
+}
+
+const fetchTracks = async () => {
+  const empty = tracks.value.length === 0;
+  if (empty) {
+    isLoading.value = true;
+  } else {
+    isRevalidating.value = true;
+  }
+
+  try {
     const params = new URLSearchParams({
       method: "user.getrecenttracks",
       user: USER,
@@ -32,21 +56,33 @@ const fetchTracks = async () => {
     }
 
     const data = await response.json();
-    tracks.value = data.recenttracks.track;
+    const list = normalizeTrackList(data);
+    tracks.value = list;
+    revalidateFailed.value = false;
     error.value = null;
+    if (list.length) {
+      writeLocalCache(CACHE_KEYS.LASTFM_TRACKS, list);
+    }
   } catch (err) {
     if (import.meta.env.DEV) console.error("Failed to load recent tracks:", err);
-    error.value = "couldn't load tracks";
+    if (tracks.value.length) {
+      revalidateFailed.value = true;
+      error.value = null;
+    } else {
+      error.value = "couldn't load tracks";
+    }
   } finally {
     isLoading.value = false;
-    if (initialLoad) {
-      initialLoad = false;
+    isRevalidating.value = false;
+    if (!initialHydrated) {
+      initialHydrated = true;
       markReady("songs");
     }
   }
 };
 
-// --- Smart polling: only when tab is visible ---
+hydrateFromCache();
+
 const startPolling = () => {
   if (pollTimer) return;
   pollTimer = setInterval(fetchTracks, POLL_INTERVAL);
@@ -63,13 +99,11 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     stopPolling();
   } else {
-    // Tab visible again — fetch immediately then resume polling
     fetchTracks();
     startPolling();
   }
 });
 
-// --- Lanyard Spotify trigger: instant update on track change ---
 let lastTrackId = null;
 watch(
   () => lanyardData.spotify,
@@ -82,6 +116,5 @@ watch(
   },
 );
 
-// Boot
 fetchTracks();
 startPolling();

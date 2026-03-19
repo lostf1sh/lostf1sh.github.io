@@ -53,10 +53,23 @@ export const getAllReposWithLanguages = async () => {
   }
 };
 
+export const buildFallbackContributionYear = () => {
+  const weeks = 53;
+  const today = new Date();
+  const contributionMap = new Map();
+  for (let i = weeks * 7 - 1; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    contributionMap.set(date.toISOString().split("T")[0], 0);
+  }
+  return Array.from(contributionMap.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([date, count]) => ({ date, count }));
+};
+
 export const getContributionData = async () => {
   const weeks = 53;
   const today = new Date();
-  const year = today.getFullYear();
 
   try {
     // Use GitHub's contribution calendar API (used by github skyline)
@@ -108,19 +121,7 @@ export const getContributionData = async () => {
     throw new Error("No contributions data available");
   } catch (error) {
     console.error("Error fetching contribution data:", error);
-
-    // Fallback: Return empty year of data
-    const contributionMap = new Map();
-    for (let i = weeks * 7 - 1; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
-      contributionMap.set(dateStr, 0);
-    }
-
-    return Array.from(contributionMap.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([date, count]) => ({ date, count }));
+    throw error;
   }
 };
 

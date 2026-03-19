@@ -5,6 +5,10 @@ import { fadeLeft } from "@/utils/motion";
 
 const props = defineProps({
     isLoading: Boolean,
+    isConnected: Boolean,
+    isReconnecting: Boolean,
+    presenceUnavailable: Boolean,
+    usingCachedPresence: Boolean,
     discordUser: Object,
     discordStatus: String,
     discordStatusColor: String,
@@ -49,6 +53,10 @@ const editorStatus = computed(() => {
         filename,
     };
 });
+
+const showPresenceSkeleton = computed(
+    () => props.isLoading && !props.discordUser,
+);
 </script>
 
 <template>
@@ -56,13 +64,33 @@ const editorStatus = computed(() => {
         :variants="fadeLeft"
         class="border-l-2 border-catppuccin-surface pl-4 mb-4"
     >
-        <div class="text-catppuccin-subtle text-sm mb-2">
-            ~$ ps aux | grep duhan
+        <div class="text-catppuccin-subtle text-sm mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>~$ ps aux | grep duhan</span>
+            <span
+                v-if="isReconnecting"
+                class="text-xs text-catppuccin-peach"
+            >[reconnecting…]</span>
+            <span
+                v-else-if="usingCachedPresence && !isConnected && discordUser"
+                class="text-xs text-catppuccin-subtle"
+            >[live feed offline — last known]</span>
+            <span
+                v-else-if="presenceUnavailable && !discordUser"
+                class="text-xs text-catppuccin-red"
+            >[presence unavailable]</span>
         </div>
         <div class="space-y-1 text-sm">
             <div
-                v-if="!isLoading && discordUser"
-                class="flex items-center gap-2"
+                v-if="showPresenceSkeleton"
+                class="text-catppuccin-subtle space-y-1"
+            >
+                <div class="h-4 w-48 rounded bg-catppuccin-surface/40 animate-pulse"></div>
+                <div class="h-4 w-64 rounded bg-catppuccin-surface/30 animate-pulse"></div>
+            </div>
+
+            <div
+                v-else-if="discordUser"
+                class="flex items-center gap-2 flex-wrap"
             >
                 <span class="text-catppuccin-blue">discord</span>
                 <span class="text-catppuccin-subtle">:</span>
@@ -74,15 +102,19 @@ const editorStatus = computed(() => {
                 >
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-catppuccin-green">spotify</span>
                 <span class="text-catppuccin-subtle">:</span>
                 <span
-                    v-if="!isLoading && spotify"
+                    v-if="!showPresenceSkeleton && spotify"
                     class="text-catppuccin-text truncate"
                 >
                     {{ spotify.song }} - {{ spotify.artist }}
                 </span>
+                <span
+                    v-else-if="showPresenceSkeleton"
+                    class="h-4 w-56 rounded bg-catppuccin-surface/30 animate-pulse inline-block align-middle"
+                ></span>
                 <span v-else class="text-catppuccin-subtle"
                     >not playing</span
                 >
@@ -90,7 +122,7 @@ const editorStatus = computed(() => {
 
             <div
                 v-if="
-                    !isLoading &&
+                    !showPresenceSkeleton &&
                     editorActivity &&
                     editorStatus &&
                     (editorStatus.workspace ||

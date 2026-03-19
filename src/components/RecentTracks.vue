@@ -13,6 +13,8 @@ defineProps({
     currentTrack: Object,
     tracks: { type: Array, required: true },
     loading: Boolean,
+    revalidating: Boolean,
+    staleFailed: Boolean,
     error: String,
 });
 
@@ -32,9 +34,22 @@ const skeletonItem = {
         :transition="springs.default"
         :inViewOptions="{ once: true }"
     >
-        <div class="text-catppuccin-subtle text-sm mb-3">
-            ~$ cat recent_tracks.log
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div class="text-catppuccin-subtle text-sm">
+                ~$ cat recent_tracks.log
+            </div>
+            <span
+                v-if="revalidating"
+                class="text-[10px] text-catppuccin-subtle"
+            >refreshing…</span>
         </div>
+
+        <p
+            v-if="staleFailed && (tracks.length || currentTrack)"
+            class="text-xs text-catppuccin-peach mb-2"
+        >
+            couldn’t refresh — showing cached scrobbles
+        </p>
 
         <motion.div
             v-if="loading"

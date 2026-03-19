@@ -11,6 +11,7 @@ import {
 defineProps({
     repos: { type: Array, required: true },
     loading: Boolean,
+    revalidating: Boolean,
 });
 
 const repoContainer = staggerContainer(0.05);
@@ -29,14 +30,20 @@ const skeletonItem = {
         :transition="springs.default"
         :inViewOptions="{ once: true }"
     >
-        <div class="flex items-center justify-between mb-3">
-            <div class="text-catppuccin-subtle text-sm">
-                ~$ ls ~/projects
+        <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <div class="text-catppuccin-subtle text-sm">
+                    ~$ ls ~/projects
+                </div>
+                <span
+                    v-if="revalidating"
+                    class="text-[10px] text-catppuccin-subtle"
+                >refreshing…</span>
             </div>
             <router-link
                 v-if="!loading && repos.length"
                 to="/projects"
-                class="text-xs text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors"
+                class="text-xs text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors flex-shrink-0"
             >
                 see all →
             </router-link>

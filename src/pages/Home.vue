@@ -2,12 +2,24 @@
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { motion } from "motion-v";
 import { lanyardData } from "@/services/lanyardService";
-import { tracks as lastfmTracks, isLoading as lastfmLoading, error as lastfmError } from "@/services/lastfmService";
+import {
+    tracks as lastfmTracks,
+    isLoading as lastfmLoading,
+    isRevalidating as lastfmRevalidating,
+    error as lastfmError,
+    revalidateFailed as lastfmRevalidateFailed,
+} from "@/services/lastfmService";
 import {
     getAllReposWithLanguages,
     getContributionData,
+    buildFallbackContributionYear,
 } from "@/services/githubService";
 import { markReady } from "@/services/preloader";
+import {
+    CACHE_KEYS,
+    readLocalCache,
+    writeLocalCache,
+} from "@/utils/apiLocalCache";
 import {
     staggerContainer,
     fadeUp,
@@ -25,11 +37,28 @@ const discordStatus = computed(() => lanyardData.discordStatus);
 const discordUser = computed(() => lanyardData.discordUser);
 const editorActivity = computed(() => lanyardData.editorActivity);
 const isLoading = computed(() => lanyardData.isLoading);
+const lanyardConnected = computed(() => lanyardData.isConnected);
+const lanyardReconnecting = computed(() => lanyardData.isReconnecting);
+const lanyardUnavailable = computed(() => lanyardData.presenceUnavailable);
+const lanyardStalePresence = computed(() => lanyardData.usingCachedPresence);
 
 const repos = ref([]);
-const reposLoading = ref(true);
+const reposCached = readLocalCache(CACHE_KEYS.GITHUB_REPOS);
+if (reposCached?.value?.length) {
+    repos.value = reposCached.value;
+    markReady("projects");
+}
+const reposLoading = ref(!repos.value.length);
+const reposRevalidating = ref(false);
+
 const contributions = ref([]);
-const contributionsLoading = ref(true);
+const contribCached = readLocalCache(CACHE_KEYS.GITHUB_CONTRIBUTIONS);
+if (contribCached?.value?.length) {
+    contributions.value = contribCached.value;
+    markReady("contributions");
+}
+const contributionsLoading = ref(!contributions.value.length);
+const contributionsRevalidating = ref(false);
 let ageInterval = null;
 let timeInterval = null;
 
@@ -96,8 +125,10 @@ const displayedRepos = computed(() => {
 });
 
 const fetchProjects = async () => {
+    const firstPaint = repos.value.length === 0;
+    if (firstPaint) reposLoading.value = true;
+    reposRevalidating.value = !firstPaint;
     try {
-        reposLoading.value = true;
         const [{ repos: ownRepos }, ...pinnedResults] = await Promise.all([
             getAllReposWithLanguages(),
             ...pinnedExternal.map((r) =>
@@ -108,24 +139,33 @@ const fetchProjects = async () => {
         ]);
         const pinned = pinnedResults.filter(Boolean);
         repos.value = [...pinned, ...ownRepos];
+        writeLocalCache(CACHE_KEYS.GITHUB_REPOS, repos.value);
     } catch (error) {
         if (import.meta.env.DEV) console.error("Failed to load repositories:", error);
-        repos.value = [];
+        if (!repos.value.length) repos.value = [];
     } finally {
         reposLoading.value = false;
+        reposRevalidating.value = false;
         markReady("projects");
     }
 };
 
 const fetchContributions = async () => {
+    const firstPaint = contributions.value.length === 0;
+    if (firstPaint) contributionsLoading.value = true;
+    contributionsRevalidating.value = !firstPaint;
     try {
-        contributionsLoading.value = true;
-        contributions.value = await getContributionData();
+        const data = await getContributionData();
+        contributions.value = data;
+        writeLocalCache(CACHE_KEYS.GITHUB_CONTRIBUTIONS, data);
     } catch (error) {
         if (import.meta.env.DEV) console.error("Failed to load contribution data:", error);
-        contributions.value = [];
+        if (!contributions.value.length) {
+            contributions.value = buildFallbackContributionYear();
+        }
     } finally {
         contributionsLoading.value = false;
+        contributionsRevalidating.value = false;
         markReady("contributions");
     }
 };
@@ -271,6 +311,10 @@ const heroContainer = staggerContainer(0.06);
                 <!-- Status section -->
                 <StatusSection
                     :isLoading="isLoading"
+                    :isConnected="lanyardConnected"
+                    :isReconnecting="lanyardReconnecting"
+                    :presenceUnavailable="lanyardUnavailable"
+                    :usingCachedPresence="lanyardStalePresence"
                     :discordUser="discordUser"
                     :discordStatus="discordStatus"
                     :discordStatusColor="discordStatusColor"
@@ -300,13 +344,16 @@ const heroContainer = staggerContainer(0.06);
                 <ProjectsGrid
                     :repos="displayedRepos"
                     :loading="reposLoading"
+                    :revalidating="reposRevalidating"
                 />
 
                 <!-- Tracks column -->
                 <RecentTracks
                     :currentTrack="currentTrack"
                     :tracks="consolidatedTracks"
-                    :loading="lastfmLoading"
+                    :loading="lastfmLoading && !consolidatedTracks.length && !currentTrack"
+                    :revalidating="lastfmRevalidating"
+                    :staleFailed="lastfmRevalidateFailed"
                     :error="lastfmError"
                 />
             </div>
@@ -315,6 +362,7 @@ const heroContainer = staggerContainer(0.06);
             <ContributionGraph
                 :contributions="contributions"
                 :loading="contributionsLoading"
+                :revalidating="contributionsRevalidating"
             />
 
         </div>

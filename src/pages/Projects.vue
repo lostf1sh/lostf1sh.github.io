@@ -3,6 +3,11 @@ import { ref, computed, onMounted } from "vue";
 import { motion } from "motion-v";
 import { getAllReposWithLanguages } from "@/services/githubService";
 import {
+    CACHE_KEYS,
+    readLocalCache,
+    writeLocalCache,
+} from "@/utils/apiLocalCache";
+import {
     springs,
     staggerContainer,
     fadeUp,
@@ -13,15 +18,22 @@ import {
 } from "@/utils/motion";
 
 const repos = ref([]);
-const loading = ref(true);
+const reposCached = readLocalCache(CACHE_KEYS.GITHUB_REPOS);
+if (reposCached?.value?.length) {
+    repos.value = reposCached.value;
+}
+const loading = ref(!repos.value.length);
+const revalidating = ref(false);
 const activeLanguage = ref(null);
 
 const pinnedSlugs = ["lostf1sh.github.io", "PixelPlayer"];
 const pinnedExternal = ["theovilardo/PixelPlayer"];
 
 const fetchRepos = async () => {
+    const firstPaint = repos.value.length === 0;
+    if (firstPaint) loading.value = true;
+    else revalidating.value = true;
     try {
-        loading.value = true;
         const [{ repos: ownRepos }, ...pinnedResults] = await Promise.all([
             getAllReposWithLanguages(),
             ...pinnedExternal.map((r) =>
@@ -32,10 +44,12 @@ const fetchRepos = async () => {
         ]);
         const pinned = pinnedResults.filter(Boolean);
         repos.value = [...pinned, ...ownRepos];
+        writeLocalCache(CACHE_KEYS.GITHUB_REPOS, repos.value);
     } catch {
-        repos.value = [];
+        if (!repos.value.length) repos.value = [];
     } finally {
         loading.value = false;
+        revalidating.value = false;
     }
 };
 
@@ -111,6 +125,10 @@ const langColors = {
                 </motion.h1>
                 <motion.p :variants="fadeUp" class="text-sm text-catppuccin-gray leading-relaxed mb-6">
                     open source projects and experiments.
+                    <span
+                        v-if="revalidating"
+                        class="block text-xs text-catppuccin-subtle mt-1"
+                    >refreshing from github…</span>
                 </motion.p>
 
                 <motion.div :variants="fadeUp" class="flex items-center gap-4 text-sm mb-6">

@@ -2,11 +2,12 @@
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { motion } from "motion-v";
 import { lanyardData } from "@/services/lanyardService";
-import { getRecentTracks } from "@/services/lastfmService";
+import { tracks as lastfmTracks, isLoading as lastfmLoading, error as lastfmError } from "@/services/lastfmService";
 import {
     getAllReposWithLanguages,
     getContributionData,
 } from "@/services/githubService";
+import { markReady } from "@/services/preloader";
 import {
     staggerContainer,
     fadeUp,
@@ -27,22 +28,25 @@ const isLoading = computed(() => lanyardData.isLoading);
 
 const repos = ref([]);
 const reposLoading = ref(true);
-const allTracks = ref([]);
-const songsLoading = ref(true);
-const songsInitialLoad = ref(true);
-const songsError = ref(null);
 const contributions = ref([]);
 const contributionsLoading = ref(true);
-let updateInterval = null;
 let ageInterval = null;
 let timeInterval = null;
 
-const currentTrack = computed(() =>
-    allTracks.value.find((track) => track["@attr"]?.nowplaying),
-);
+// Now playing from Lanyard Spotify (real-time via WebSocket)
+const currentTrack = computed(() => {
+    const sp = lanyardData.spotify;
+    if (!sp) return null;
+    return {
+        name: sp.song,
+        artist: { "#text": sp.artist },
+        url: `https://open.spotify.com/track/${sp.track_id}`,
+    };
+});
 
+// Past tracks from LastFM (excludes any nowplaying entry)
 const consolidatedTracks = computed(() => {
-    const tracks = allTracks.value.filter(
+    const tracks = lastfmTracks.value.filter(
         (track) => !track["@attr"]?.nowplaying,
     );
     const consolidated = [];
@@ -91,20 +95,6 @@ const displayedRepos = computed(() => {
     return [...pinned, ...rest].slice(0, 6);
 });
 
-const fetchSongs = async () => {
-    try {
-        songsLoading.value = true;
-        allTracks.value = await getRecentTracks();
-        songsError.value = null;
-    } catch (error) {
-        if (import.meta.env.DEV) console.error("Failed to load recent tracks:", error);
-        songsError.value = "couldn't load tracks";
-    } finally {
-        songsLoading.value = false;
-        songsInitialLoad.value = false;
-    }
-};
-
 const fetchProjects = async () => {
     try {
         reposLoading.value = true;
@@ -123,6 +113,7 @@ const fetchProjects = async () => {
         repos.value = [];
     } finally {
         reposLoading.value = false;
+        markReady("projects");
     }
 };
 
@@ -135,22 +126,20 @@ const fetchContributions = async () => {
         contributions.value = [];
     } finally {
         contributionsLoading.value = false;
+        markReady("contributions");
     }
 };
 
 onMounted(() => {
     fetchProjects();
-    fetchSongs();
     fetchContributions();
     updateAge();
     updateTime();
-    updateInterval = setInterval(fetchSongs, 30000);
     ageInterval = setInterval(updateAge, 1000);
     timeInterval = setInterval(updateTime, 1000);
 });
 
 onBeforeUnmount(() => {
-    if (updateInterval) clearInterval(updateInterval);
     if (ageInterval) clearInterval(ageInterval);
     if (timeInterval) clearInterval(timeInterval);
 });
@@ -317,8 +306,8 @@ const heroContainer = staggerContainer(0.06);
                 <RecentTracks
                     :currentTrack="currentTrack"
                     :tracks="consolidatedTracks"
-                    :loading="songsLoading"
-                    :error="songsError"
+                    :loading="lastfmLoading"
+                    :error="lastfmError"
                 />
             </div>
 

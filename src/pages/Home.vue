@@ -59,7 +59,7 @@ if (contribCached?.value?.length) {
 }
 const contributionsLoading = ref(!contributions.value.length);
 const contributionsRevalidating = ref(false);
-let ageInterval = null;
+let ageRafId = null;
 let timeInterval = null;
 
 // Now playing from Lanyard Spotify (real-time via WebSocket)
@@ -173,14 +173,17 @@ const fetchContributions = async () => {
 onMounted(() => {
     fetchProjects();
     fetchContributions();
-    updateAge();
     updateTime();
-    ageInterval = setInterval(updateAge, 1000);
+    const tickAge = () => {
+        updateAge();
+        ageRafId = requestAnimationFrame(tickAge);
+    };
+    tickAge();
     timeInterval = setInterval(updateTime, 1000);
 });
 
 onBeforeUnmount(() => {
-    if (ageInterval) clearInterval(ageInterval);
+    if (ageRafId) cancelAnimationFrame(ageRafId);
     if (timeInterval) clearInterval(timeInterval);
 });
 

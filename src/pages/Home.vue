@@ -354,7 +354,7 @@ const heroContainer = staggerContainer(0.06);
                 <RecentTracks
                     :currentTrack="currentTrack"
                     :tracks="consolidatedTracks"
-                    :loading="lastfmLoading && !consolidatedTracks.length && !currentTrack"
+                    :loading="lastfmLoading && !consolidatedTracks.length"
                     :revalidating="lastfmRevalidating"
                     :staleFailed="lastfmRevalidateFailed"
                     :error="lastfmError"

@@ -18,7 +18,6 @@ defineProps({
     error: String,
 });
 
-const trackContainer = staggerContainer(0.05);
 const skeletonContainer = staggerContainer(0.04);
 const skeletonItem = {
     hidden: { opacity: 0, y: 8 },
@@ -139,15 +138,12 @@ const skeletonItem = {
             </div>
 
             <!-- Past tracks list -->
-            <motion.div
+            <div
                 v-else-if="tracks.length"
-                :variants="trackContainer"
-                initial="hidden"
-                animate="visible"
                 class="space-y-2"
             >
                 <motion.a
-                    v-for="track in tracks.slice(
+                    v-for="(track, index) in tracks.slice(
                         0,
                         currentTrack ? 5 : 6,
                     )"
@@ -155,7 +151,9 @@ const skeletonItem = {
                     :href="track.url"
                     target="_blank"
                     rel="noopener noreferrer"
-                    :variants="fadeUp"
+                    :initial="fadeUp.hidden"
+                    :animate="fadeUp.visible"
+                    :transition="{ ...springs.default, delay: index * 0.05 }"
                     :whileHover="cardHover"
                     :whilePress="cardPress"
                     class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
@@ -194,7 +192,7 @@ const skeletonItem = {
                         </div>
                     </div>
                 </motion.a>
-            </motion.div>
+            </div>
         </div>
     </motion.div>
 </template>

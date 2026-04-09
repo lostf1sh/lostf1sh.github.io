@@ -51,7 +51,7 @@ const skeletonItem = {
         </p>
 
         <div class="space-y-2">
-            <!-- Now playing (always shown independently when available) -->
+            <!-- Now playing -->
             <motion.a
                 v-if="currentTrack"
                 :href="currentTrack.url"
@@ -60,37 +60,30 @@ const skeletonItem = {
                 :key="`current-${currentTrack.name}-${currentTrack.artist['#text']}`"
                 :initial="scaleFade.hidden"
                 :animate="scaleFade.visible"
-                :whileHover="cardHover"
-                :whilePress="cardPress"
-                class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
+                class="flex items-start gap-3 text-sm group py-2.5 border-b border-catppuccin-surface/40"
             >
-                <div
-                    class="flex items-start gap-3 text-sm px-3 py-2"
-                >
-                    <span class="text-catppuccin-green">♪</span>
+                <span class="text-catppuccin-green mt-0.5">♪</span>
 
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="text-catppuccin-text group-hover:text-catppuccin-green transition-colors truncate"
-                                :title="currentTrack.name"
-                            >
-                                {{ currentTrack.name }}
-                            </span>
-
-                            <span
-                                class="text-catppuccin-green text-xs flex-shrink-0"
-                                >[now]</span
-                            >
-                        </div>
-
-                        <p
-                            class="text-xs text-catppuccin-gray truncate"
-                            :title="currentTrack.artist['#text']"
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="text-catppuccin-text group-hover:text-catppuccin-green transition-colors truncate"
+                            :title="currentTrack.name"
                         >
-                            {{ currentTrack.artist["#text"] }}
-                        </p>
+                            {{ currentTrack.name }}
+                        </span>
+
+                        <span
+                            class="text-catppuccin-green text-xs flex-shrink-0"
+                        >[now]</span>
                     </div>
+
+                    <p
+                        class="text-xs text-catppuccin-gray truncate"
+                        :title="currentTrack.artist['#text']"
+                    >
+                        {{ currentTrack.artist["#text"] }}
+                    </p>
                 </div>
             </motion.a>
 
@@ -140,7 +133,7 @@ const skeletonItem = {
             <!-- Past tracks list -->
             <div
                 v-else-if="tracks.length"
-                class="space-y-2"
+                class="divide-y divide-catppuccin-surface/40"
             >
                 <motion.a
                     v-for="(track, index) in tracks.slice(
@@ -154,42 +147,35 @@ const skeletonItem = {
                     :initial="fadeUp.hidden"
                     :animate="fadeUp.visible"
                     :transition="{ ...springs.default, delay: index * 0.05 }"
-                    :whileHover="cardHover"
-                    :whilePress="cardPress"
-                    class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
+                    class="flex items-start gap-3 text-sm group py-2.5 first:pt-0"
                 >
-                    <div
-                        class="flex items-start gap-3 text-sm px-3 py-2"
-                    >
-                        <span
-                            class="text-catppuccin-subtle group-hover:text-catppuccin-green transition-colors"
-                            >></span
-                        >
+                    <span
+                        class="text-catppuccin-subtle group-hover:text-catppuccin-green transition-colors mt-0.5"
+                    >&gt;</span>
 
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="text-catppuccin-text group-hover:text-catppuccin-green transition-colors truncate"
-                                    :title="track.name"
-                                >
-                                    {{ track.name }}
-                                </span>
-
-                                <span
-                                    v-if="track.playcount > 1"
-                                    class="text-catppuccin-yellow text-xs flex-shrink-0"
-                                >
-                                    ×{{ track.playcount }}
-                                </span>
-                            </div>
-
-                            <p
-                                class="text-xs text-catppuccin-gray truncate"
-                                :title="track.artist['#text']"
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="text-catppuccin-text group-hover:text-catppuccin-green transition-colors truncate"
+                                :title="track.name"
                             >
-                                {{ track.artist["#text"] }}
-                            </p>
+                                {{ track.name }}
+                            </span>
+
+                            <span
+                                v-if="track.playcount > 1"
+                                class="text-catppuccin-yellow text-xs flex-shrink-0"
+                            >
+                                ×{{ track.playcount }}
+                            </span>
                         </div>
+
+                        <p
+                            class="text-xs text-catppuccin-gray truncate"
+                            :title="track.artist['#text']"
+                        >
+                            {{ track.artist["#text"] }}
+                        </p>
                     </div>
                 </motion.a>
             </div>

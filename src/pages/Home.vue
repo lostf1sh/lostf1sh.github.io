@@ -281,13 +281,7 @@ const heroContainer = staggerContainer(0.06);
                         >
                             [instagram]
                         </a>
-                        <router-link
-                            to="/uses"
-                            class="text-catppuccin-subtle hover:text-catppuccin-peach transition-colors"
-                        >
-                            [uses]
-                        </router-link>
-                        <router-link
+<router-link
                             to="/now"
                             class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors"
                         >

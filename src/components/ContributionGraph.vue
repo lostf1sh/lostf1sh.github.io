@@ -48,10 +48,10 @@ const totalContributions = computed(() => {
                 <span>less</span>
                 <div class="flex gap-[1px]">
                     <div class="w-2 h-2 rounded-[2px] bg-catppuccin-surface/50"></div>
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/30"></div>
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/50"></div>
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green/70"></div>
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-green"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/30"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/50"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/70"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve"></div>
                 </div>
                 <span>more</span>
             </div>
@@ -77,15 +77,15 @@ const totalContributions = computed(() => {
                                 :href="getGitHubContributionUrl(day.date)"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-all hover:ring-1 hover:ring-catppuccin-green hover:scale-110 cursor-pointer"
+                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-all hover:ring-1 hover:ring-catppuccin-mauve hover:scale-110 cursor-pointer"
                                 :class="[
                                     getContributionLevel(day.count) === 1
-                                        ? 'bg-catppuccin-green/30 hover:bg-catppuccin-green/40'
+                                        ? 'bg-catppuccin-mauve/30 hover:bg-catppuccin-mauve/40'
                                         : getContributionLevel(day.count) === 2
-                                          ? 'bg-catppuccin-green/50 hover:bg-catppuccin-green/60'
+                                          ? 'bg-catppuccin-mauve/50 hover:bg-catppuccin-mauve/60'
                                           : getContributionLevel(day.count) === 3
-                                            ? 'bg-catppuccin-green/70 hover:bg-catppuccin-green/80'
-                                            : 'bg-catppuccin-green hover:bg-catppuccin-green',
+                                            ? 'bg-catppuccin-mauve/70 hover:bg-catppuccin-mauve/80'
+                                            : 'bg-catppuccin-mauve hover:bg-catppuccin-mauve',
                                 ]"
                                 :title="`${day.date}: ${day.count} contributions - Click to view on GitHub`"
                             ></a>

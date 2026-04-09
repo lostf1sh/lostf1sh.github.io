@@ -176,7 +176,7 @@ const langColors = {
                             :variants="repoContainer"
                             initial="hidden"
                             animate="visible"
-                            class="grid md:grid-cols-2 gap-3"
+                            class="divide-y divide-catppuccin-surface/40"
                         >
                             <motion.a
                                 v-for="repo in pinnedRepos"
@@ -185,34 +185,24 @@ const langColors = {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 :variants="scaleFade"
-                                :whileHover="cardHover"
-                                :whilePress="cardPress"
-                                class="block group rounded-md border border-catppuccin-mauve/30 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/60"
+                                class="flex items-start gap-3 text-sm group py-2.5 first:pt-0"
                             >
-                                <div class="px-4 py-3">
-                                    <div class="flex items-center gap-2 mb-1">
-                                        <span class="text-catppuccin-mauve text-xs">★</span>
-                                        <span class="text-catppuccin-text font-medium group-hover:text-catppuccin-mauve transition-colors">
+                                <span class="text-catppuccin-mauve mt-0.5">★</span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-catppuccin-text font-medium group-hover:text-catppuccin-mauve transition-colors truncate">
                                             {{ repo.name }}
                                         </span>
-                                        <span v-if="repo.stargazers_count > 0" class="text-catppuccin-yellow text-xs ml-auto">
+                                        <span v-if="repo.stargazers_count > 0" class="text-catppuccin-yellow text-xs flex-shrink-0">
                                             ★{{ repo.stargazers_count }}
                                         </span>
-                                    </div>
-                                    <p class="text-xs text-catppuccin-gray mb-2">
-                                        {{ repo.description || "no description" }}
-                                    </p>
-                                    <div class="flex items-center gap-3 text-xs">
-                                        <span v-if="repo.language" :class="langColors[repo.language] || 'text-catppuccin-subtle'">
+                                        <span v-if="repo.language" :class="langColors[repo.language] || 'text-catppuccin-subtle'" class="text-xs flex-shrink-0 ml-auto">
                                             {{ repo.language }}
                                         </span>
-                                        <span v-if="repo.forks_count > 0" class="text-catppuccin-subtle">
-                                            ⑂ {{ repo.forks_count }}
-                                        </span>
-                                        <span class="text-catppuccin-subtle ml-auto">
-                                            {{ formatDate(repo.updated_at) }}
-                                        </span>
                                     </div>
+                                    <p class="text-xs text-catppuccin-gray truncate">
+                                        {{ repo.description || "no description" }}
+                                    </p>
                                 </div>
                             </motion.a>
                         </motion.div>
@@ -236,7 +226,7 @@ const langColors = {
                         :variants="repoContainer"
                         initial="hidden"
                         animate="visible"
-                        class="space-y-2"
+                        class="divide-y divide-catppuccin-surface/40"
                     >
                         <motion.a
                             v-for="repo in filteredRepos"
@@ -245,28 +235,24 @@ const langColors = {
                             target="_blank"
                             rel="noopener noreferrer"
                             :variants="scaleFade"
-                            :whileHover="cardHover"
-                            :whilePress="cardPress"
-                            class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
+                            class="flex items-start gap-3 text-sm group py-2.5 first:pt-0"
                         >
-                            <div class="flex items-start gap-3 text-sm px-3 py-2">
-                                <span class="text-catppuccin-subtle group-hover:text-catppuccin-mauve transition-colors">></span>
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors font-medium truncate">
-                                            {{ repo.name }}
-                                        </span>
-                                        <span v-if="repo.stargazers_count > 0" class="text-catppuccin-yellow text-xs flex-shrink-0">
-                                            ★{{ repo.stargazers_count }}
-                                        </span>
-                                        <span v-if="repo.language" :class="langColors[repo.language] || 'text-catppuccin-subtle'" class="text-xs flex-shrink-0 ml-auto">
-                                            {{ repo.language }}
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-catppuccin-gray truncate">
-                                        {{ repo.description || "no description" }}
-                                    </p>
+                            <span class="text-catppuccin-subtle group-hover:text-catppuccin-mauve transition-colors mt-0.5">&gt;</span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors font-medium truncate">
+                                        {{ repo.name }}
+                                    </span>
+                                    <span v-if="repo.stargazers_count > 0" class="text-catppuccin-yellow text-xs flex-shrink-0">
+                                        ★{{ repo.stargazers_count }}
+                                    </span>
+                                    <span v-if="repo.language" :class="langColors[repo.language] || 'text-catppuccin-subtle'" class="text-xs flex-shrink-0 ml-auto">
+                                        {{ repo.language }}
+                                    </span>
                                 </div>
+                                <p class="text-xs text-catppuccin-gray truncate">
+                                    {{ repo.description || "no description" }}
+                                </p>
                             </div>
                         </motion.a>
                     </motion.div>

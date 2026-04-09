@@ -87,7 +87,7 @@ const skeletonItem = {
             :variants="repoContainer"
             initial="hidden"
             animate="visible"
-            class="space-y-2"
+            class="divide-y divide-catppuccin-surface/40"
         >
             <motion.a
                 v-for="repo in repos"
@@ -96,44 +96,35 @@ const skeletonItem = {
                 target="_blank"
                 rel="noopener noreferrer"
                 :variants="scaleFade"
-                :whileHover="cardHover"
-                :whilePress="cardPress"
-                class="block group rounded-md border border-catppuccin-surface/60 bg-catppuccin-base/20 hover:bg-catppuccin-base/30 hover:border-catppuccin-mauve/40"
+                class="flex items-start gap-3 text-sm group py-2.5 first:pt-0"
             >
-                <div
-                    class="flex items-start gap-3 text-sm hover:text-catppuccin-mauve transition-colors px-3 py-2"
-                >
-                    <span
-                        class="text-catppuccin-subtle group-hover:text-catppuccin-mauve transition-colors"
-                        >></span
-                    >
+                <span
+                    class="text-catppuccin-subtle group-hover:text-catppuccin-mauve transition-colors mt-0.5"
+                >&gt;</span>
 
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            <span
-                                class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors font-medium truncate"
-                                :title="repo.name"
-                            >
-                                {{ repo.name }}
-                            </span>
-
-                            <span
-                                v-if="repo.stargazers_count > 0"
-                                class="text-catppuccin-yellow text-xs flex-shrink-0"
-                            >
-                                ★{{ repo.stargazers_count }}
-                            </span>
-                        </div>
-
-                        <p
-                            class="text-xs text-catppuccin-gray truncate"
-                            :title="repo.description"
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors font-medium truncate"
+                            :title="repo.name"
                         >
-                            {{
-                                repo.description || "no description"
-                            }}
-                        </p>
+                            {{ repo.name }}
+                        </span>
+
+                        <span
+                            v-if="repo.stargazers_count > 0"
+                            class="text-catppuccin-yellow text-xs flex-shrink-0"
+                        >
+                            ★{{ repo.stargazers_count }}
+                        </span>
                     </div>
+
+                    <p
+                        class="text-xs text-catppuccin-gray truncate"
+                        :title="repo.description"
+                    >
+                        {{ repo.description || "no description" }}
+                    </p>
                 </div>
             </motion.a>
         </motion.div>

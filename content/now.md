@@ -1,16 +1,20 @@
 ---
-lastUpdated: 2026-03-15
+lastUpdated: 2026-04-09
 ---
 
-currently exploring rust and building cli tools. learning about systems programming and having fun with low-level stuff.
+rebuilding my personal site piece by piece — new layouts, animations, api integrations. having fun with vue and motion-v.
 
-working on my personal website — adding new features, improving the terminal aesthetic, and playing with animations.
+switched to zed from neovim. feels like home. still tweaking my terminal setup constantly.
 
-also getting deeper into docker and containerization for side projects.
+picking up rust on the side. writing small cli tools, slowly getting the hang of ownership.
+
+table tennis practice is going well. cooking whenever i get the chance.
 
 ## goals
 
-- get comfortable with rust ownership model
-- ship 2 cli tools this month
-- write more blog posts about terminal workflows
-- contribute to an open source project
+- land my first freelance project
+- get comfortable reading other people's codebases
+- hit 1000 github contributions this year
+- learn enough rust to stop reaching for python
+- write a blog post that actually gets shared
+- cook something i've never tried before

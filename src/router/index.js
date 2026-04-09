@@ -20,16 +20,7 @@ const routes = [
       description: "Thoughts on code, tools, and random stuff.",
     },
   },
-  {
-    path: "/uses",
-    name: "Uses",
-    component: () => import("@/pages/Uses.vue"),
-    meta: {
-      title: "Uses | f1sh.dev",
-      description: "Tools, hardware, and software I use daily.",
-    },
-  },
-  {
+{
     path: "/projects",
     name: "Projects",
     component: () => import("@/pages/Projects.vue"),

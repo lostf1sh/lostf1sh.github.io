@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { motion } from "motion-v";
-import { lanyardData } from "@/services/lanyardService";
 import { getAllPosts, formatDate as formatBlogDate } from "@/services/blogService";
 import { getRecentEvents } from "@/services/githubService";
 import {
@@ -10,7 +9,6 @@ import {
     writeLocalCache,
 } from "@/utils/apiLocalCache";
 import { parseFrontmatter, renderMarkdown } from "@/utils/markdown";
-import StatusSection from "@/components/StatusSection.vue";
 import {
     springs,
     staggerContainer,
@@ -18,17 +16,6 @@ import {
     fadeLeft,
 } from "@/utils/motion";
 import nowRaw from "/content/now.md?raw";
-
-const discordStatusColor = computed(() => lanyardData.discordStatusColor);
-const spotify = computed(() => lanyardData.spotify);
-const discordStatus = computed(() => lanyardData.discordStatus);
-const discordUser = computed(() => lanyardData.discordUser);
-const editorActivity = computed(() => lanyardData.editorActivity);
-const isLoading = computed(() => lanyardData.isLoading);
-const lanyardConnected = computed(() => lanyardData.isConnected);
-const lanyardReconnecting = computed(() => lanyardData.isReconnecting);
-const lanyardUnavailable = computed(() => lanyardData.presenceUnavailable);
-const lanyardStalePresence = computed(() => lanyardData.usingCachedPresence);
 
 const events = ref([]);
 const eventsCached = readLocalCache(CACHE_KEYS.GITHUB_EVENTS);
@@ -87,55 +74,35 @@ const sectionContainer = staggerContainer(0.04);
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
             <!-- Header -->
             <motion.div
-                class="mb-12"
+                class="mb-10"
                 :variants="headerContainer"
                 initial="hidden"
                 animate="visible"
             >
-                <motion.div :variants="fadeUp" class="text-catppuccin-subtle text-sm mb-2">
-                    ~$ cat now.txt
-                </motion.div>
-                <motion.h1
-                    :variants="fadeUp"
-                    class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-4"
-                >
-                    <span class="text-catppuccin-mauve">now</span>
-                </motion.h1>
-                <motion.p :variants="fadeUp" class="text-sm text-catppuccin-gray leading-relaxed mb-2">
-                    what i'm currently up to.
-                </motion.p>
-                <motion.p v-if="lastUpdated" :variants="fadeUp" class="text-xs text-catppuccin-subtle mb-6">
-                    last updated: {{ lastUpdated }}
-                </motion.p>
-
-                <motion.div :variants="fadeUp" class="flex items-center gap-4 text-sm mb-6">
+                <motion.div :variants="fadeUp" class="flex items-center gap-3 text-sm mb-4">
                     <router-link
                         to="/"
                         class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
-                    >
-                        [← home]
-                    </router-link>
+                    >~</router-link>
+                    <span class="text-catppuccin-surface">/</span>
+                    <span class="text-catppuccin-subtle">now</span>
+                </motion.div>
+                <motion.h1
+                    :variants="fadeUp"
+                    class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-2"
+                >
+                    <span class="text-catppuccin-mauve">now</span>
+                </motion.h1>
+                <motion.div :variants="fadeUp" class="flex items-center gap-2 text-xs text-catppuccin-subtle">
+                    <span>what i'm currently up to</span>
+                    <span v-if="lastUpdated" class="text-catppuccin-surface">·</span>
+                    <span v-if="lastUpdated">{{ lastUpdated }}</span>
                 </motion.div>
             </motion.div>
 
-            <!-- Status (real-time) -->
-            <StatusSection
-                :isLoading="isLoading"
-                :isConnected="lanyardConnected"
-                :isReconnecting="lanyardReconnecting"
-                :presenceUnavailable="lanyardUnavailable"
-                :usingCachedPresence="lanyardStalePresence"
-                :discordUser="discordUser"
-                :discordStatus="discordStatus"
-                :discordStatusColor="discordStatusColor"
-                :spotify="spotify"
-                :editorActivity="editorActivity"
-            />
-
-            <!-- Manual content from now.md -->
+            <!-- now.md content -->
             <motion.div
-                :variants="fadeLeft"
-                class="border-l-2 border-catppuccin-surface pl-4 mb-4"
+                class="border-l-2 border-catppuccin-surface pl-4 mb-8"
                 :initial="{ opacity: 0, x: -15 }"
                 :animate="{ opacity: 1, x: 0 }"
                 :transition="springs.default"
@@ -143,11 +110,11 @@ const sectionContainer = staggerContainer(0.04);
                 <div class="text-catppuccin-subtle text-sm mb-2">
                     ~$ cat status.txt
                 </div>
-                <div class="prose prose-invert max-w-none text-catppuccin-text" v-html="nowHtml"></div>
+                <div class="now-prose text-sm text-catppuccin-text leading-relaxed" v-html="nowHtml"></div>
             </motion.div>
 
             <!-- Recent activity grid -->
-            <div class="grid md:grid-cols-2 gap-6 mt-6">
+            <div class="grid md:grid-cols-2 gap-6">
                 <!-- Recent blog posts -->
                 <motion.div
                     class="border-l-2 border-catppuccin-surface pl-4"
@@ -160,23 +127,21 @@ const sectionContainer = staggerContainer(0.04);
                     <div class="text-catppuccin-subtle text-sm mb-3">
                         ~$ ls ~/blog --recent
                     </div>
-                    <div class="space-y-2 text-sm">
+                    <div class="divide-y divide-catppuccin-surface/40 text-sm">
                         <router-link
                             v-for="post in recentPosts"
                             :key="post.slug"
                             :to="{ path: '/blog', query: { post: post.slug } }"
-                            class="block group"
+                            class="flex items-start gap-2 group py-2.5 first:pt-0"
                         >
-                            <div class="flex items-start gap-2">
-                                <span class="text-catppuccin-blue">></span>
-                                <div class="min-w-0">
-                                    <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate block">
-                                        {{ post.title }}
-                                    </span>
-                                    <span class="text-xs text-catppuccin-subtle">
-                                        {{ formatBlogDate(post.date) }}
-                                    </span>
-                                </div>
+                            <span class="text-catppuccin-blue mt-0.5">&gt;</span>
+                            <div class="min-w-0">
+                                <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate block">
+                                    {{ post.title }}
+                                </span>
+                                <span class="text-xs text-catppuccin-subtle">
+                                    {{ formatBlogDate(post.date) }}
+                                </span>
                             </div>
                         </router-link>
                     </div>
@@ -211,30 +176,28 @@ const sectionContainer = staggerContainer(0.04);
                         no recent activity
                     </div>
 
-                    <div v-else class="space-y-2 text-sm">
+                    <div v-else class="divide-y divide-catppuccin-surface/40 text-sm">
                         <a
                             v-for="(event, i) in events"
                             :key="i"
                             :href="event.repoUrl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="block group"
+                            class="flex items-start gap-2 group py-2.5 first:pt-0"
                         >
-                            <div class="flex items-start gap-2">
-                                <span class="text-catppuccin-green">></span>
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-catppuccin-text group-hover:text-catppuccin-green transition-colors truncate">
-                                            {{ event.repo }}
-                                        </span>
-                                        <span class="text-xs text-catppuccin-subtle flex-shrink-0">
-                                            {{ formatRelativeTime(event.date) }}
-                                        </span>
-                                    </div>
-                                    <span class="text-xs text-catppuccin-gray truncate block">
-                                        {{ event.message }}
+                            <span class="text-catppuccin-green mt-0.5">&gt;</span>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-catppuccin-text group-hover:text-catppuccin-green transition-colors truncate">
+                                        {{ event.repo }}
+                                    </span>
+                                    <span class="text-xs text-catppuccin-subtle flex-shrink-0">
+                                        {{ formatRelativeTime(event.date) }}
                                     </span>
                                 </div>
+                                <span class="text-xs text-catppuccin-gray truncate block">
+                                    {{ event.message }}
+                                </span>
                             </div>
                         </a>
                     </div>
@@ -243,3 +206,36 @@ const sectionContainer = staggerContainer(0.04);
         </div>
     </div>
 </template>
+
+<style scoped>
+.now-prose :deep(p) {
+    margin-bottom: 0.75rem;
+}
+
+.now-prose :deep(h2) {
+    color: rgb(var(--color-mauve));
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.now-prose :deep(ul) {
+    list-style: none;
+    padding-left: 0;
+}
+
+.now-prose :deep(li) {
+    padding-left: 1rem;
+    position: relative;
+    margin-bottom: 0.25rem;
+    color: rgb(var(--color-gray));
+}
+
+.now-prose :deep(li)::before {
+    content: ">";
+    position: absolute;
+    left: 0;
+    color: rgb(var(--color-subtle));
+}
+</style>

@@ -1,5 +1,9 @@
 import { stagger } from "motion-v";
 
+const prefersReducedMotion = () =>
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 // Spring configs
 export const springs = {
     default: { type: "spring", stiffness: 300, damping: 25 },
@@ -8,41 +12,46 @@ export const springs = {
     snappy: { type: "spring", stiffness: 500, damping: 30 },
 };
 
+const noMotion = { duration: 0 };
+
 // Stagger container variants
 export const staggerContainer = (delay = 0.06) => ({
     hidden: {},
     visible: {
-        transition: {
-            delayChildren: stagger(delay),
-        },
+        transition: prefersReducedMotion()
+            ? {}
+            : { delayChildren: stagger(delay) },
     },
 });
 
 // Fade up (most common element entrance)
-export const fadeUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: springs.default },
-};
+export const fadeUp = prefersReducedMotion()
+    ? { hidden: { opacity: 0 }, visible: { opacity: 1, transition: noMotion } }
+    : { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: springs.default } };
 
 // Fade in from left (for border-l sections)
-export const fadeLeft = {
-    hidden: { opacity: 0, x: -15 },
-    visible: { opacity: 1, x: 0, transition: springs.default },
-};
+export const fadeLeft = prefersReducedMotion()
+    ? { hidden: { opacity: 0 }, visible: { opacity: 1, transition: noMotion } }
+    : { hidden: { opacity: 0, x: -15 }, visible: { opacity: 1, x: 0, transition: springs.default } };
 
 // Scale fade (for cards)
-export const scaleFade = {
-    hidden: { opacity: 0, scale: 0.95, y: 10 },
-    visible: { opacity: 1, scale: 1, y: 0, transition: springs.gentle },
-};
+export const scaleFade = prefersReducedMotion()
+    ? { hidden: { opacity: 0 }, visible: { opacity: 1, transition: noMotion } }
+    : { hidden: { opacity: 0, scale: 0.95, y: 10 }, visible: { opacity: 1, scale: 1, y: 0, transition: springs.gentle } };
 
 // Hover/press presets
-export const cardHover = { scale: 1.02, transition: springs.snappy };
-export const cardPress = { scale: 0.98 };
-export const linkHover = { x: 3, transition: springs.snappy };
+export const cardHover = prefersReducedMotion() ? {} : { scale: 1.02, transition: springs.snappy };
+export const cardPress = prefersReducedMotion() ? {} : { scale: 0.98 };
+export const linkHover = prefersReducedMotion() ? {} : { x: 3, transition: springs.snappy };
 
-// Page transition presets
-export const pageEnter = { opacity: 0, y: 15, filter: "blur(4px)" };
-export const pageAnimate = { opacity: 1, y: 0, filter: "blur(0px)" };
-export const pageExit = { opacity: 0, y: -10, filter: "blur(4px)" };
-export const pageTransition = springs.gentle;
+// Page transition presets (removed filter: blur — not compositor-friendly)
+export const pageEnter = prefersReducedMotion()
+    ? { opacity: 0 }
+    : { opacity: 0, y: 15 };
+export const pageAnimate = prefersReducedMotion()
+    ? { opacity: 1 }
+    : { opacity: 1, y: 0 };
+export const pageExit = prefersReducedMotion()
+    ? { opacity: 0 }
+    : { opacity: 0, y: -10 };
+export const pageTransition = prefersReducedMotion() ? noMotion : springs.gentle;

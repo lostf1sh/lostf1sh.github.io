@@ -54,7 +54,7 @@ export const marked = new Marked({
             return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-catppuccin-blue hover:text-catppuccin-mauve underline transition-colors">${text}</a>`;
         },
         image({ href, text }) {
-            return `<img src="${href}" alt="${text}" class="rounded border border-catppuccin-surface my-4 max-w-full">`;
+            return `<img src="${href}" alt="${text}" loading="lazy" class="rounded border border-catppuccin-surface my-4 max-w-full h-auto">`;
         },
         code({ text, lang }) {
             const id = `code-block-${codeBlockCounter++}`;

@@ -233,6 +233,7 @@ const heroContainer = staggerContainer(0.06);
                     <motion.h1
                         :variants="fadeUp"
                         class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-2"
+                        style="text-wrap: balance"
                     >
                         <span class="text-catppuccin-mauve">f1sh.</span>
                         <span class="text-catppuccin-subtle">v</span>
@@ -245,7 +246,7 @@ const heroContainer = staggerContainer(0.06);
                         <span class="text-catppuccin-subtle">aka </span
                         ><span class="text-catppuccin-green">moli</span>
                         <span class="text-catppuccin-surface">|</span>
-                        <span class="text-catppuccin-peach">{{ currentTime }}</span>
+                        <span class="text-catppuccin-peach" style="font-variant-numeric: tabular-nums">{{ currentTime }}</span>
                         <span class="text-catppuccin-subtle text-xs">TRT</span>
                     </motion.div>
 
@@ -299,7 +300,7 @@ const heroContainer = staggerContainer(0.06);
                         ~$ cat about.txt
                     </div>
                     <p class="text-catppuccin-text leading-relaxed mb-4">
-                        <span class="text-catppuccin-yellow">{{ currentAge.toFixed(10) }}</span> y/o
+                        <span class="text-catppuccin-yellow" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> y/o
                         junior dev. building stuff and learning along the way.
                         code, table tennis, cooking. based in turkey.
                     </p>

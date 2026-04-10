@@ -112,7 +112,7 @@ onMounted(() => {
                 <div class="shrink-0">
                     <div class="h-1.5 rounded-full overflow-hidden bg-catppuccin-surface/50">
                         <div
-                            class="h-full bg-catppuccin-mauve transition-all duration-500 ease-out"
+                            class="h-full bg-catppuccin-mauve transition-[width] duration-500 ease-out"
                             :style="{ width: (loadProgress * 100) + '%' }"
                         ></div>
                     </div>

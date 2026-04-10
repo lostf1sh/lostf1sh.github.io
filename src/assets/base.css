@@ -4,6 +4,7 @@
 
 @layer base {
     :root {
+        color-scheme: dark;
         /* Catppuccin Mocha (dark - default) */
         --color-crust: 17 17 27;
         --color-base: 30 30 46;
@@ -23,6 +24,7 @@
     }
 
     [data-theme="light"] {
+        color-scheme: light;
         /* Catppuccin Latte */
         --color-crust: 220 224 232;
         --color-base: 239 241 245;

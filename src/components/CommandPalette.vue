@@ -126,15 +126,16 @@ onBeforeUnmount(() => {
         >
             <div class="fixed inset-0 bg-catppuccin-crust/80 backdrop-blur-sm palette-backdrop" @click="close"></div>
 
-            <div class="relative z-10 w-full max-w-lg mx-4 rounded-md border border-catppuccin-surface bg-catppuccin-base shadow-2xl overflow-hidden palette-modal">
+            <div role="dialog" aria-modal="true" aria-label="Command palette" class="relative z-10 w-full max-w-lg mx-4 rounded-md border border-catppuccin-surface bg-catppuccin-base shadow-2xl overflow-hidden palette-modal overscroll-contain">
                 <div class="flex items-center gap-2 px-4 py-3 border-b border-catppuccin-surface">
                     <span class="text-catppuccin-subtle text-sm">~$</span>
                     <input
                         ref="inputRef"
                         v-model="query"
                         type="text"
-                        placeholder="type a command..."
-                        class="flex-1 bg-transparent text-catppuccin-text text-sm outline-none placeholder:text-catppuccin-overlay"
+                        placeholder="type a command…"
+                        aria-label="Command search"
+                        class="flex-1 bg-transparent text-catppuccin-text text-sm placeholder:text-catppuccin-overlay focus:outline-none"
                     />
                     <kbd class="text-xs text-catppuccin-subtle px-1.5 py-0.5 rounded border border-catppuccin-surface">esc</kbd>
                 </div>
@@ -202,6 +203,13 @@ onBeforeUnmount(() => {
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .palette-backdrop,
+    .palette-modal {
+        animation: none;
     }
 }
 </style>

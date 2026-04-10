@@ -90,6 +90,7 @@ const sectionContainer = staggerContainer(0.04);
                 <motion.h1
                     :variants="fadeUp"
                     class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-2"
+                    style="text-wrap: balance"
                 >
                     <span class="text-catppuccin-mauve">now</span>
                 </motion.h1>
@@ -110,7 +111,7 @@ const sectionContainer = staggerContainer(0.04);
                 <div class="text-catppuccin-subtle text-sm mb-2">
                     ~$ cat status.txt
                 </div>
-                <div class="now-prose text-sm text-catppuccin-text leading-relaxed" v-html="nowHtml"></div>
+                <div class="now-prose text-sm text-catppuccin-text leading-relaxed [&_img]:max-w-full [&_img]:h-auto" v-html="nowHtml"></div>
             </motion.div>
 
             <!-- Recent activity grid -->

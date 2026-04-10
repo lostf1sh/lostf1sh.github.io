@@ -120,6 +120,7 @@ const langColors = {
                 <motion.h1
                     :variants="fadeUp"
                     class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-4"
+                    style="text-wrap: balance"
                 >
                     <span class="text-catppuccin-mauve">projects</span>
                 </motion.h1>
@@ -160,7 +161,7 @@ const langColors = {
             </motion.div>
 
             <div v-if="loading" class="text-sm text-catppuccin-subtle">
-                loading repositories...
+                loading repositories…
             </div>
 
             <template v-else>

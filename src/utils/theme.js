@@ -10,6 +10,7 @@ export const theme = ref("dark");
 export const setTheme = (t) => {
     theme.value = t;
     document.documentElement.setAttribute("data-theme", t);
+    document.documentElement.style.colorScheme = t;
     localStorage.setItem("theme", t);
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColors[t]);
 };

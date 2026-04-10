@@ -77,7 +77,7 @@ const totalContributions = computed(() => {
                                 :href="getGitHubContributionUrl(day.date)"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-all hover:ring-1 hover:ring-catppuccin-mauve hover:scale-110 cursor-pointer"
+                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-[background-color,box-shadow,transform] hover:ring-1 hover:ring-catppuccin-mauve hover:scale-110 cursor-pointer"
                                 :class="[
                                     getContributionLevel(day.count) === 1
                                         ? 'bg-catppuccin-mauve/30 hover:bg-catppuccin-mauve/40'
@@ -87,6 +87,7 @@ const totalContributions = computed(() => {
                                             ? 'bg-catppuccin-mauve/70 hover:bg-catppuccin-mauve/80'
                                             : 'bg-catppuccin-mauve hover:bg-catppuccin-mauve',
                                 ]"
+                                :aria-label="`${day.date}: ${day.count} contributions`"
                                 :title="`${day.date}: ${day.count} contributions - Click to view on GitHub`"
                             ></a>
                             <div

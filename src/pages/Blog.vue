@@ -341,7 +341,7 @@ const viewExitToLeft = { opacity: 0, x: -24 };
 
                                 <!-- Left border grows on hover -->
                                 <div
-                                    class="absolute left-0 top-0 bottom-0 w-0 group-hover:w-[3px] transition-all duration-200"
+                                    class="absolute left-0 top-0 bottom-0 w-0 group-hover:w-[3px] transition-[width] duration-200"
                                     :style="{ backgroundColor: getAccentColor(idx) }"
                                 ></div>
                             </button>
@@ -396,7 +396,7 @@ const viewExitToLeft = { opacity: 0, x: -24 };
 
                         <!-- Article -->
                         <div class="flex-1 min-w-0">
-                            <h1 class="text-2xl md:text-3xl font-bold text-catppuccin-text mb-8 leading-snug">
+                            <h1 class="text-2xl md:text-3xl font-bold text-catppuccin-text mb-8 leading-snug" style="text-wrap: balance">
                                 {{ currentPost.title }}
                             </h1>
 
@@ -526,6 +526,7 @@ const viewExitToLeft = { opacity: 0, x: -24 };
     margin: 2.5rem 0 1rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid rgb(var(--color-green) / 0.35);
+    scroll-margin-top: 1.5rem;
 }
 
 /* H3: uppercase, subtle */
@@ -537,6 +538,7 @@ const viewExitToLeft = { opacity: 0, x: -24 };
     margin: 2rem 0 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
+    scroll-margin-top: 1.5rem;
 }
 
 .prose-blog :deep(blockquote) {
@@ -555,5 +557,6 @@ const viewExitToLeft = { opacity: 0, x: -24 };
 
 .prose-blog :deep(img) {
     max-width: 100%;
+    height: auto;
 }
 </style>

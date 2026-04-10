@@ -27,7 +27,7 @@ router.isReady().then(() => {
     <BootSequence />
     <ThemeToggle />
     <CommandPalette />
-    <router-view v-slot="{ Component, route }">
+    <router-view v-slot="{ Component, route }" id="main-content">
         <AnimatePresence mode="wait">
             <motion.div
                 :key="route.path"

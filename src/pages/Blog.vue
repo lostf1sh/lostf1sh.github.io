@@ -383,7 +383,7 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                                 </div>
                                 <div v-if="currentPost.tags.length">
                                     <div class="text-[0.55rem] tracking-[0.2em] uppercase text-catppuccin-subtle mb-1">tags</div>
-                                    <div class="flex flex-col gap-1">
+                                    <div class="flex flex-row flex-wrap gap-x-2 gap-y-1 md:flex-col md:gap-1">
                                         <span
                                             v-for="tag in currentPost.tags"
                                             :key="tag"

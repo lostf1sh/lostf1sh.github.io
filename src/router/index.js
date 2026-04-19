@@ -12,7 +12,7 @@ const routes = [
     },
   },
   {
-    path: "/blog",
+    path: "/blog/:slug?",
     name: "Blog",
     component: () => import("@/pages/Blog.vue"),
     meta: {

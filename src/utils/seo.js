@@ -27,3 +27,22 @@ export const updateMeta = ({ title, description, url } = {}) => {
   setContent('meta[name="twitter:url"]', u);
   document.querySelector('link[rel="canonical"]')?.setAttribute("href", u);
 };
+
+export const setJsonLd = (id, data) => {
+  const scriptId = `jsonld-${id}`;
+  let script = document.getElementById(scriptId);
+
+  if (!script) {
+    script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = scriptId;
+    document.head.appendChild(script);
+  }
+
+  script.textContent = JSON.stringify(data);
+};
+
+export const removeJsonLd = (id) => {
+  const script = document.getElementById(`jsonld-${id}`);
+  if (script) script.remove();
+};

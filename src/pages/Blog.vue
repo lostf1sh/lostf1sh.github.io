@@ -7,9 +7,10 @@ import { renderMarkdown } from "@/utils/markdown";
 import {
     getAllPosts,
     getPostBySlug,
+    getRelatedPosts,
     formatDate,
 } from "@/services/blogService";
-import { updateMeta } from "@/utils/seo";
+import { updateMeta, setJsonLd, removeJsonLd } from "@/utils/seo";
 import { springs, staggerContainer, fadeUp } from "@/utils/motion";
 
 const view = ref("list");
@@ -53,6 +54,11 @@ const currentPostNumber = computed(() =>
     String(sortedPosts.value.length - currentPostIndex.value).padStart(3, '0')
 );
 
+const relatedPosts = computed(() => {
+    if (!currentPost.value) return [];
+    return getRelatedPosts(currentPost.value.slug, 3);
+});
+
 const loadPosts = () => { posts.value = getAllPosts(); };
 
 const openPost = (slug) => {
@@ -60,20 +66,37 @@ const openPost = (slug) => {
     if (currentPost.value) {
         view.value = "post";
         window.scrollTo({ top: 0, behavior: "smooth" });
-        if (route.query.post !== slug) {
-            router.replace({ name: "Blog", query: { ...route.query, post: slug } });
+        const currentRouteSlug = typeof route.params.slug === "string" ? route.params.slug : "";
+        if (currentRouteSlug !== slug || route.query.post) {
+            const nextQuery = { ...route.query };
+            delete nextQuery.post;
+            router.replace({ name: "Blog", params: { slug }, query: nextQuery });
         }
         updateMeta({
             title: `${currentPost.value.title} | f1sh.dev`,
             description: currentPost.value.excerpt,
-            url: `https://f1sh.dev/blog?post=${slug}`,
+            url: `https://f1sh.dev/blog/${slug}`,
+        });
+        setJsonLd("article", {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: currentPost.value.title,
+            description: currentPost.value.excerpt,
+            datePublished: currentPost.value.date,
+            dateModified: currentPost.value.date,
+            author: {
+                "@type": "Person",
+                name: "Moli",
+            },
+            mainEntityOfPage: `https://f1sh.dev/blog/${slug}`,
+            url: `https://f1sh.dev/blog/${slug}`,
+            image: "https://f1sh.dev/screenshot.png",
         });
         void highlightCodeBlocks();
         extractHeadings();
-    } else if (route.query.post) {
-        const newQuery = { ...route.query };
-        delete newQuery.post;
-        router.replace({ name: "Blog", query: newQuery });
+    } else if (route.params.slug || route.query.post) {
+        removeJsonLd("article");
+        router.replace({ name: "Blog", params: { slug: undefined }, query: {} });
     }
 };
 
@@ -87,10 +110,11 @@ const goBack = ({ skipQueryUpdate = false } = {}) => {
         description: "Thoughts on code, tools, and random stuff.",
         url: "https://f1sh.dev/blog",
     });
-    if (!skipQueryUpdate && "post" in route.query) {
+    removeJsonLd("article");
+    if (!skipQueryUpdate && (route.params.slug || route.query.post)) {
         const newQuery = { ...route.query };
         delete newQuery.post;
-        router.replace({ name: "Blog", query: newQuery });
+        router.replace({ name: "Blog", params: { slug: undefined }, query: newQuery });
     }
 };
 
@@ -169,8 +193,10 @@ onMounted(() => {
     loadPosts();
     document.documentElement.style.overflowY = "auto";
     document.body.style.overflowY = "auto";
-    const slugFromQuery = route.query.post;
-    if (slugFromQuery) openPost(slugFromQuery);
+    const slugFromParam = typeof route.params.slug === "string" ? route.params.slug : "";
+    const slugFromQuery = typeof route.query.post === "string" ? route.query.post : "";
+    if (slugFromParam) openPost(slugFromParam);
+    else if (slugFromQuery) openPost(slugFromQuery);
     window.addEventListener("scroll", updateReadingProgress, { passive: true });
 });
 
@@ -179,6 +205,7 @@ onBeforeUnmount(() => {
     document.body.style.overflowY = "";
     window.removeEventListener("scroll", updateReadingProgress);
     if (rafId) cancelAnimationFrame(rafId);
+    removeJsonLd("article");
 });
 
 watch(articleContentRef, (el, _, onCleanup) => {
@@ -191,10 +218,13 @@ watch(articleContentRef, (el, _, onCleanup) => {
 });
 
 watch(
-    () => route.query.post,
+    () => [route.params.slug, route.query.post],
     (slug, prevSlug) => {
-        if (slug && slug !== prevSlug) openPost(slug);
-        else if (!slug && view.value === "post") goBack({ skipQueryUpdate: true });
+        const currentSlug = typeof slug[0] === "string" ? slug[0] : typeof slug[1] === "string" ? slug[1] : "";
+        const previousSlug = typeof prevSlug?.[0] === "string" ? prevSlug[0] : typeof prevSlug?.[1] === "string" ? prevSlug[1] : "";
+
+        if (currentSlug && currentSlug !== previousSlug) openPost(currentSlug);
+        else if (!currentSlug && view.value === "post") goBack({ skipQueryUpdate: true });
     },
 );
 
@@ -278,6 +308,14 @@ const viewExitToLeft = { opacity: 0, x: -24 };
 
                     <!-- Rule -->
                     <div class="border-t border-catppuccin-surface mb-2"></div>
+
+                    <div class="flex items-center justify-between gap-3 border-b border-catppuccin-surface/60 py-3 mb-2 text-xs">
+                        <span class="text-catppuccin-subtle">follow updates without email</span>
+                        <div class="flex items-center gap-3">
+                            <a href="/rss.xml" class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors" target="_blank" rel="noopener noreferrer">[rss]</a>
+                            <a href="https://github.com/lostf1sh" class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors" target="_blank" rel="noopener noreferrer">[github]</a>
+                        </div>
+                    </div>
 
                     <div v-if="!posts.length" class="text-sm text-catppuccin-subtle py-8">
                         no posts found
@@ -434,6 +472,33 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                                         </div>
                                     </button>
                                     <div v-else class="flex-1"></div>
+                                </div>
+                            </div>
+
+                            <div v-if="relatedPosts.length" class="mt-10 pt-6 border-t border-catppuccin-surface">
+                                <div class="text-[0.55rem] tracking-[0.2em] uppercase text-catppuccin-subtle mb-3">you may also like</div>
+                                <div class="space-y-2">
+                                    <button
+                                        v-for="post in relatedPosts"
+                                        :key="post.slug"
+                                        @click="openPost(post.slug)"
+                                        class="group w-full text-left border border-catppuccin-surface/70 hover:border-catppuccin-mauve/50 px-3 py-2 transition-colors cursor-pointer"
+                                    >
+                                        <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
+                                            {{ post.title }}
+                                        </div>
+                                        <div class="mt-1 text-[0.65rem] text-catppuccin-subtle">
+                                            {{ formatDate(post.date) }}
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 pt-5 border-t border-catppuccin-surface/70 flex items-center justify-between gap-3 text-xs">
+                                <span class="text-catppuccin-subtle">want more posts?</span>
+                                <div class="flex items-center gap-3">
+                                    <a href="/rss.xml" class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors" target="_blank" rel="noopener noreferrer">[rss]</a>
+                                    <a href="https://github.com/lostf1sh" class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors" target="_blank" rel="noopener noreferrer">[github]</a>
                                 </div>
                             </div>
 

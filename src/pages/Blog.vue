@@ -301,47 +301,49 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                                 @click="openPost(post.slug)"
                                 class="post-row w-full text-left flex items-start gap-5 py-5 border-b border-catppuccin-surface/60 cursor-pointer relative"
                             >
-                                <!-- Big ghost number -->
-                                <span
-                                    class="flex-shrink-0 w-12 text-right text-[3.5rem] leading-none font-bold select-none transition-colors duration-300"
-                                    :style="{ color: getAccentMuted(idx) }"
-                                    aria-hidden="true"
-                                >
-                                    {{ String(posts.length - idx).padStart(2, '0') }}
-                                </span>
+                                <div class="post-row-inner flex items-start gap-5 w-full">
+                                    <!-- Big ghost number -->
+                                    <span
+                                        class="flex-shrink-0 w-12 text-right text-[3.5rem] leading-none font-bold select-none transition-colors duration-300"
+                                        :style="{ color: getAccentMuted(idx) }"
+                                        aria-hidden="true"
+                                    >
+                                        {{ String(posts.length - idx).padStart(2, '0') }}
+                                    </span>
 
-                                <!-- Post content -->
-                                <div class="flex-1 min-w-0 pt-1">
-                                    <div
-                                        class="text-[0.6rem] tracking-[0.18em] uppercase mb-1.5 font-mono"
+                                    <!-- Post content -->
+                                    <div class="flex-1 min-w-0 pt-1">
+                                        <div
+                                            class="text-[0.6rem] tracking-[0.18em] uppercase mb-1.5 font-mono"
+                                            :style="{ color: getAccentColor(idx) }"
+                                        >
+                                            {{ formatDate(post.date) }}
+                                        </div>
+
+                                        <div class="text-sm font-semibold text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors duration-150 leading-snug mb-2">
+                                            {{ post.title }}
+                                        </div>
+
+                                        <div v-if="post.tags.length" class="text-xs text-catppuccin-subtle">
+                                            <span v-for="(tag, ti) in post.tags" :key="tag">
+                                                <span>{{ tag }}</span>
+                                                <span v-if="ti < post.tags.length - 1" class="mx-1.5 text-catppuccin-overlay">／</span>
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Read indicator -->
+                                    <span
+                                        class="pt-2 flex-shrink-0 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                                         :style="{ color: getAccentColor(idx) }"
                                     >
-                                        {{ formatDate(post.date) }}
-                                    </div>
-
-                                    <div class="text-sm font-semibold text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors duration-150 leading-snug mb-2">
-                                        {{ post.title }}
-                                    </div>
-
-                                    <div v-if="post.tags.length" class="text-xs text-catppuccin-subtle">
-                                        <span v-for="(tag, ti) in post.tags" :key="tag">
-                                            <span>{{ tag }}</span>
-                                            <span v-if="ti < post.tags.length - 1" class="mx-1.5 text-catppuccin-overlay">／</span>
-                                        </span>
-                                    </div>
+                                        read →
+                                    </span>
                                 </div>
-
-                                <!-- Read indicator -->
-                                <span
-                                    class="pt-2 flex-shrink-0 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                                    :style="{ color: getAccentColor(idx) }"
-                                >
-                                    read →
-                                </span>
 
                                 <!-- Left border grows on hover -->
                                 <div
-                                    class="absolute left-0 top-0 bottom-0 w-0 group-hover:w-[3px] transition-[width] duration-200"
+                                    class="absolute left-0 top-0 bottom-0 w-[3px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200 will-change-transform"
                                     :style="{ backgroundColor: getAccentColor(idx) }"
                                 ></div>
                             </button>
@@ -453,9 +455,15 @@ const viewExitToLeft = { opacity: 0, x: -24 };
 <style scoped>
 /* Card row: shift left on hover */
 .post-row {
-    transition: transform 0.15s ease, padding-left 0.15s ease;
+    contain: paint;
 }
-.post-row:hover {
+
+.post-row-inner {
+    transition: transform 0.15s ease;
+    will-change: transform;
+}
+
+.post-row:hover .post-row-inner {
     transform: translateX(-3px);
 }
 

@@ -61,6 +61,13 @@ const contributionsLoading = ref(!contributions.value.length);
 const contributionsRevalidating = ref(false);
 let ageRafId = null;
 let timeInterval = null;
+const isClockHovered = ref(false);
+const isAgeWarping = ref(false);
+const isAltPressed = ref(false);
+let ageWarpStartedAt = 0;
+
+const AGE_WARP_DURATION_MS = 2000;
+const AGE_WARP_MULTIPLIER = 10;
 
 // Now playing from Lanyard Spotify (real-time via WebSocket)
 const currentTrack = computed(() => {
@@ -174,6 +181,8 @@ onMounted(() => {
     fetchProjects();
     fetchContributions();
     updateTime();
+    window.addEventListener("keydown", handleWarpHotkey);
+    window.addEventListener("keyup", handleAltRelease);
     const tickAge = () => {
         updateAge();
         ageRafId = requestAnimationFrame(tickAge);
@@ -185,6 +194,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
     if (ageRafId) cancelAnimationFrame(ageRafId);
     if (timeInterval) clearInterval(timeInterval);
+    window.removeEventListener("keydown", handleWarpHotkey);
+    window.removeEventListener("keyup", handleAltRelease);
 });
 
 const BIRTH_DATE = new Date("2008-06-06T00:00:00");
@@ -193,10 +204,46 @@ const currentAge = ref(0);
 const currentTime = ref("");
 
 const updateAge = () => {
-    const now = new Date();
+    let nowMs = Date.now();
+
+    if (isAgeWarping.value) {
+        const elapsed = performance.now() - ageWarpStartedAt;
+        if (elapsed >= AGE_WARP_DURATION_MS) {
+            isAgeWarping.value = false;
+        } else {
+            nowMs += elapsed * (AGE_WARP_MULTIPLIER - 1);
+        }
+    }
+
+    const now = new Date(nowMs);
     const diffMs = now - BIRTH_DATE;
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
     currentAge.value = diffDays / 365.25;
+};
+
+const triggerAgeWarp = () => {
+    if (isAgeWarping.value) return;
+    isAgeWarping.value = true;
+    ageWarpStartedAt = performance.now();
+};
+
+const handleWarpHotkey = (event) => {
+    if (event.key !== "Alt") return;
+    isAltPressed.value = true;
+    if (isClockHovered.value) triggerAgeWarp();
+};
+
+const handleAltRelease = (event) => {
+    if (event.key === "Alt") isAltPressed.value = false;
+};
+
+const handleClockMouseEnter = (event) => {
+    isClockHovered.value = true;
+    if (event.altKey || isAltPressed.value) triggerAgeWarp();
+};
+
+const handleClockMouseLeave = () => {
+    isClockHovered.value = false;
 };
 
 const updateTime = () => {
@@ -246,8 +293,15 @@ const heroContainer = staggerContainer(0.06);
                         <span class="text-catppuccin-subtle">aka </span
                         ><span class="text-catppuccin-green">moli</span>
                         <span class="text-catppuccin-surface">|</span>
-                        <span class="text-catppuccin-peach" style="font-variant-numeric: tabular-nums">{{ currentTime }}</span>
-                        <span class="text-catppuccin-subtle text-xs">TRT</span>
+                        <span
+                            class="flex items-center gap-1"
+                            @mouseenter="handleClockMouseEnter"
+                            @mouseleave="handleClockMouseLeave"
+                        >
+                            <span class="text-catppuccin-peach" style="font-variant-numeric: tabular-nums">{{ currentTime }}</span>
+                            <span class="text-catppuccin-subtle text-xs" :class="{ 'text-catppuccin-mauve': isAgeWarping }">TRT</span>
+                            <span v-if="isAgeWarping" class="text-[10px] text-catppuccin-mauve">warp x10</span>
+                        </span>
                     </motion.div>
 
                     <motion.div

@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
 import { toggleTheme, theme } from "@/utils/theme";
-import { getAllPosts } from "@/services/blogService";
+import { getAllPosts, getAllTags } from "@/services/blogService";
 
 const router = useRouter();
 const isOpen = ref(false);
@@ -17,6 +17,21 @@ const pages = [
     { type: "page", label: "now", description: "what i'm doing now", path: "/now" },
 ];
 
+const quickCommands = [
+    {
+        type: "command",
+        label: "open rss feed",
+        description: "open /rss.xml",
+        href: "/rss.xml",
+    },
+    {
+        type: "command",
+        label: "open sitemap",
+        description: "open /sitemap.xml",
+        href: "/sitemap.xml",
+    },
+];
+
 const themeAction = computed(() => ({
     type: "theme",
     label: theme.value === "dark" ? "switch to light mode" : "switch to dark mode",
@@ -29,29 +44,81 @@ const blogPosts = computed(() => {
         label: post.title,
         description: post.excerpt || "blog post",
         slug: post.slug,
+        tags: post.tags,
     }));
 });
+
+const blogTags = computed(() => {
+    return getAllTags().map((tag) => ({
+        type: "tag",
+        label: `tag: ${tag}`,
+        description: "filter blog posts by tag",
+        tag,
+    }));
+});
+
+const getScore = (action, q) => {
+    const label = action.label.toLowerCase();
+    const description = action.description.toLowerCase();
+    let score = 0;
+
+    if (label === q) score += 120;
+    if (label.startsWith(q)) score += 80;
+    if (label.includes(q)) score += 35;
+    if (description.includes(q)) score += 15;
+
+    if (action.type === "blog") {
+        const tags = (action.tags || []).map((tag) => tag.toLowerCase());
+        if (tags.some((tag) => tag.includes(q))) score += 25;
+    }
+
+    if (action.type === "tag" && action.tag.toLowerCase() === q) score += 40;
+
+    return score;
+};
 
 const filteredActions = computed(() => {
     const q = query.value.toLowerCase().trim();
     const all = [
+        ...quickCommands,
         ...pages,
         themeAction.value,
+        ...blogTags.value,
         ...blogPosts.value,
     ];
 
     if (!q) {
         return [
+            ...quickCommands,
             ...pages,
             themeAction.value,
+            ...blogTags.value.slice(0, 6),
             ...blogPosts.value.slice(0, 5),
         ];
     }
 
-    return all.filter(action =>
-        action.label.toLowerCase().includes(q) ||
-        action.description.toLowerCase().includes(q)
-    );
+    if (q.startsWith("tag:")) {
+        const tagQuery = q.replace("tag:", "").trim();
+        if (!tagQuery) return blogTags.value;
+
+        return blogTags.value
+            .filter((tagAction) => tagAction.tag.toLowerCase().includes(tagQuery))
+            .sort((a, b) => getScore(b, q) - getScore(a, q));
+    }
+
+    if (q.startsWith("#")) {
+        const tagQuery = q.replace("#", "").trim();
+        return blogPosts.value.filter((post) =>
+            (post.tags || []).some((tag) => tag.toLowerCase().includes(tagQuery)),
+        );
+    }
+
+    return all
+        .filter(action =>
+            action.label.toLowerCase().includes(q) ||
+            action.description.toLowerCase().includes(q),
+        )
+        .sort((a, b) => getScore(b, q) - getScore(a, q));
 });
 
 const open = () => {
@@ -71,8 +138,14 @@ const execute = (action) => {
         router.push(action.path);
     } else if (action.type === "theme") {
         toggleTheme();
+    } else if (action.type === "command") {
+        window.open(action.href, "_blank", "noopener,noreferrer");
     } else if (action.type === "blog") {
-        router.push({ path: "/blog", query: { post: action.slug } });
+        router.push({ path: `/blog/${action.slug}` });
+    } else if (action.type === "tag") {
+        query.value = `#${action.tag}`;
+        selectedIndex.value = 0;
+        return;
     }
     close();
 };
@@ -133,7 +206,7 @@ onBeforeUnmount(() => {
                         ref="inputRef"
                         v-model="query"
                         type="text"
-                        placeholder="type a command…"
+                        placeholder="type a command or #tag…"
                         aria-label="Command search"
                         class="flex-1 bg-transparent text-catppuccin-text text-sm placeholder:text-catppuccin-overlay focus:outline-none"
                     />
@@ -161,9 +234,11 @@ onBeforeUnmount(() => {
                                 'text-catppuccin-blue': action.type === 'page',
                                 'text-catppuccin-yellow': action.type === 'theme',
                                 'text-catppuccin-green': action.type === 'blog',
+                                'text-catppuccin-mauve': action.type === 'tag',
+                                'text-catppuccin-peach': action.type === 'command',
                             }"
                         >
-                            {{ action.type === 'page' ? 'page' : action.type === 'theme' ? 'theme' : 'post' }}
+                            {{ action.type === 'page' ? 'page' : action.type === 'theme' ? 'theme' : action.type === 'tag' ? 'tag' : action.type === 'command' ? 'cmd' : 'post' }}
                         </span>
                         <div class="min-w-0 flex-1">
                             <div class="text-catppuccin-text truncate">{{ action.label }}</div>
@@ -175,6 +250,7 @@ onBeforeUnmount(() => {
                     <span>↑↓ navigate</span>
                     <span>↵ select</span>
                     <span>esc close</span>
+                    <span>#tag filter posts</span>
                 </div>
             </div>
         </div>

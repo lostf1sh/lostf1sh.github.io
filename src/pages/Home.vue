@@ -383,7 +383,7 @@ const heroContainer = staggerContainer(0.06);
                         ~$ ls ~/tools
                     </div>
                     <div class="text-sm text-catppuccin-text">
-                        vue | nextjs | js/ts | rust | go | kotlin | ruby | angular |
+                        vue | nextjs | js/ts | rust | go | kotlin | ruby | angular
                     </div>
                 </motion.div>
 

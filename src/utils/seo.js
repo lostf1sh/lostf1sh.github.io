@@ -1,7 +1,7 @@
 const defaults = {
-  title: "Personal Website | f1sh.dev",
-  description: "Personal portfolio and creative space of Moli, showcasing projects, photography, and digital experiences.",
-  url: "https://f1sh.dev",
+  title: "Personal Website | f1sh.v.recipes",
+  description: "Personal portfolio and creative space of Moli.",
+  url: "https://f1sh.v.recipes",
 };
 
 export const updateMeta = ({ title, description, url } = {}) => {

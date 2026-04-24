@@ -73,7 +73,7 @@ const showPresenceSkeleton = computed(
             <span
                 v-else-if="usingCachedPresence && !isConnected && discordUser"
                 class="text-xs text-catppuccin-subtle"
-            >[live feed offline — last known]</span>
+            >[cached status — reconnecting]</span>
             <span
                 v-else-if="presenceUnavailable && !discordUser"
                 class="text-xs text-catppuccin-red"

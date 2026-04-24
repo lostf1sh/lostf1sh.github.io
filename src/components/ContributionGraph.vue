@@ -77,7 +77,7 @@ const totalContributions = computed(() => {
                                 :href="getGitHubContributionUrl(day.date)"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-[background-color,box-shadow,transform] hover:ring-1 hover:ring-catppuccin-mauve hover:scale-110 cursor-pointer"
+                                class="contrib-cell w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-[background-color,box-shadow,transform] hover:ring-1 hover:ring-catppuccin-mauve hover:scale-110 cursor-pointer relative group"
                                 :class="[
                                     getContributionLevel(day.count) === 1
                                         ? 'bg-catppuccin-mauve/30 hover:bg-catppuccin-mauve/40'
@@ -88,12 +88,13 @@ const totalContributions = computed(() => {
                                             : 'bg-catppuccin-mauve hover:bg-catppuccin-mauve',
                                 ]"
                                 :aria-label="`${day.date}: ${day.count} contributions`"
-                                :title="`${day.date}: ${day.count} contributions - Click to view on GitHub`"
-                            ></a>
+                            >
+                                <span class="contrib-tip" :data-tip="`${day.date}: ${day.count}`"></span>
+                            </a>
                             <div
                                 v-else
                                 class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm bg-catppuccin-surface/50"
-                                :title="`${day.date}: ${day.count} contributions`"
+                                :title="`${day.date}: 0 contributions`"
                             ></div>
                         </template>
                     </div>
@@ -106,3 +107,35 @@ const totalContributions = computed(() => {
         </div>
     </motion.div>
 </template>
+
+<style scoped>
+.contrib-cell:hover .contrib-tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 3px 6px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    white-space: nowrap;
+    background: rgb(var(--color-surface));
+    color: rgb(var(--color-text));
+    border: 1px solid rgb(var(--color-overlay) / 0.3);
+    border-radius: 3px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.contrib-tip {
+    display: block;
+    position: absolute;
+    inset: 0;
+}
+
+@media (hover: none) {
+    .contrib-cell:hover .contrib-tip::after {
+        display: none;
+    }
+}
+</style>

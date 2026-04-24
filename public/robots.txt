@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://f1sh.dev/sitemap.xml
+Sitemap: https://f1sh.v.recipes/sitemap.xml

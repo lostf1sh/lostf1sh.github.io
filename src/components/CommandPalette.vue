@@ -15,6 +15,7 @@ const pages = [
     { type: "page", label: "blog", description: "read blog posts", path: "/blog" },
     { type: "page", label: "projects", description: "view projects", path: "/projects" },
     { type: "page", label: "now", description: "what i'm doing now", path: "/now" },
+    { type: "page", label: "uses", description: "tools and setup i use daily", path: "/uses" },
 ];
 
 const quickCommands = [

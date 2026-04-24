@@ -218,8 +218,13 @@ const langColors = {
                         ~$ find ~/projects -type d {{ activeLanguage ? `| grep ${activeLanguage}` : '' }}
                     </div>
 
-                    <div v-if="!filteredRepos.length" class="text-sm text-catppuccin-subtle">
-                        no projects found{{ activeLanguage ? ` for ${activeLanguage}` : '' }}
+                    <div v-if="!filteredRepos.length" class="text-sm text-catppuccin-subtle py-4">
+                        <div>
+                            <span class="text-catppuccin-peach">$</span> no projects found<template v-if="activeLanguage"> matching <span class="text-catppuccin-mauve">{{ activeLanguage }}</span></template>
+                        </div>
+                        <div class="text-catppuccin-overlay mt-1">
+                            try a different language or clear the filter
+                        </div>
                     </div>
 
                     <motion.div

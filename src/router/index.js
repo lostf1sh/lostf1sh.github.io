@@ -7,7 +7,7 @@ const routes = [
     name: "Home",
     component: () => import("@/pages/Home.vue"),
     meta: {
-      title: "Personal Website | f1sh.dev",
+      title: "Personal Website | f1sh.v.recipes",
       description: "Personal portfolio and creative space of Moli, showcasing projects, photography, and digital experiences.",
     },
   },
@@ -16,7 +16,7 @@ const routes = [
     name: "Blog",
     component: () => import("@/pages/Blog.vue"),
     meta: {
-      title: "Blog | f1sh.dev",
+      title: "Blog | f1sh.v.recipes",
       description: "Thoughts on code, tools, and random stuff.",
     },
   },
@@ -25,8 +25,8 @@ const routes = [
     name: "Projects",
     component: () => import("@/pages/Projects.vue"),
     meta: {
-      title: "Projects | f1sh.dev",
-      description: "Open source projects and experiments by duhan.",
+      title: "Projects | f1sh.v.recipes",
+      description: "Open source projects and experiments.",
     },
   },
   {
@@ -34,8 +34,17 @@ const routes = [
     name: "Now",
     component: () => import("@/pages/Now.vue"),
     meta: {
-        title: "Now | f1sh.dev",
-        description: "What duhan is currently working on.",
+        title: "Now | f1sh.v.recipes",
+        description: "What I'm currently working on.",
+    },
+  },
+  {
+    path: "/uses",
+    name: "Uses",
+    component: () => import("@/pages/Uses.vue"),
+    meta: {
+        title: "Uses | f1sh.v.recipes",
+        description: "Tools, hardware, and software I use daily.",
     },
   },
   {
@@ -43,7 +52,7 @@ const routes = [
     name: "NotFound",
     component: () => import("@/pages/NotFound.vue"),
     meta: {
-      title: "404 Not Found | f1sh.dev",
+      title: "404 Not Found | f1sh.v.recipes",
     },
   },
 ];
@@ -60,7 +69,7 @@ router.beforeEach((to, _, next) => {
   updateMeta({
     title: to.meta.title,
     description: to.meta.description,
-    url: `https://f1sh.dev${to.path}`,
+    url: `https://f1sh.v.recipes${to.path}`,
   });
   next();
 });

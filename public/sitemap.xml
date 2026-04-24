@@ -1,129 +1,134 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://f1sh.dev/</loc>
+    <loc>https://f1sh.v.recipes/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog</loc>
+    <loc>https://f1sh.v.recipes/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/projects</loc>
+    <loc>https://f1sh.v.recipes/projects</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/now</loc>
+    <loc>https://f1sh.v.recipes/now</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/linux-daily-driver-2026</loc>
+    <loc>https://f1sh.v.recipes/uses</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://f1sh.v.recipes/blog/linux-daily-driver-2026</loc>
     <lastmod>2026-03-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/git-beyond-the-basics</loc>
+    <loc>https://f1sh.v.recipes/blog/git-beyond-the-basics</loc>
     <lastmod>2026-03-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/building-this-site</loc>
+    <loc>https://f1sh.v.recipes/blog/building-this-site</loc>
     <lastmod>2026-03-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/zapret-installation</loc>
+    <loc>https://f1sh.v.recipes/blog/zapret-installation</loc>
     <lastmod>2026-01-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/new-year-2026</loc>
+    <loc>https://f1sh.v.recipes/blog/new-year-2026</loc>
     <lastmod>2026-01-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/llm-coding</loc>
+    <loc>https://f1sh.v.recipes/blog/llm-coding</loc>
     <lastmod>2025-12-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/terminal-setup-2025</loc>
+    <loc>https://f1sh.v.recipes/blog/terminal-setup-2025</loc>
     <lastmod>2025-12-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/rust-for-js-developers</loc>
+    <loc>https://f1sh.v.recipes/blog/rust-for-js-developers</loc>
     <lastmod>2025-12-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/github-contribution-heatmap</loc>
+    <loc>https://f1sh.v.recipes/blog/github-contribution-heatmap</loc>
     <lastmod>2025-12-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/smaller-containers</loc>
+    <loc>https://f1sh.v.recipes/blog/smaller-containers</loc>
     <lastmod>2025-12-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/lastfm-is-still-goated</loc>
+    <loc>https://f1sh.v.recipes/blog/lastfm-is-still-goated</loc>
     <lastmod>2025-11-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/dotfiles-with-chezmoi</loc>
+    <loc>https://f1sh.v.recipes/blog/dotfiles-with-chezmoi</loc>
     <lastmod>2025-11-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/switching-from-neovim-to-zed</loc>
+    <loc>https://f1sh.v.recipes/blog/switching-from-neovim-to-zed</loc>
     <lastmod>2025-11-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/obsidian-to-vue-notes-pipeline</loc>
+    <loc>https://f1sh.v.recipes/blog/obsidian-to-vue-notes-pipeline</loc>
     <lastmod>2025-10-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/shipping-small-cli-tools</loc>
+    <loc>https://f1sh.v.recipes/blog/shipping-small-cli-tools</loc>
     <lastmod>2025-10-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/designing-terminal-aesthetic-ui</loc>
+    <loc>https://f1sh.v.recipes/blog/designing-terminal-aesthetic-ui</loc>
     <lastmod>2025-10-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/ai-browsers-are-just-chromium</loc>
+    <loc>https://f1sh.v.recipes/blog/ai-browsers-are-just-chromium</loc>
     <lastmod>2025-10-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://f1sh.dev/blog/welcome-to-my-blog</loc>
+    <loc>https://f1sh.v.recipes/blog/welcome-to-my-blog</loc>
     <lastmod>2025-10-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>

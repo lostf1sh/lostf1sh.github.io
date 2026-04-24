@@ -70,7 +70,7 @@ onMounted(() => {
                 <div class="flex-1 flex flex-col justify-end text-sm space-y-1 overflow-hidden mb-4">
                     <div v-if="line >= 1" class="boot-anim">
                         <span class="text-catppuccin-blue">[BIOS]</span>
-                        <span class="text-catppuccin-text"> f1sh.v.recipes v2.0</span>
+                        <span class="text-catppuccin-text"> f1sh.v.recipes v3.0</span>
                     </div>
                     <div v-if="line >= 2" class="boot-anim">
                         <span class="text-catppuccin-yellow">[INIT]</span>

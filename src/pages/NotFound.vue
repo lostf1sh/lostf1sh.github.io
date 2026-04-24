@@ -69,15 +69,45 @@
                             </router-link>
                         </motion.div>
                         <motion.div :variants="fadeUp">
+                            <router-link
+                                to="/projects"
+                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
+                            >
+                                <span class="text-catppuccin-blue">/projects</span>
+                                <span class="text-catppuccin-subtle">→</span>
+                                <span>projects</span>
+                            </router-link>
+                        </motion.div>
+                        <motion.div :variants="fadeUp">
+                            <router-link
+                                to="/now"
+                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
+                            >
+                                <span class="text-catppuccin-blue">/now</span>
+                                <span class="text-catppuccin-subtle">→</span>
+                                <span>what i'm doing now</span>
+                            </router-link>
+                        </motion.div>
+                        <motion.div :variants="fadeUp">
+                            <router-link
+                                to="/uses"
+                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
+                            >
+                                <span class="text-catppuccin-blue">/uses</span>
+                                <span class="text-catppuccin-subtle">→</span>
+                                <span>tools &amp; setup</span>
+                            </router-link>
+                        </motion.div>
+                        <motion.div :variants="fadeUp">
                             <a
                                 href="https://github.com/lostf1sh"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
                             >
-                                <span class="text-catppuccin-blue">github.com/lostf1sh</span>
+                                <span class="text-catppuccin-blue">github</span>
                                 <span class="text-catppuccin-subtle">→</span>
-                                <span>projects</span>
+                                <span>lostf1sh</span>
                             </a>
                         </motion.div>
                         <motion.div :variants="fadeUp">
@@ -87,9 +117,9 @@
                                 rel="noopener noreferrer"
                                 class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
                             >
-                                <span class="text-catppuccin-blue">instagram.com/kawaiimoli</span>
+                                <span class="text-catppuccin-blue">instagram</span>
                                 <span class="text-catppuccin-subtle">→</span>
-                                <span>photos</span>
+                                <span>kawaiimoli</span>
                             </a>
                         </motion.div>
                     </div>

@@ -2,12 +2,14 @@ const defaults = {
   title: "Personal Website | f1sh.v.recipes",
   description: "Personal portfolio and creative space of Moli.",
   url: "https://f1sh.v.recipes",
+  image: "https://f1sh.v.recipes/screenshot.png",
 };
 
-export const updateMeta = ({ title, description, url } = {}) => {
+export const updateMeta = ({ title, description, url, image } = {}) => {
   const t = title || defaults.title;
   const d = description || defaults.description;
   const u = url || defaults.url;
+  const img = image || defaults.image;
 
   document.title = t;
 
@@ -26,6 +28,9 @@ export const updateMeta = ({ title, description, url } = {}) => {
   setContent('meta[property="og:url"]', u);
   setContent('meta[name="twitter:url"]', u);
   document.querySelector('link[rel="canonical"]')?.setAttribute("href", u);
+
+  setContent('meta[property="og:image"]', img);
+  setContent('meta[name="twitter:image"]', img);
 };
 
 export const setJsonLd = (id, data) => {

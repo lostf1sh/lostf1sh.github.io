@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { motion, AnimatePresence } from "motion-v";
 import "prismjs/themes/prism-tomorrow.css";
 import { renderMarkdown } from "@/utils/markdown";
+import TableOfContents from "@/components/TableOfContents.vue";
 import {
     getAllPosts,
     getPostBySlug,
@@ -73,9 +74,9 @@ const openPost = (slug) => {
             router.replace({ name: "Blog", params: { slug }, query: nextQuery });
         }
         updateMeta({
-            title: `${currentPost.value.title} | f1sh.dev`,
+            title: `${currentPost.value.title} | f1sh.v.recipes`,
             description: currentPost.value.excerpt,
-            url: `https://f1sh.dev/blog/${slug}`,
+            url: `https://f1sh.v.recipes/blog/${slug}`,
         });
         setJsonLd("article", {
             "@context": "https://schema.org",
@@ -88,9 +89,9 @@ const openPost = (slug) => {
                 "@type": "Person",
                 name: "Moli",
             },
-            mainEntityOfPage: `https://f1sh.dev/blog/${slug}`,
-            url: `https://f1sh.dev/blog/${slug}`,
-            image: "https://f1sh.dev/screenshot.png",
+            mainEntityOfPage: `https://f1sh.v.recipes/blog/${slug}`,
+            url: `https://f1sh.v.recipes/blog/${slug}`,
+            image: "https://f1sh.v.recipes/screenshot.png",
         });
         void highlightCodeBlocks();
         extractHeadings();
@@ -106,9 +107,9 @@ const goBack = ({ skipQueryUpdate = false } = {}) => {
     headings.value = [];
     window.scrollTo({ top: 0, behavior: "smooth" });
     updateMeta({
-        title: "Blog | f1sh.dev",
+        title: "Blog | f1sh.v.recipes",
         description: "Thoughts on code, tools, and random stuff.",
-        url: "https://f1sh.dev/blog",
+        url: "https://f1sh.v.recipes/blog",
     });
     removeJsonLd("article");
     if (!skipQueryUpdate && (route.params.slug || route.query.post)) {
@@ -431,6 +432,11 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                                         >{{ tag }}</span>
                                     </div>
                                 </div>
+                            </div>
+
+                            <!-- Table of Contents -->
+                            <div v-if="headings.length" class="hidden md:block mt-6 pt-4 border-t border-catppuccin-surface/40">
+                                <TableOfContents :headings="headings" />
                             </div>
                         </aside>
 

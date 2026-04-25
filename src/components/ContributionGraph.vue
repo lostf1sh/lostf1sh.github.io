@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from "vue";
 import { motion } from "motion-v";
-import { springs } from "@/utils/motion";
+import { springs, fadeUp } from "@/utils/motion";
 import {
     getContributionLevel,
     getGitHubContributionUrl,
@@ -28,30 +28,28 @@ const totalContributions = computed(() => {
 
 <template>
     <motion.div
-        class="mt-6 border-l-2 border-catppuccin-surface pl-4"
+        class="mt-10"
         :whileInView="{ opacity: 1, y: 0 }"
-        :initial="{ opacity: 0, y: 20 }"
-        :transition="springs.default"
+        :initial="{ opacity: 0, y: 10 }"
+        :transition="springs.gentle"
         :inViewOptions="{ once: true }"
     >
-        <div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
-            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <div class="text-catppuccin-subtle text-sm">
-                    ~$ git log --oneline --since="1.year.ago" | wc -l
-                </div>
+        <div class="flex items-center justify-between gap-2 mb-4 flex-wrap">
+            <div class="section-label">
+                contributions
                 <span
                     v-if="revalidating && !loading"
-                    class="text-[10px] text-catppuccin-subtle"
-                >refreshing…</span>
+                    class="text-[10px] text-catppuccin-subtle/50 ml-2 font-sans"
+                >updating</span>
             </div>
-            <div v-if="!loading" class="flex items-center gap-1 text-[10px] text-catppuccin-subtle">
+            <div v-if="!loading" class="flex items-center gap-1.5 text-[10px] text-catppuccin-subtle">
                 <span>less</span>
-                <div class="flex gap-[1px]">
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-surface/50"></div>
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/30"></div>
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/50"></div>
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/70"></div>
-                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve"></div>
+                <div class="flex gap-[2px]">
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-surface/60"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/25"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/45"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/65"></div>
+                    <div class="w-2 h-2 rounded-[2px] bg-catppuccin-mauve/85"></div>
                 </div>
                 <span>more</span>
             </div>
@@ -60,7 +58,7 @@ const totalContributions = computed(() => {
         <div
             v-if="loading"
         >
-            <div class="h-[60px] bg-catppuccin-surface/30 rounded cursor-blink"></div>
+            <div class="h-[60px] bg-catppuccin-surface/20 rounded cursor-blink"></div>
         </div>
 
         <div v-else>
@@ -77,15 +75,15 @@ const totalContributions = computed(() => {
                                 :href="getGitHubContributionUrl(day.date)"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="contrib-cell w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-[background-color,box-shadow,transform] hover:ring-1 hover:ring-catppuccin-mauve hover:scale-110 cursor-pointer relative group"
+                                class="contrib-cell w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm transition-[background-color,box-shadow,transform] hover:ring-1 hover:ring-catppuccin-mauve/50 hover:scale-110 cursor-pointer relative group"
                                 :class="[
                                     getContributionLevel(day.count) === 1
-                                        ? 'bg-catppuccin-mauve/30 hover:bg-catppuccin-mauve/40'
+                                        ? 'bg-catppuccin-mauve/20 hover:bg-catppuccin-mauve/35'
                                         : getContributionLevel(day.count) === 2
-                                          ? 'bg-catppuccin-mauve/50 hover:bg-catppuccin-mauve/60'
+                                          ? 'bg-catppuccin-mauve/40 hover:bg-catppuccin-mauve/55'
                                           : getContributionLevel(day.count) === 3
-                                            ? 'bg-catppuccin-mauve/70 hover:bg-catppuccin-mauve/80'
-                                            : 'bg-catppuccin-mauve hover:bg-catppuccin-mauve',
+                                            ? 'bg-catppuccin-mauve/60 hover:bg-catppuccin-mauve/75'
+                                            : 'bg-catppuccin-mauve/80 hover:bg-catppuccin-mauve',
                                 ]"
                                 :aria-label="`${day.date}: ${day.count} contributions`"
                             >
@@ -93,7 +91,7 @@ const totalContributions = computed(() => {
                             </a>
                             <div
                                 v-else
-                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm bg-catppuccin-surface/50"
+                                class="w-[10px] h-[10px] md:w-auto md:h-auto md:aspect-square rounded-sm bg-catppuccin-surface/30"
                                 :title="`${day.date}: 0 contributions`"
                             ></div>
                         </template>
@@ -101,7 +99,7 @@ const totalContributions = computed(() => {
                 </div>
             </div>
 
-            <div class="text-xs text-catppuccin-gray mt-2">
+            <div class="text-xs text-catppuccin-subtle mt-3">
                 {{ totalContributions }} contributions in the last year
             </div>
         </div>
@@ -115,13 +113,12 @@ const totalContributions = computed(() => {
     bottom: calc(100% + 6px);
     left: 50%;
     transform: translateX(-50%);
-    padding: 3px 6px;
+    padding: 3px 8px;
     font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Karla', sans-serif;
     white-space: nowrap;
     background: rgb(var(--color-surface));
     color: rgb(var(--color-text));
-    border: 1px solid rgb(var(--color-overlay) / 0.3);
     border-radius: 3px;
     z-index: 10;
     pointer-events: none;

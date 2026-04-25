@@ -1,140 +1,81 @@
 <template>
-    <div class="w-full min-h-screen overflow-x-hidden font-mono">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
-            <div class="mb-12">
-                <motion.div :variants="fadeUp" class="text-catppuccin-subtle text-sm mb-2">
-                    ~$ cd /
-                </motion.div>
-
-                <motion.h1
-                    class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-2"
-                    style="text-wrap: balance"
-                    :initial="{ opacity: 0, y: 25, scale: 0.95 }"
-                    :animate="{ opacity: 1, y: 0, scale: 1 }"
-                    :transition="springs.bouncy"
+    <div class="w-full min-h-screen">
+        <div class="max-w-3xl mx-auto px-6 sm:px-8 py-16 md:py-24">
+            <motion.div
+                class="mb-12"
+                :initial="{ opacity: 0, y: 15 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="springs.gentle"
+            >
+                <router-link
+                    to="/"
+                    class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors mb-8 block"
                 >
-                    <span class="text-catppuccin-red">404</span>
-                </motion.h1>
+                    ← home
+                </router-link>
 
-                <motion.div
-                    class="border-l-2 border-catppuccin-surface pl-4 mb-6"
-                    :initial="{ opacity: 0, x: -15 }"
-                    :animate="{ opacity: 1, x: 0 }"
-                    :transition="{ ...springs.default, delay: 0.15 }"
+                <h1
+                    class="font-serif text-6xl md:text-7xl font-semibold text-catppuccin-text/20 tracking-tight mb-4"
                 >
-                    <div class="text-catppuccin-subtle text-sm mb-2">
-                        ~$ cat error.txt
-                    </div>
-                    <div class="space-y-1 text-catppuccin-text">
-                        <div class="flex items-center gap-2">
-                            <span class="text-catppuccin-red">bash:</span>
-                            <span class="text-catppuccin-text">cd: {{ route.path }}: No such file or directory</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-catppuccin-subtle">hint:</span>
-                            <span class="text-catppuccin-gray">the requested page was not found</span>
-                        </div>
-                    </div>
-                </motion.div>
+                    404
+                </h1>
 
-                <motion.div
-                    class="border-l-2 border-catppuccin-surface pl-4"
-                    :variants="linksContainer"
-                    initial="hidden"
-                    animate="visible"
-                >
-                    <motion.div :variants="fadeUp" class="text-catppuccin-subtle text-sm mb-3">
-                        ~$ ls useful_links/
-                    </motion.div>
+                <p class="text-sm text-catppuccin-subtle mb-10">
+                    the page you're looking for doesn't exist
+                </p>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                        <motion.div :variants="fadeUp">
-                            <router-link
-                                to="/"
-                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
-                            >
-                                <span class="text-catppuccin-blue">/</span>
-                                <span class="text-catppuccin-subtle">→</span>
-                                <span>home</span>
-                            </router-link>
-                        </motion.div>
-                        <motion.div :variants="fadeUp">
-                            <router-link
-                                to="/blog"
-                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
-                            >
-                                <span class="text-catppuccin-blue">/blog</span>
-                                <span class="text-catppuccin-subtle">→</span>
-                                <span>blog posts</span>
-                            </router-link>
-                        </motion.div>
-                        <motion.div :variants="fadeUp">
-                            <router-link
-                                to="/projects"
-                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
-                            >
-                                <span class="text-catppuccin-blue">/projects</span>
-                                <span class="text-catppuccin-subtle">→</span>
-                                <span>projects</span>
-                            </router-link>
-                        </motion.div>
-                        <motion.div :variants="fadeUp">
-                            <router-link
-                                to="/now"
-                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
-                            >
-                                <span class="text-catppuccin-blue">/now</span>
-                                <span class="text-catppuccin-subtle">→</span>
-                                <span>what i'm doing now</span>
-                            </router-link>
-                        </motion.div>
-                        <motion.div :variants="fadeUp">
-                            <router-link
-                                to="/uses"
-                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
-                            >
-                                <span class="text-catppuccin-blue">/uses</span>
-                                <span class="text-catppuccin-subtle">→</span>
-                                <span>tools &amp; setup</span>
-                            </router-link>
-                        </motion.div>
-                        <motion.div :variants="fadeUp">
-                            <a
-                                href="https://github.com/lostf1sh"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
-                            >
-                                <span class="text-catppuccin-blue">github</span>
-                                <span class="text-catppuccin-subtle">→</span>
-                                <span>lostf1sh</span>
-                            </a>
-                        </motion.div>
-                        <motion.div :variants="fadeUp">
-                            <a
-                                href="https://www.instagram.com/kawaiimoli"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="flex items-center gap-2 text-catppuccin-text hover:text-catppuccin-mauve transition-colors"
-                            >
-                                <span class="text-catppuccin-blue">instagram</span>
-                                <span class="text-catppuccin-subtle">→</span>
-                                <span>kawaiimoli</span>
-                            </a>
-                        </motion.div>
-                    </div>
-                </motion.div>
-            </div>
+                <div class="hr-zen mb-10"></div>
+
+                <div class="space-y-2 text-sm">
+                    <router-link
+                        to="/"
+                        class="group flex items-center gap-3 py-2"
+                    >
+                        <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors">home</span>
+                        <span class="text-catppuccin-subtle/40">—</span>
+                        <span class="text-catppuccin-subtle">homepage</span>
+                    </router-link>
+                    <router-link
+                        to="/blog"
+                        class="group flex items-center gap-3 py-2"
+                    >
+                        <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors">blog</span>
+                        <span class="text-catppuccin-subtle/40">—</span>
+                        <span class="text-catppuccin-subtle">writing</span>
+                    </router-link>
+                    <router-link
+                        to="/projects"
+                        class="group flex items-center gap-3 py-2"
+                    >
+                        <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors">projects</span>
+                        <span class="text-catppuccin-subtle/40">—</span>
+                        <span class="text-catppuccin-subtle">open source work</span>
+                    </router-link>
+                    <router-link
+                        to="/now"
+                        class="group flex items-center gap-3 py-2"
+                    >
+                        <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors">now</span>
+                        <span class="text-catppuccin-subtle/40">—</span>
+                        <span class="text-catppuccin-subtle">current focus</span>
+                    </router-link>
+                    <a
+                        href="https://github.com/lostf1sh"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="group flex items-center gap-3 py-2"
+                    >
+                        <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors">github</span>
+                        <span class="text-catppuccin-subtle/40">—</span>
+                        <span class="text-catppuccin-subtle">lostf1sh</span>
+                    </a>
+                </div>
+            </motion.div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { useRoute } from "vue-router";
 import { motion } from "motion-v";
-import { springs, staggerContainer, fadeUp } from "@/utils/motion";
-
-const route = useRoute();
-
-const linksContainer = staggerContainer(0.05);
+import { springs } from "@/utils/motion";
 </script>

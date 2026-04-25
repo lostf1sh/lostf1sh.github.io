@@ -1,19 +1,9 @@
 <script setup>
-import { ref, watch, onMounted } from "vue";
-import { allReady, preloaderState, loadProgress } from "@/services/preloader";
+import { ref, onMounted, watch } from "vue";
+import { allReady } from "@/services/preloader";
 
-const show = ref(false);
 const done = ref(false);
-const line = ref(0);
-const showReady = ref(false);
-
-const finish = () => {
-    show.value = false;
-    sessionStorage.setItem("booted", "true");
-    setTimeout(() => {
-        done.value = true;
-    }, 400);
-};
+const phase = ref("idle"); // idle → drawing → hold → fading → done
 
 onMounted(() => {
     if (sessionStorage.getItem("booted")) {
@@ -28,31 +18,34 @@ onMounted(() => {
         return;
     }
 
-    show.value = true;
+    // Start the ensō draw
+    phase.value = "drawing";
 
-    // Reveal lines sequentially
-    const timings = [0, 300, 600, 900, 1200, 1500, 1650, 1800];
-    timings.forEach((ms, i) => {
-        setTimeout(() => { line.value = i + 1; }, ms);
-    });
+    // Drawing takes ~1.2s, then hold
+    setTimeout(() => {
+        phase.value = "hold";
+    }, 1200);
 
-    // Wait for both minimum animation time and all data to load
-    // Max 6s timeout so boot never hangs if an API is down
-    const minTime = new Promise((r) => setTimeout(r, 2500));
-    const maxTime = new Promise((r) => setTimeout(r, 6000));
+    // Wait for data or timeout
+    const maxTime = new Promise((r) => setTimeout(r, 3500));
     const dataReady = new Promise((resolve) => {
         if (allReady.value) return resolve();
         const stop = watch(allReady, (ready) => {
             if (ready) { stop(); resolve(); }
         });
+        // Safety cleanup
+        setTimeout(() => { stop(); resolve(); }, 3500);
     });
 
-    Promise.race([
-        Promise.all([minTime, dataReady]),
-        maxTime,
-    ]).then(() => {
-        showReady.value = true;
-        setTimeout(finish, 600);
+    // Ensure minimum display time (let the circle draw + hold)
+    const minTime = new Promise((r) => setTimeout(r, 1800));
+
+    Promise.all([Promise.race([dataReady, maxTime]), minTime]).then(() => {
+        phase.value = "fading";
+        setTimeout(() => {
+            sessionStorage.setItem("booted", "true");
+            done.value = true;
+        }, 700);
     });
 });
 </script>
@@ -61,84 +54,107 @@ onMounted(() => {
     <Teleport to="body">
         <div
             v-if="!done"
-            class="fixed inset-0 z-[9999] flex flex-col items-center justify-center font-mono transition-opacity duration-400"
-            :class="show ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-            :style="{ backgroundColor: 'rgb(var(--color-crust))' }"
+            class="enso-screen"
+            :class="phase === 'fading' ? 'is-fading' : ''"
         >
-            <div class="flex flex-col px-6 max-w-md w-full" style="max-height: 60vh">
-                <!-- Boot lines — grow upward from bottom -->
-                <div class="flex-1 flex flex-col justify-end text-sm space-y-1 overflow-hidden mb-4">
-                    <div v-if="line >= 1" class="boot-anim">
-                        <span class="text-catppuccin-blue">[BIOS]</span>
-                        <span class="text-catppuccin-text"> f1sh.v.recipes v3.0</span>
-                    </div>
-                    <div v-if="line >= 2" class="boot-anim">
-                        <span class="text-catppuccin-yellow">[INIT]</span>
-                        <span class="text-catppuccin-subtle"> loading kernel modules...</span>
-                    </div>
-                    <div v-if="line >= 3" class="boot-anim">
-                        <span class="text-catppuccin-green">[OK]</span>
-                        <span class="text-catppuccin-text">   catppuccin.theme</span>
-                    </div>
-                    <div v-if="line >= 4" class="boot-anim">
-                        <span class="text-catppuccin-green">[OK]</span>
-                        <span class="text-catppuccin-text">   vue@3.x</span>
-                    </div>
-                    <div v-if="line >= 5" class="boot-anim">
-                        <span class="text-catppuccin-green">[OK]</span>
-                        <span class="text-catppuccin-text">   motion-v initialized</span>
-                    </div>
-                    <div v-if="line >= 6" class="boot-anim">
-                        <span :class="preloaderState.projects ? 'text-catppuccin-green' : 'text-catppuccin-yellow'">
-                            {{ preloaderState.projects ? '[OK]' : '[..]' }}
-                        </span>
-                        <span class="text-catppuccin-text">   github.repos</span>
-                    </div>
-                    <div v-if="line >= 7" class="boot-anim">
-                        <span :class="preloaderState.songs ? 'text-catppuccin-green' : 'text-catppuccin-yellow'">
-                            {{ preloaderState.songs ? '[OK]' : '[..]' }}
-                        </span>
-                        <span class="text-catppuccin-text">   lastfm.tracks</span>
-                    </div>
-                    <div v-if="line >= 8" class="boot-anim">
-                        <span :class="preloaderState.contributions ? 'text-catppuccin-green' : 'text-catppuccin-yellow'">
-                            {{ preloaderState.contributions ? '[OK]' : '[..]' }}
-                        </span>
-                        <span class="text-catppuccin-text">   github.contributions</span>
-                    </div>
-                </div>
-
-                <!-- Progress bar + READY — pinned at bottom -->
-                <div class="shrink-0">
-                    <div class="h-1.5 rounded-full overflow-hidden bg-catppuccin-surface/50">
-                        <div
-                            class="h-full bg-catppuccin-mauve transition-[width] duration-500 ease-out"
-                            :style="{ width: (loadProgress * 100) + '%' }"
-                        ></div>
-                    </div>
-                    <div v-if="showReady" class="boot-anim text-sm mt-2">
-                        <span class="text-catppuccin-mauve">[READY]</span>
-                        <span class="text-catppuccin-text"> welcome, visitor.</span>
-                    </div>
-                </div>
-            </div>
+            <svg
+                class="enso-svg"
+                viewBox="0 0 100 100"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <circle
+                    class="enso-circle"
+                    :class="{ 'is-drawing': phase !== 'idle' }"
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-dasharray="239"
+                    stroke-dashoffset="239"
+                    :style="{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }"
+                />
+                <!-- Small gap imperfection — wabi-sabi -->
+                <circle
+                    class="enso-gap"
+                    :class="{ 'is-visible': phase === 'hold' || phase === 'fading' }"
+                    cx="50"
+                    cy="50"
+                    r="38"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-dasharray="4 240"
+                    stroke-dashoffset="-232"
+                    :style="{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }"
+                />
+            </svg>
         </div>
     </Teleport>
 </template>
 
 <style scoped>
-.boot-anim {
-    animation: boot-appear 0.15s ease-out forwards;
+.enso-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(var(--color-crust));
+    transition: opacity 0.7s ease;
 }
 
-@keyframes boot-appear {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
+.enso-screen.is-fading {
+    opacity: 0;
+}
+
+.enso-svg {
+    width: 64px;
+    height: 64px;
+    color: rgb(var(--color-overlay));
+}
+
+.enso-circle {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.enso-circle.is-drawing {
+    opacity: 1;
+    animation: enso-draw 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.enso-gap {
+    opacity: 0;
+    transition: opacity 0.6s ease;
+}
+
+.enso-gap.is-visible {
+    opacity: 0.7;
+}
+
+@keyframes enso-draw {
+    0% {
+        stroke-dashoffset: 239;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    100% {
+        stroke-dashoffset: 8;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .enso-circle.is-drawing {
+        animation: none;
+        stroke-dashoffset: 8;
+        opacity: 0.5;
+    }
+
+    .enso-gap.is-visible {
+        opacity: 0;
     }
 }
 </style>

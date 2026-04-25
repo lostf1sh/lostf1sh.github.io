@@ -23,7 +23,6 @@ import {
 import {
     staggerContainer,
     fadeUp,
-    fadeLeft,
 } from "@/utils/motion";
 
 import StatusSection from "@/components/StatusSection.vue";
@@ -60,14 +59,6 @@ if (contribCached?.value?.length) {
 const contributionsLoading = ref(!contributions.value.length);
 const contributionsRevalidating = ref(false);
 let ageRafId = null;
-let timeInterval = null;
-const isClockHovered = ref(false);
-const isAgeWarping = ref(false);
-const isAltPressed = ref(false);
-let ageWarpStartedAt = 0;
-
-const AGE_WARP_DURATION_MS = 2000;
-const AGE_WARP_MULTIPLIER = 10;
 
 // Now playing from Lanyard Spotify (real-time via WebSocket)
 const currentTrack = computed(() => {
@@ -117,18 +108,25 @@ const consolidatedTracks = computed(() => {
     return consolidated.slice(0, 10);
 });
 
-const pinnedExternal = ["theovilardo/PixelPlayer"];
-const pinnedFullNames = new Set(pinnedExternal);
+const externalToFetch = ["theovilardo/PixelPlayer"];
+const pinnedOrder = [
+    "theovilardo/PixelPlayer",
+    "lostf1sh/lostf1sh.github.io",
+    "lostf1sh/dusk",
+    "lostf1sh/pomo",
+    "lostf1sh/clp",
+    "lostf1sh/v-recipes",
+];
+const pinnedSet = new Set(pinnedOrder);
 
 const displayedRepos = computed(() => {
     if (!repos.value.length) return [];
 
-    const pinned = repos.value.filter((r) => pinnedFullNames.has(r.full_name));
-    const rest = repos.value
-        .filter((r) => !pinnedFullNames.has(r.full_name))
-        .sort((a, b) => b.stargazers_count - a.stargazers_count);
+    const pinned = pinnedOrder
+        .map(name => repos.value.find(r => r.full_name === name))
+        .filter(Boolean);
 
-    return [...pinned, ...rest].slice(0, 6);
+    return pinned;
 });
 
 const fetchProjects = async () => {
@@ -138,7 +136,7 @@ const fetchProjects = async () => {
     try {
         const [{ repos: ownRepos }, ...pinnedResults] = await Promise.all([
             getAllReposWithLanguages(),
-            ...pinnedExternal.map((r) =>
+            ...externalToFetch.map((r) =>
                 fetch(`https://api.github.com/repos/${r}`)
                     .then((res) => (res.ok ? res.json() : null))
                     .catch(() => null),
@@ -180,231 +178,165 @@ const fetchContributions = async () => {
 onMounted(() => {
     fetchProjects();
     fetchContributions();
-    updateTime();
-    window.addEventListener("keydown", handleWarpHotkey);
-    window.addEventListener("keyup", handleAltRelease);
     const tickAge = () => {
         updateAge();
         ageRafId = requestAnimationFrame(tickAge);
     };
     tickAge();
-    timeInterval = setInterval(updateTime, 1000);
 });
 
 onBeforeUnmount(() => {
     if (ageRafId) cancelAnimationFrame(ageRafId);
-    if (timeInterval) clearInterval(timeInterval);
-    window.removeEventListener("keydown", handleWarpHotkey);
-    window.removeEventListener("keyup", handleAltRelease);
 });
 
 const BIRTH_DATE = new Date("2008-06-06T00:00:00");
 
 const currentAge = ref(0);
-const currentTime = ref("");
 
 const updateAge = () => {
-    let nowMs = Date.now();
-
-    if (isAgeWarping.value) {
-        const elapsed = performance.now() - ageWarpStartedAt;
-        if (elapsed >= AGE_WARP_DURATION_MS) {
-            isAgeWarping.value = false;
-        } else {
-            nowMs += elapsed * (AGE_WARP_MULTIPLIER - 1);
-        }
-    }
-
-    const now = new Date(nowMs);
+    const now = new Date();
     const diffMs = now - BIRTH_DATE;
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
     currentAge.value = diffDays / 365.25;
 };
 
-const triggerAgeWarp = () => {
-    if (isAgeWarping.value) return;
-    isAgeWarping.value = true;
-    ageWarpStartedAt = performance.now();
-};
-
-const handleWarpHotkey = (event) => {
-    if (event.key !== "Alt") return;
-    isAltPressed.value = true;
-    if (isClockHovered.value) triggerAgeWarp();
-};
-
-const handleAltRelease = (event) => {
-    if (event.key === "Alt") isAltPressed.value = false;
-};
-
-const handleClockMouseEnter = (event) => {
-    isClockHovered.value = true;
-    if (event.altKey || isAltPressed.value) triggerAgeWarp();
-};
-
-const handleClockMouseLeave = () => {
-    isClockHovered.value = false;
-};
-
-const updateTime = () => {
-    const now = new Date();
-    currentTime.value = now.toLocaleTimeString("en-US", {
-        hour12: false,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-    });
-};
-
-// Variant definitions
-const heroContainer = staggerContainer(0.06);
+const heroContainer = staggerContainer(0.08);
 </script>
 
 <template>
-    <div class="w-full min-h-screen overflow-x-hidden font-mono">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-            <!-- Hero section -->
+    <div class="w-full min-h-screen">
+        <div class="max-w-3xl mx-auto px-6 sm:px-8 py-16 md:py-24">
+
+            <!-- Hero -->
             <motion.div
-                class="mb-12"
+                class="mb-16"
                 :variants="heroContainer"
                 initial="hidden"
                 animate="visible"
             >
-                <div class="mb-8">
-                    <motion.div
-                        :variants="fadeUp"
-                        class="text-catppuccin-subtle text-sm mb-2"
-                    >
-                        ~$ whoami
-                    </motion.div>
-                    <motion.h1
-                        :variants="fadeUp"
-                        class="text-3xl md:text-4xl font-bold text-catppuccin-text mb-2"
-                        style="text-wrap: balance"
-                    >
-                        <span class="text-catppuccin-mauve">f1sh.</span>
-                        <span class="text-catppuccin-subtle">v</span>
-                        <span class="text-catppuccin-blue">.recipes</span>
-                    </motion.h1>
-                    <motion.div
-                        :variants="fadeUp"
-                        class="text-sm text-catppuccin-gray mb-4 flex items-center gap-2"
-                    >
-                        <span class="text-catppuccin-subtle">aka </span
-                        ><span class="text-catppuccin-green">moli</span>
-                        <span class="text-catppuccin-surface">|</span>
-                        <span
-                            class="flex items-center gap-1"
-                            @mouseenter="handleClockMouseEnter"
-                            @mouseleave="handleClockMouseLeave"
-                        >
-                            <span class="text-catppuccin-peach" style="font-variant-numeric: tabular-nums">{{ currentTime }}</span>
-                            <span class="text-catppuccin-subtle text-xs" :class="{ 'text-catppuccin-mauve': isAgeWarping }">TRT</span>
-                            <span v-if="isAgeWarping" class="text-[10px] text-catppuccin-mauve">warp x10</span>
-                        </span>
-                    </motion.div>
-
-                    <motion.div
-                        :variants="fadeUp"
-                        class="flex items-center flex-wrap gap-4 text-sm"
-                    >
-                        <router-link
-                            to="/blog"
-                            class="text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors"
-                        >
-                            [blog]
-                        </router-link>
-                        <router-link
-                            to="/projects"
-                            class="text-catppuccin-subtle hover:text-catppuccin-blue transition-colors"
-                        >
-                            [projects]
-                        </router-link>
-                        <a
-                            href="https://github.com/lostf1sh"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
-                        >
-                            [github]
-                        </a>
-                        <a
-                            href="https://www.instagram.com/kawaiimoli"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="text-catppuccin-subtle hover:text-catppuccin-pink transition-colors"
-                        >
-                            [instagram]
-                        </a>
-<router-link
-                            to="/now"
-                            class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors"
-                        >
-                            [now]
-                        </router-link>
-                        <router-link
-                            to="/uses"
-                            class="text-catppuccin-subtle hover:text-catppuccin-yellow transition-colors"
-                        >
-                            [uses]
-                        </router-link>
-                    </motion.div>
-                </div>
-
-                <!-- About section -->
-                <motion.div
-                    :variants="fadeLeft"
-                    class="border-l-2 border-catppuccin-surface pl-4 mb-4"
+                <motion.h1
+                    :variants="fadeUp"
+                    class="font-serif text-4xl md:text-5xl font-semibold text-catppuccin-text tracking-tight"
                 >
-                    <div class="text-catppuccin-subtle text-sm mb-2">
-                        ~$ cat about.txt
-                    </div>
-                    <p class="text-catppuccin-text leading-relaxed mb-4">
-                        <span class="text-catppuccin-yellow" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> y/o
-                        junior dev. building stuff and learning along the way.
-                        code, table tennis, cooking. based in turkey.
-                    </p>
-                </motion.div>
-
-                <!-- Status section -->
-                <StatusSection
-                    :isLoading="isLoading"
-                    :isConnected="lanyardConnected"
-                    :isReconnecting="lanyardReconnecting"
-                    :presenceUnavailable="lanyardUnavailable"
-                    :usingCachedPresence="lanyardStalePresence"
-                    :discordUser="discordUser"
-                    :discordStatus="discordStatus"
-                    :discordStatusColor="discordStatusColor"
-                    :spotify="spotify"
-                    :editorActivity="editorActivity"
-                />
-
-                <!-- Tools section -->
-                <motion.div
-                    :variants="fadeLeft"
-                    class="border-l-2 border-catppuccin-surface pl-4 mb-4"
+                    moli
+                </motion.h1>
+                <motion.p
+                    :variants="fadeUp"
+                    class="text-catppuccin-subtle mt-2 text-sm"
                 >
-                    <div class="text-catppuccin-subtle text-sm mb-2">
-                        ~$ ls ~/tools
-                    </div>
-                    <div class="text-sm text-catppuccin-text">
-                        vue | nextjs | js/ts | rust | go | kotlin | ruby | angular
-                    </div>
-                </motion.div>
+                    junior developer · turkey
+                </motion.p>
 
+                <!-- Nav links -->
+                <motion.nav
+                    :variants="fadeUp"
+                    class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
+                >
+                    <router-link
+                        to="/blog"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                    >
+                        blog
+                    </router-link>
+                    <router-link
+                        to="/projects"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                    >
+                        projects
+                    </router-link>
+                    <router-link
+                        to="/now"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                    >
+                        now
+                    </router-link>
+                    <router-link
+                        to="/uses"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                    >
+                        uses
+                    </router-link>
+                    <span class="text-catppuccin-surface">·</span>
+                    <a
+                        href="https://github.com/lostf1sh"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                    >
+                        github
+                    </a>
+                    <a
+                        href="https://www.instagram.com/kawaiimoli"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                    >
+                        instagram
+                    </a>
+                </motion.nav>
             </motion.div>
 
+            <!-- About -->
+            <motion.div
+                class="mb-6"
+                :initial="{ opacity: 0, y: 10 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ type: 'spring', stiffness: 200, damping: 20, delay: 0.3 }"
+            >
+                <div class="section-label mb-2">about</div>
+                <p class="text-catppuccin-text leading-relaxed">
+                    <span class="text-catppuccin-mauve font-medium" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> years old.
+                    building things and learning along the way.
+                    code, table tennis, cooking.
+                </p>
+            </motion.div>
+
+            <!-- Divider -->
+            <div class="hr-zen mb-6"></div>
+
+            <!-- Status -->
+            <StatusSection
+                :isLoading="isLoading"
+                :isConnected="lanyardConnected"
+                :isReconnecting="lanyardReconnecting"
+                :presenceUnavailable="lanyardUnavailable"
+                :usingCachedPresence="lanyardStalePresence"
+                :discordUser="discordUser"
+                :discordStatus="discordStatus"
+                :discordStatusColor="discordStatusColor"
+                :spotify="spotify"
+                :editorActivity="editorActivity"
+            />
+
+            <!-- Tools -->
+            <motion.div
+                class="mb-6"
+                :initial="{ opacity: 0, y: 10 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ type: 'spring', stiffness: 200, damping: 20, delay: 0.5 }"
+            >
+                <div class="section-label mb-2">tools</div>
+                <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-catppuccin-subtle">
+                    <span>vue</span>
+                    <span>nextjs</span>
+                    <span>typescript</span>
+                    <span>rust</span>
+                    <span>go</span>
+                    <span>kotlin</span>
+                </div>
+            </motion.div>
+
+            <!-- Divider -->
+            <div class="hr-zen mb-6"></div>
+
             <!-- Projects & Tracks grid -->
-            <div class="grid lg:grid-cols-2 gap-6">
-                <!-- Projects column -->
+            <div class="grid lg:grid-cols-2 gap-8 lg:gap-10">
                 <ProjectsGrid
                     :repos="displayedRepos"
                     :loading="reposLoading"
                     :revalidating="reposRevalidating"
                 />
 
-                <!-- Tracks column -->
                 <RecentTracks
                     :currentTrack="currentTrack"
                     :tracks="consolidatedTracks"
@@ -422,6 +354,12 @@ const heroContainer = staggerContainer(0.06);
                 :revalidating="contributionsRevalidating"
             />
 
+            <!-- Footer -->
+            <div class="mt-16 pt-8 border-t border-catppuccin-surface/20">
+                <p class="text-xs text-catppuccin-subtle/50">
+                    © {{ new Date().getFullYear() }} moli
+                </p>
+            </div>
         </div>
     </div>
 </template>

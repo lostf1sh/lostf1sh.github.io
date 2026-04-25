@@ -1,25 +1,21 @@
 <script setup>
-import { ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { motion, AnimatePresence } from "motion-v";
+import { ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import ThemeToggle from "@/components/ThemeToggle.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import BootSequence from "@/components/BootSequence.vue";
-import {
-    pageEnter,
-    pageAnimate,
-    pageExit,
-    pageTransition,
-} from "@/utils/motion";
 
 const route = useRoute();
-const router = useRouter();
-const isInitialLoad = ref(true);
+const pageKey = ref(0);
+let initialized = false;
 
-router.isReady().then(() => {
-    setTimeout(() => {
-        isInitialLoad.value = false;
-    }, 100);
+// Bump key on route change to re-trigger CSS animation (skip first)
+watch(() => route.path, () => {
+    if (!initialized) {
+        initialized = true;
+        return;
+    }
+    pageKey.value++;
 });
 </script>
 
@@ -28,17 +24,12 @@ router.isReady().then(() => {
     <ThemeToggle />
     <CommandPalette />
     <router-view v-slot="{ Component, route }" id="main-content">
-        <AnimatePresence mode="wait">
-            <motion.div
-                :key="route.path"
-                :initial="isInitialLoad ? false : pageEnter"
-                :animate="pageAnimate"
-                :exit="pageExit"
-                :transition="pageTransition"
-            >
-                <component v-if="Component" :is="Component" />
-            </motion.div>
-        </AnimatePresence>
+        <div
+            :key="pageKey"
+            class="page-transition"
+        >
+            <component v-if="Component" :is="Component" />
+        </div>
     </router-view>
 </template>
 
@@ -48,41 +39,40 @@ body {
 }
 
 ::-webkit-scrollbar {
-    width: 16px;
+    width: 6px;
 }
 
 html {
-    scrollbar-width: auto;
-    scrollbar-color: rgb(var(--color-overlay)) rgb(var(--color-base));
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-overlay) / 0.3) transparent;
 }
 
 ::-webkit-scrollbar-track {
-    background-color: rgb(var(--color-base));
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--color-overlay));
-    border: 3px solid rgb(var(--color-base));
-    border-radius: 8px;
+    background: rgb(var(--color-overlay) / 0.3);
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(var(--color-overlay));
+    background: rgb(var(--color-overlay) / 0.5);
 }
 
-/* Desktop: Centered layout */
-@media (min-width: 1024px) {
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        min-height: 100vh;
-    }
+/* Page transition — no transforms, preserves sticky */
+.page-transition {
+    animation: page-fade-in 0.35s ease both;
+}
 
-    #app {
-        zoom: 0.9;
-        transform-origin: center center;
-        margin-top: 2vh;
+@keyframes page-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-transition {
+        animation: none;
     }
 }
 </style>

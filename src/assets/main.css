@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600&display=swap");
 @import "./base.css";
 
 * {
@@ -8,15 +8,13 @@
 html,
 body {
     min-height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto;
 }
 
 html {
     scroll-behavior: smooth;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.6s ease, color 0.6s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -28,43 +26,25 @@ html {
 
 body {
     background-color: rgb(var(--color-base));
-    background-image:
-        radial-gradient(
-            1200px circle at 10% 15%,
-            rgb(var(--color-mauve) / 0.08),
-            transparent 40%
-        ),
-        radial-gradient(
-            900px circle at 85% 10%,
-            rgb(var(--color-green) / 0.06),
-            transparent 45%
-        ),
-        radial-gradient(
-            1000px circle at 80% 80%,
-            rgb(var(--color-blue) / 0.05),
-            transparent 40%
-        ),
-        repeating-linear-gradient(
-            0deg,
-            rgb(var(--color-subtle) / 0.05) 0,
-            rgb(var(--color-subtle) / 0.05) 1px,
-            transparent 1px,
-            transparent 40px
-        ),
-        repeating-linear-gradient(
-            90deg,
-            rgb(var(--color-subtle) / 0.04) 0,
-            rgb(var(--color-subtle) / 0.04) 1px,
-            transparent 1px,
-            transparent 40px
-        );
-    background-attachment: fixed;
-    background-size: 100% 100%, 100% 100%, 100% 100%, 40px 40px, 40px 40px;
     min-height: 100vh;
-    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-    font-size: 14px;
-    line-height: 1.6;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: "Karla", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    letter-spacing: 0.01em;
+    transition: background-color 0.6s ease, color 0.6s ease;
+    position: relative;
+}
+
+/* Subtle grain overlay — wabi-sabi texture */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9990;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -73,14 +53,14 @@ body {
     }
 }
 
-/* Smooth theme transition — butter edition */
+/* Smooth theme transition */
 html.theme-transitioning,
 html.theme-transitioning *,
 html.theme-transitioning *::before,
 html.theme-transitioning *::after {
-    transition: background-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.45s cubic-bezier(0.4, 0, 0.2, 1),
-                color 0.45s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -92,16 +72,14 @@ html.theme-transitioning *::after {
     }
 }
 
-
-
 ::selection {
-    background: rgb(var(--color-mauve));
-    color: rgb(var(--color-base));
+    background: rgb(var(--color-mauve) / 0.25);
+    color: rgb(var(--color-text));
 }
 
 /* Thin scrollbar for contribution graph */
 .scrollbar-thin::-webkit-scrollbar {
-    height: 4px;
+    height: 3px;
 }
 
 .scrollbar-thin::-webkit-scrollbar-track {
@@ -109,12 +87,12 @@ html.theme-transitioning *::after {
 }
 
 .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgb(var(--color-surface));
+    background: rgb(var(--color-overlay) / 0.4);
     border-radius: 2px;
 }
 
 a {
-    transition: color 0.15s ease;
+    transition: color 0.2s ease, opacity 0.2s ease;
     text-decoration: none;
 }
 
@@ -123,11 +101,11 @@ a:hover {
 }
 
 *:focus-visible {
-    outline: 1px solid rgb(var(--color-mauve));
+    outline: 1px solid rgb(var(--color-mauve) / 0.5);
     outline-offset: 2px;
 }
 
-/* Terminal cursor blink animation */
+/* Cursor blink — kept for contribution graph loading state */
 @keyframes cursor-blink {
     0%, 50% {
         opacity: 1;
@@ -142,8 +120,10 @@ a:hover {
 }
 
 .cursor-blink::after {
-    content: "_";
-    color: rgb(var(--color-mauve));
+    content: "○";
+    color: rgb(var(--color-overlay));
+    font-size: 0.6em;
+    margin-left: 2px;
     animation: cursor-blink 1.2s infinite;
 }
 
@@ -152,4 +132,28 @@ a:hover {
     .cursor-blink::after {
         animation: none;
     }
+}
+
+/* ── Shared utilities ────────────────────────────────── */
+
+/* Section label — small, uppercase, muted */
+.section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgb(var(--color-subtle) / 0.6);
+    font-family: "Karla", sans-serif;
+}
+
+/* Zen divider — thin, subtle, centered */
+.hr-zen {
+    border: none;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgb(var(--color-surface) / 0.5) 20%,
+        rgb(var(--color-surface) / 0.5) 80%,
+        transparent
+    );
 }

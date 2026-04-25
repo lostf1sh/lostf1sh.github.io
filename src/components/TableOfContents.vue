@@ -6,6 +6,7 @@ const props = defineProps({
 });
 
 const activeId = ref("");
+const listRef = ref(null);
 let observer = null;
 
 const setupObserver = () => {
@@ -46,6 +47,17 @@ const scrollTo = (id) => {
     }
 };
 
+// Auto-scroll TOC list so active item stays visible
+watch(activeId, () => {
+    nextTick(() => {
+        if (!listRef.value) return;
+        const activeBtn = listRef.value.querySelector(`[data-heading-id="${activeId.value}"]`);
+        if (activeBtn) {
+            activeBtn.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+    });
+});
+
 watch(() => props.headings, () => {
     nextTick(setupObserver);
 }, { deep: true });
@@ -62,13 +74,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <nav v-if="headings.length" class="max-h-[calc(100vh-8rem)] overflow-y-auto">
-        <ul class="space-y-1 text-xs">
+    <nav v-if="headings.length">
+        <div class="section-label text-[10px] mb-2">contents</div>
+        <ul ref="listRef" class="space-y-1 text-xs">
             <li
                 v-for="heading in headings"
                 :key="heading.id"
             >
                 <button
+                    :data-heading-id="heading.id"
                     @click="scrollTo(heading.id)"
                     class="text-left w-full truncate transition-colors cursor-pointer py-0.5"
                     :class="[

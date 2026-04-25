@@ -21,13 +21,13 @@ const pages = [
 const quickCommands = [
     {
         type: "command",
-        label: "open rss feed",
+        label: "rss feed",
         description: "open /rss.xml",
         href: "/rss.xml",
     },
     {
         type: "command",
-        label: "open sitemap",
+        label: "sitemap",
         description: "open /sitemap.xml",
         href: "/sitemap.xml",
     },
@@ -35,7 +35,7 @@ const quickCommands = [
 
 const themeAction = computed(() => ({
     type: "theme",
-    label: theme.value === "dark" ? "switch to light mode" : "switch to dark mode",
+    label: theme.value === "dark" ? "light mode" : "dark mode",
     description: "toggle theme",
 }));
 
@@ -52,8 +52,8 @@ const blogPosts = computed(() => {
 const blogTags = computed(() => {
     return getAllTags().map((tag) => ({
         type: "tag",
-        label: `tag: ${tag}`,
-        description: "filter blog posts by tag",
+        label: `#${tag}`,
+        description: "filter by tag",
         tag,
     }));
 });
@@ -195,28 +195,27 @@ onBeforeUnmount(() => {
     <Teleport to="body">
         <div
             v-if="isOpen"
-            class="fixed inset-0 z-[9997] flex items-start justify-center pt-[20vh] font-mono"
+            class="fixed inset-0 z-[9997] flex items-start justify-center pt-[20vh]"
             @click.self="close"
         >
-            <div class="fixed inset-0 bg-catppuccin-crust/80 backdrop-blur-sm palette-backdrop" @click="close"></div>
+            <div class="fixed inset-0 bg-catppuccin-crust/70 backdrop-blur-sm palette-backdrop" @click="close"></div>
 
-            <div role="dialog" aria-modal="true" aria-label="Command palette" class="relative z-10 w-full max-w-lg mx-4 rounded-md border border-catppuccin-surface bg-catppuccin-base shadow-2xl overflow-hidden palette-modal overscroll-contain">
-                <div class="flex items-center gap-2 px-4 py-3 border-b border-catppuccin-surface">
-                    <span class="text-catppuccin-subtle text-sm">~$</span>
+            <div role="dialog" aria-modal="true" aria-label="Command palette" class="relative z-10 w-full max-w-md mx-4 border border-catppuccin-surface/40 bg-catppuccin-base shadow-2xl overflow-hidden palette-modal overscroll-contain">
+                <div class="flex items-center gap-3 px-4 py-3 border-b border-catppuccin-surface/30">
                     <input
                         ref="inputRef"
                         v-model="query"
                         type="text"
-                        placeholder="type a command or #tag…"
+                        placeholder="search…"
                         aria-label="Command search"
-                        class="flex-1 bg-transparent text-catppuccin-text text-sm placeholder:text-catppuccin-overlay focus:outline-none"
+                        class="flex-1 bg-transparent text-catppuccin-text text-sm placeholder:text-catppuccin-subtle/50 focus:outline-none font-sans"
                     />
-                    <kbd class="text-xs text-catppuccin-subtle px-1.5 py-0.5 rounded border border-catppuccin-surface">esc</kbd>
+                    <kbd class="text-[10px] text-catppuccin-subtle/50 px-1.5 py-0.5 border border-catppuccin-surface/30">esc</kbd>
                 </div>
 
-                <div class="max-h-[300px] overflow-y-auto py-2">
+                <div class="max-h-[300px] overflow-y-auto py-1">
                     <div v-if="!filteredActions.length" class="px-4 py-3 text-sm text-catppuccin-subtle">
-                        no results found
+                        nothing found
                     </div>
 
                     <button
@@ -226,17 +225,17 @@ onBeforeUnmount(() => {
                         @mouseenter="selectedIndex = i"
                         class="w-full text-left px-4 py-2 text-sm flex items-center gap-3 transition-colors cursor-pointer"
                         :class="i === selectedIndex
-                            ? 'bg-catppuccin-surface/40 border-l-2 border-catppuccin-mauve pl-3.5'
-                            : 'border-l-2 border-transparent'"
+                            ? 'bg-catppuccin-surface/30'
+                            : ''"
                     >
                         <span
-                            class="text-xs flex-shrink-0 w-12"
+                            class="text-[10px] uppercase tracking-wider flex-shrink-0 w-10 text-right"
                             :class="{
-                                'text-catppuccin-blue': action.type === 'page',
-                                'text-catppuccin-yellow': action.type === 'theme',
-                                'text-catppuccin-green': action.type === 'blog',
-                                'text-catppuccin-mauve': action.type === 'tag',
-                                'text-catppuccin-peach': action.type === 'command',
+                                'text-catppuccin-subtle/60': action.type === 'page',
+                                'text-catppuccin-subtle/60': action.type === 'theme',
+                                'text-catppuccin-mauve/70': action.type === 'blog',
+                                'text-catppuccin-subtle/60': action.type === 'tag',
+                                'text-catppuccin-subtle/60': action.type === 'command',
                             }"
                         >
                             {{ action.type === 'page' ? 'page' : action.type === 'theme' ? 'theme' : action.type === 'tag' ? 'tag' : action.type === 'command' ? 'cmd' : 'post' }}
@@ -247,11 +246,10 @@ onBeforeUnmount(() => {
                     </button>
                 </div>
 
-                <div class="px-4 py-2 border-t border-catppuccin-surface flex items-center gap-4 text-xs text-catppuccin-subtle">
+                <div class="px-4 py-2 border-t border-catppuccin-surface/20 flex items-center gap-4 text-[10px] text-catppuccin-subtle/50">
                     <span>↑↓ navigate</span>
                     <span>↵ select</span>
                     <span>esc close</span>
-                    <span>#tag filter posts</span>
                 </div>
             </div>
         </div>
@@ -260,11 +258,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .palette-backdrop {
-    animation: backdrop-in 0.15s ease-out;
+    animation: backdrop-in 0.2s ease-out;
 }
 
 .palette-modal {
-    animation: modal-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: modal-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes backdrop-in {
@@ -275,11 +273,11 @@ onBeforeUnmount(() => {
 @keyframes modal-in {
     from {
         opacity: 0;
-        transform: translateY(-8px) scale(0.96);
+        transform: translateY(-4px);
     }
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
 }
 

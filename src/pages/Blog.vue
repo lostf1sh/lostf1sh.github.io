@@ -177,7 +177,6 @@ const readingTime = (content) => {
     return calculateReadingTime(text);
 };
 
-// Stepped progress blocks (12 segments)
 const progressBlocks = computed(() => {
     const total = 12;
     return Array.from({ length: total }, (_, i) => ({
@@ -185,15 +184,8 @@ const progressBlocks = computed(() => {
     }));
 });
 
-// Rotating accent per post index
-const accentVars = ['--color-pink', '--color-mauve', '--color-green', '--color-blue'];
-const getAccentColor = (idx) => `rgb(var(${accentVars[idx % accentVars.length]}))`;
-const getAccentMuted = (idx) => `rgb(var(${accentVars[idx % accentVars.length]}) / 0.1)`;
-
 onMounted(() => {
     loadPosts();
-    document.documentElement.style.overflowY = "auto";
-    document.body.style.overflowY = "auto";
     const slugFromParam = typeof route.params.slug === "string" ? route.params.slug : "";
     const slugFromQuery = typeof route.query.post === "string" ? route.query.post : "";
     if (slugFromParam) openPost(slugFromParam);
@@ -202,8 +194,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-    document.documentElement.style.overflowY = "";
-    document.body.style.overflowY = "";
     window.removeEventListener("scroll", updateReadingProgress);
     if (rafId) cancelAnimationFrame(rafId);
     removeJsonLd("article");
@@ -230,40 +220,28 @@ watch(
 );
 
 const listHeaderContainer = staggerContainer(0.07);
-const listItemsContainer = staggerContainer(0.07);
-const postDetailContainer = staggerContainer(0.06);
+const listItemsContainer = staggerContainer(0.06);
 
-// ClipPath wipe reveal — left to right
-const cardWipeIn = {
-    hidden: { clipPath: "inset(0 100% 0 0)", opacity: 1 },
-    visible: {
-        clipPath: "inset(0 0% 0 0)",
-        opacity: 1,
-        transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
-    },
-};
-
-// Slide transitions for list ↔ post
-const viewEnter = { opacity: 0, x: 24 };
-const viewAnimate = { opacity: 1, x: 0 };
-const viewExitToLeft = { opacity: 0, x: -24 };
+const viewEnter = { opacity: 0, y: 12 };
+const viewAnimate = { opacity: 1, y: 0 };
+const viewExit = { opacity: 0, y: -8 };
 </script>
 
 <template>
-    <!-- Stepped reading progress (fills left to right, block by block) -->
+    <!-- Reading progress bar -->
     <Teleport to="body">
-        <div v-if="view === 'post' && currentPost" class="fixed top-0 left-0 w-full z-[9998] flex gap-px h-[4px]">
+        <div v-if="view === 'post' && currentPost" class="fixed top-0 left-0 w-full z-[9998] flex gap-px h-[2px]">
             <div
                 v-for="(block, i) in progressBlocks"
                 :key="i"
                 class="flex-1 transition-colors duration-200"
-                :style="{ backgroundColor: block.filled ? 'rgb(var(--color-green))' : 'rgb(var(--color-surface))' }"
+                :style="{ backgroundColor: block.filled ? 'rgb(var(--color-mauve))' : 'transparent' }"
             ></div>
         </div>
     </Teleport>
 
     <div class="w-full min-h-screen">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div class="max-w-3xl mx-auto px-6 sm:px-8 py-16 md:py-24">
             <AnimatePresence mode="wait">
 
                 <!-- ── Post list ─────────────────────────────────────────── -->
@@ -272,57 +250,48 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                     key="list"
                     :initial="viewEnter"
                     :animate="viewAnimate"
-                    :exit="viewExitToLeft"
-                    :transition="springs.default"
+                    :exit="viewExit"
+                    :transition="springs.gentle"
                 >
-                    <!-- Header block -->
                     <motion.div
-                        class="mb-10"
+                        class="mb-12"
                         :variants="listHeaderContainer"
                         initial="hidden"
                         animate="visible"
                     >
-                        <motion.div :variants="fadeUp" class="text-[0.6rem] tracking-[0.22em] uppercase text-catppuccin-subtle mb-2">
-                            ~$ cat ~/blog/index.txt
-                        </motion.div>
-
-                        <motion.div :variants="fadeUp" class="flex items-baseline gap-3 mb-1">
-                            <span class="text-2xl font-bold text-catppuccin-mauve">
-                                issue {{ String(posts.length).padStart(3, '0') }}
-                            </span>
-                            <span class="text-catppuccin-subtle text-xs">{{ new Date().getFullYear() }}</span>
-                        </motion.div>
-
-                        <motion.p :variants="fadeUp" class="text-sm text-catppuccin-subtle mb-5">
-                            thoughts on code, tools, and systems.
-                        </motion.p>
-
-                        <motion.div :variants="fadeUp">
+                        <motion.div :variants="fadeUp" class="mb-2">
                             <router-link
                                 to="/"
                                 class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors"
                             >
-                                [← home]
+                                ← home
                             </router-link>
                         </motion.div>
+
+                        <motion.h1
+                            :variants="fadeUp"
+                            class="font-serif text-3xl md:text-4xl font-semibold text-catppuccin-text tracking-tight mb-2"
+                        >
+                            writing
+                        </motion.h1>
+
+                        <motion.p :variants="fadeUp" class="text-sm text-catppuccin-subtle">
+                            {{ posts.length }} posts · thoughts on code, tools, and systems
+                        </motion.p>
                     </motion.div>
 
-                    <!-- Rule -->
-                    <div class="border-t border-catppuccin-surface mb-2"></div>
-
-                    <div class="flex items-center justify-between gap-3 border-b border-catppuccin-surface/60 py-3 mb-2 text-xs">
-                        <span class="text-catppuccin-subtle">follow updates without email</span>
+                    <div class="flex items-center justify-between gap-3 border-b border-catppuccin-surface/20 pb-3 mb-2 text-xs">
+                        <span class="text-catppuccin-subtle/60">follow without email</span>
                         <div class="flex items-center gap-3">
-                            <a href="/rss.xml" class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors" target="_blank" rel="noopener noreferrer">[rss]</a>
-                            <a href="https://github.com/lostf1sh" class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors" target="_blank" rel="noopener noreferrer">[github]</a>
+                            <a href="/rss.xml" class="text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors" target="_blank" rel="noopener noreferrer">rss</a>
+                            <a href="https://github.com/lostf1sh" class="text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors" target="_blank" rel="noopener noreferrer">github</a>
                         </div>
                     </div>
 
                     <div v-if="!posts.length" class="text-sm text-catppuccin-subtle py-8">
-                        no posts found
+                        no posts yet
                     </div>
 
-                    <!-- Post entries -->
                     <motion.div
                         v-else
                         :variants="listItemsContainer"
@@ -332,117 +301,88 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                         <motion.div
                             v-for="(post, idx) in posts"
                             :key="post.id"
-                            :variants="cardWipeIn"
-                            class="group relative"
+                            :variants="fadeUp"
+                            class="group"
                         >
                             <button
                                 type="button"
                                 @click="openPost(post.slug)"
-                                class="post-row w-full text-left flex items-start gap-5 py-5 border-b border-catppuccin-surface/60 cursor-pointer relative"
+                                class="w-full text-left py-5 border-b border-catppuccin-surface/20 cursor-pointer block"
                             >
-                                <div class="post-row-inner flex items-start gap-5 w-full">
-                                    <!-- Big ghost number -->
-                                    <span
-                                        class="flex-shrink-0 w-12 text-right text-[3.5rem] leading-none font-bold select-none transition-colors duration-300"
-                                        :style="{ color: getAccentMuted(idx) }"
-                                        aria-hidden="true"
-                                    >
-                                        {{ String(posts.length - idx).padStart(2, '0') }}
-                                    </span>
-
-                                    <!-- Post content -->
-                                    <div class="flex-1 min-w-0 pt-1">
-                                        <div
-                                            class="text-[0.6rem] tracking-[0.18em] uppercase mb-1.5 font-mono"
-                                            :style="{ color: getAccentColor(idx) }"
-                                        >
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-xs text-catppuccin-subtle mb-1.5">
                                             {{ formatDate(post.date) }}
                                         </div>
-
-                                        <div class="text-sm font-semibold text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors duration-150 leading-snug mb-2">
+                                        <div class="text-sm font-medium text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors duration-150 leading-snug mb-1.5">
                                             {{ post.title }}
                                         </div>
-
-                                        <div v-if="post.tags.length" class="text-xs text-catppuccin-subtle">
+                                        <div v-if="post.tags.length" class="text-xs text-catppuccin-subtle/70">
                                             <span v-for="(tag, ti) in post.tags" :key="tag">
                                                 <span>{{ tag }}</span>
-                                                <span v-if="ti < post.tags.length - 1" class="mx-1.5 text-catppuccin-overlay">／</span>
+                                                <span v-if="ti < post.tags.length - 1" class="mx-1.5 text-catppuccin-surface">/</span>
                                             </span>
                                         </div>
                                     </div>
-
-                                    <!-- Read indicator -->
-                                    <span
-                                        class="pt-2 flex-shrink-0 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                                        :style="{ color: getAccentColor(idx) }"
-                                    >
-                                        read →
+                                    <span class="text-xs text-catppuccin-subtle/40 group-hover:text-catppuccin-mauve transition-colors flex-shrink-0 pt-1 opacity-0 group-hover:opacity-100">
+                                        →
                                     </span>
                                 </div>
-
-                                <!-- Left border grows on hover -->
-                                <div
-                                    class="absolute left-0 top-0 bottom-0 w-[3px] origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-200 will-change-transform"
-                                    :style="{ backgroundColor: getAccentColor(idx) }"
-                                ></div>
                             </button>
                         </motion.div>
                     </motion.div>
                 </motion.div>
 
-                <!-- ── Post detail ────────────────────────────────────────── -->
-                <motion.div
+                <!-- ── Post detail (plain div, no motion-v, sticky works) ── -->
+                <div
                     v-else-if="view === 'post' && currentPost"
                     key="post"
-                    :initial="viewEnter"
-                    :animate="viewAnimate"
-                    :exit="viewExitToLeft"
-                    :transition="springs.default"
+                    class="post-detail-enter"
                 >
                     <button
                         @click="goBack"
                         class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors mb-10 cursor-pointer block"
                     >
-                        [← back to index]
+                        ← back to index
                     </button>
 
-                    <div class="flex flex-col md:flex-row gap-8 md:gap-10">
+                    <div class="flex flex-col md:flex-row gap-8 md:gap-12">
                         <!-- Metadata rail -->
-                        <aside class="md:w-36 flex-shrink-0 md:sticky md:top-8 md:self-start">
+                        <aside class="md:w-32 flex-shrink-0 md:sticky md:top-8 md:self-start md:max-h-[calc(100vh-4rem)] md:overflow-y-auto">
                             <div class="flex flex-row md:flex-col gap-5 flex-wrap text-xs">
                                 <div>
-                                    <div class="text-[0.55rem] tracking-[0.2em] uppercase text-catppuccin-subtle mb-0.5">issue</div>
-                                    <div class="text-catppuccin-mauve font-bold">#{{ currentPostNumber }}</div>
+                                    <div class="section-label text-[10px] mb-0.5">issue</div>
+                                    <div class="text-catppuccin-mauve font-medium">#{{ currentPostNumber }}</div>
                                 </div>
                                 <div>
-                                    <div class="text-[0.55rem] tracking-[0.2em] uppercase text-catppuccin-subtle mb-0.5">date</div>
+                                    <div class="section-label text-[10px] mb-0.5">date</div>
                                     <div class="text-catppuccin-text">{{ formatDate(currentPost.date) }}</div>
                                 </div>
                                 <div>
-                                    <div class="text-[0.55rem] tracking-[0.2em] uppercase text-catppuccin-subtle mb-0.5">length</div>
+                                    <div class="section-label text-[10px] mb-0.5">length</div>
                                     <div class="text-catppuccin-text">~{{ readingTime(currentPost.content) }} min</div>
                                 </div>
                                 <div v-if="currentPost.tags.length">
-                                    <div class="text-[0.55rem] tracking-[0.2em] uppercase text-catppuccin-subtle mb-1">tags</div>
+                                    <div class="section-label text-[10px] mb-1">tags</div>
                                     <div class="flex flex-row flex-wrap gap-x-2 gap-y-1 md:flex-col md:gap-1">
                                         <span
                                             v-for="tag in currentPost.tags"
                                             :key="tag"
-                                            class="text-catppuccin-mauve"
+                                            class="text-catppuccin-subtle"
                                         >{{ tag }}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Table of Contents -->
-                            <div v-if="headings.length" class="hidden md:block mt-6 pt-4 border-t border-catppuccin-surface/40">
+                            <div v-if="headings.length" class="hidden md:block mt-6 pt-4 border-t border-catppuccin-surface/20">
                                 <TableOfContents :headings="headings" />
                             </div>
                         </aside>
 
                         <!-- Article -->
                         <div class="flex-1 min-w-0">
-                            <h1 class="text-2xl md:text-3xl font-bold text-catppuccin-text mb-8 leading-snug" style="text-wrap: balance">
+                            <h1 class="font-serif text-2xl md:text-3xl font-semibold text-catppuccin-text mb-8 leading-snug tracking-tight" style="text-wrap: balance">
                                 {{ currentPost.title }}
                             </h1>
 
@@ -453,14 +393,14 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                             ></article>
 
                             <!-- Adjacent posts -->
-                            <div class="mt-12 pt-6 border-t border-catppuccin-surface">
+                            <div class="mt-12 pt-6 border-t border-catppuccin-surface/20">
                                 <div class="flex items-start justify-between gap-4">
                                     <button
                                         v-if="adjacentPosts.prev"
                                         @click="openPost(adjacentPosts.prev.slug)"
                                         class="group text-left min-w-0 flex-1 cursor-pointer"
                                     >
-                                        <div class="text-[0.55rem] tracking-[0.18em] uppercase text-catppuccin-subtle mb-1">← older</div>
+                                        <div class="text-[10px] text-catppuccin-subtle mb-1 uppercase tracking-wider">← older</div>
                                         <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
                                             {{ adjacentPosts.prev.title }}
                                         </div>
@@ -472,7 +412,7 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                                         @click="openPost(adjacentPosts.next.slug)"
                                         class="group text-right min-w-0 flex-1 cursor-pointer"
                                     >
-                                        <div class="text-[0.55rem] tracking-[0.18em] uppercase text-catppuccin-subtle mb-1">newer →</div>
+                                        <div class="text-[10px] text-catppuccin-subtle mb-1 uppercase tracking-wider">newer →</div>
                                         <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
                                             {{ adjacentPosts.next.title }}
                                         </div>
@@ -481,30 +421,30 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                                 </div>
                             </div>
 
-                            <div v-if="relatedPosts.length" class="mt-10 pt-6 border-t border-catppuccin-surface">
-                                <div class="text-[0.55rem] tracking-[0.2em] uppercase text-catppuccin-subtle mb-3">you may also like</div>
+                            <div v-if="relatedPosts.length" class="mt-10 pt-6 border-t border-catppuccin-surface/20">
+                                <div class="section-label text-[10px] mb-3">you may also like</div>
                                 <div class="space-y-2">
                                     <button
                                         v-for="post in relatedPosts"
                                         :key="post.slug"
                                         @click="openPost(post.slug)"
-                                        class="group w-full text-left border border-catppuccin-surface/70 hover:border-catppuccin-mauve/50 px-3 py-2 transition-colors cursor-pointer"
+                                        class="group w-full text-left border border-catppuccin-surface/30 hover:border-catppuccin-mauve/30 px-4 py-3 transition-colors cursor-pointer"
                                     >
                                         <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
                                             {{ post.title }}
                                         </div>
-                                        <div class="mt-1 text-[0.65rem] text-catppuccin-subtle">
+                                        <div class="mt-1 text-[10px] text-catppuccin-subtle">
                                             {{ formatDate(post.date) }}
                                         </div>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="mt-8 pt-5 border-t border-catppuccin-surface/70 flex items-center justify-between gap-3 text-xs">
-                                <span class="text-catppuccin-subtle">want more posts?</span>
+                            <div class="mt-8 pt-5 border-t border-catppuccin-surface/20 flex items-center justify-between gap-3 text-xs">
+                                <span class="text-catppuccin-subtle/60">follow along</span>
                                 <div class="flex items-center gap-3">
-                                    <a href="/rss.xml" class="text-catppuccin-subtle hover:text-catppuccin-green transition-colors" target="_blank" rel="noopener noreferrer">[rss]</a>
-                                    <a href="https://github.com/lostf1sh" class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors" target="_blank" rel="noopener noreferrer">[github]</a>
+                                    <a href="/rss.xml" class="text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors" target="_blank" rel="noopener noreferrer">rss</a>
+                                    <a href="https://github.com/lostf1sh" class="text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors" target="_blank" rel="noopener noreferrer">github</a>
                                 </div>
                             </div>
 
@@ -512,11 +452,11 @@ const viewExitToLeft = { opacity: 0, x: -24 };
                                 @click="goBack"
                                 class="mt-6 text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors cursor-pointer block"
                             >
-                                [← back to index]
+                                ← back to index
                             </button>
                         </div>
                     </div>
-                </motion.div>
+                </div>
 
             </AnimatePresence>
         </div>
@@ -524,18 +464,20 @@ const viewExitToLeft = { opacity: 0, x: -24 };
 </template>
 
 <style scoped>
-/* Card row: shift left on hover */
-.post-row {
-    contain: paint;
+/* ── Post detail entrance (CSS only, no motion-v transforms) ── */
+.post-detail-enter {
+    animation: post-detail-in 0.35s ease both;
 }
 
-.post-row-inner {
-    transition: transform 0.15s ease;
-    will-change: transform;
+@keyframes post-detail-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-.post-row:hover .post-row-inner {
-    transform: translateX(-3px);
+@media (prefers-reduced-motion: reduce) {
+    .post-detail-enter {
+        animation: none;
+    }
 }
 
 /* ─── Article prose ─────────────────────────────────────── */
@@ -549,24 +491,16 @@ const viewExitToLeft = { opacity: 0, x: -24 };
     margin: 1.2rem 0;
 }
 
-/* Drop cap on opening paragraph */
-.prose-blog :deep(p:first-of-type::first-letter) {
-    font-size: 3.75rem;
-    font-weight: 700;
-    line-height: 0.82;
-    float: left;
-    margin-right: 0.08em;
-    margin-top: 0.06em;
-    color: rgb(var(--color-mauve));
-}
-
 .prose-blog :deep(a) {
-    color: rgb(var(--color-pink));
+    color: rgb(var(--color-mauve));
     word-break: break-word;
     transition: color 0.15s ease;
+    text-decoration: underline;
+    text-decoration-color: rgb(var(--color-mauve) / 0.3);
+    text-underline-offset: 3px;
 }
 .prose-blog :deep(a:hover) {
-    color: rgb(var(--color-mauve));
+    text-decoration-color: rgb(var(--color-mauve));
 }
 
 .prose-blog :deep(ul),
@@ -578,14 +512,12 @@ const viewExitToLeft = { opacity: 0, x: -24 };
     margin: 0.35rem 0;
 }
 
-/* Code blocks: square corners, mauve left border */
 .prose-blog :deep(pre) {
     font-family: "JetBrains Mono", monospace;
     font-size: 0.8125rem;
     line-height: 1.6;
-    border-radius: 0;
+    border-radius: 2px;
     border: 1px solid rgb(var(--color-surface));
-    border-left: 3px solid rgb(var(--color-mauve) / 0.6);
     margin: 1.5rem 0;
 }
 .prose-blog :deep(code:not(pre code)) {
@@ -596,32 +528,30 @@ const viewExitToLeft = { opacity: 0, x: -24 };
     border-radius: 2px;
 }
 
-/* H2: green underline accent */
 .prose-blog :deep(h2) {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 1.05rem;
-    font-weight: 700;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 600;
     color: rgb(var(--color-text));
     margin: 2.5rem 0 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgb(var(--color-green) / 0.35);
+    border-bottom: 1px solid rgb(var(--color-surface) / 0.5);
     scroll-margin-top: 1.5rem;
 }
 
-/* H3: uppercase, subtle */
 .prose-blog :deep(h3) {
-    font-family: "JetBrains Mono", monospace;
+    font-family: "Karla", sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     color: rgb(var(--color-subtle));
     margin: 2rem 0 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.1em;
     scroll-margin-top: 1.5rem;
 }
 
 .prose-blog :deep(blockquote) {
-    border-left: 3px solid rgb(var(--color-pink) / 0.55);
+    border-left: 2px solid rgb(var(--color-mauve) / 0.4);
     padding-left: 1rem;
     color: rgb(var(--color-subtle));
     margin: 1.5rem 0;
@@ -630,7 +560,7 @@ const viewExitToLeft = { opacity: 0, x: -24 };
 
 .prose-blog :deep(hr) {
     border: none;
-    border-top: 1px solid rgb(var(--color-surface));
+    border-top: 1px solid rgb(var(--color-surface) / 0.5);
     margin: 2rem 0;
 }
 

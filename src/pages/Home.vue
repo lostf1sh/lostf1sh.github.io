@@ -29,6 +29,7 @@ import StatusSection from "@/components/StatusSection.vue";
 import ProjectsGrid from "@/components/ProjectsGrid.vue";
 import RecentTracks from "@/components/RecentTracks.vue";
 import ContributionGraph from "@/components/ContributionGraph.vue";
+import SiteFooter from "@/components/SiteFooter.vue";
 
 const discordStatusColor = computed(() => lanyardData.discordStatusColor);
 const spotify = computed(() => lanyardData.spotify);
@@ -183,10 +184,13 @@ onMounted(() => {
         ageRafId = requestAnimationFrame(tickAge);
     };
     tickAge();
+    window.addEventListener("scroll", onHeroScroll, { passive: true });
 });
 
 onBeforeUnmount(() => {
     if (ageRafId) cancelAnimationFrame(ageRafId);
+    window.removeEventListener("scroll", onHeroScroll);
+    if (heroRaf) cancelAnimationFrame(heroRaf);
 });
 
 const BIRTH_DATE = new Date("2008-06-06T00:00:00");
@@ -201,6 +205,24 @@ const updateAge = () => {
 };
 
 const heroContainer = staggerContainer(0.08);
+
+// Scroll-driven hero fade
+const heroOpacity = ref(1);
+const heroOffset = ref(0);
+let heroRaf = null;
+
+const onHeroScroll = () => {
+    if (heroRaf) return;
+    heroRaf = requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        const threshold = 300;
+        const progress = Math.min(scrollY / threshold, 1);
+        heroOpacity.value = 1 - progress * 0.6;
+        heroOffset.value = -progress * 16;
+        heroRaf = null;
+    });
+};
+
 </script>
 
 <template>
@@ -213,6 +235,7 @@ const heroContainer = staggerContainer(0.08);
                 :variants="heroContainer"
                 initial="hidden"
                 animate="visible"
+                :style="{ opacity: heroOpacity }"
             >
                 <motion.h1
                     :variants="fadeUp"
@@ -234,25 +257,25 @@ const heroContainer = staggerContainer(0.08);
                 >
                     <router-link
                         to="/blog"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
                     >
                         blog
                     </router-link>
                     <router-link
                         to="/projects"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
                     >
                         projects
                     </router-link>
                     <router-link
                         to="/now"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
                     >
                         now
                     </router-link>
                     <router-link
                         to="/uses"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
                     >
                         uses
                     </router-link>
@@ -261,7 +284,7 @@ const heroContainer = staggerContainer(0.08);
                         href="https://github.com/lostf1sh"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
                     >
                         github
                     </a>
@@ -269,7 +292,7 @@ const heroContainer = staggerContainer(0.08);
                         href="https://www.instagram.com/kawaiimoli"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
                     >
                         instagram
                     </a>
@@ -354,12 +377,7 @@ const heroContainer = staggerContainer(0.08);
                 :revalidating="contributionsRevalidating"
             />
 
-            <!-- Footer -->
-            <div class="mt-16 pt-8 border-t border-catppuccin-surface/20">
-                <p class="text-xs text-catppuccin-subtle/50">
-                    © {{ new Date().getFullYear() }} moli
-                </p>
-            </div>
+            <SiteFooter />
         </div>
     </div>
 </template>

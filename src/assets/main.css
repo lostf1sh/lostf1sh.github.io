@@ -29,8 +29,8 @@ body {
     min-height: 100vh;
     font-family: "Karla", "Helvetica Neue", Arial, sans-serif;
     font-size: 15px;
-    line-height: 1.7;
-    letter-spacing: 0.01em;
+    line-height: 1.75;
+    letter-spacing: 0.015em;
     transition: background-color 0.6s ease, color 0.6s ease;
     position: relative;
 }
@@ -73,8 +73,8 @@ html.theme-transitioning *::after {
 }
 
 ::selection {
-    background: rgb(var(--color-mauve) / 0.25);
-    color: rgb(var(--color-text));
+    background: rgb(var(--color-mauve) / 0.3);
+    color: rgb(var(--color-crust));
 }
 
 /* Thin scrollbar for contribution graph */
@@ -92,7 +92,7 @@ html.theme-transitioning *::after {
 }
 
 a {
-    transition: color 0.2s ease, opacity 0.2s ease;
+    transition: color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
     text-decoration: none;
 }
 
@@ -100,9 +100,52 @@ a:hover {
     text-decoration: none;
 }
 
+/* Underline animation for nav-style links */
+.link-underline {
+    position: relative;
+    display: inline-block;
+}
+
+.link-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 1px;
+    background: rgb(var(--color-mauve) / 0.7);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.link-underline:hover::after,
+.link-underline.active::after {
+    width: 100%;
+}
+
+/* Card/link hover lift */
+.hover-lift {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-1px);
+}
+
+/* Arrow drift */
+.arrow-drift {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group:hover .arrow-drift,
+.arrow-drift-parent:hover .arrow-drift {
+    transform: translateX(3px);
+}
+
 *:focus-visible {
-    outline: 1px solid rgb(var(--color-mauve) / 0.5);
-    outline-offset: 2px;
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--color-base)), 0 0 0 3.5px rgb(var(--color-mauve) / 0.45);
+    border-radius: 2px;
 }
 
 /* Cursor blink — kept for contribution graph loading state */
@@ -156,4 +199,43 @@ a:hover {
         rgb(var(--color-surface) / 0.5) 80%,
         transparent
     );
+    position: relative;
+    overflow: hidden;
+}
+
+.hr-zen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgb(var(--color-mauve) / 0.35) 20%,
+        rgb(var(--color-mauve) / 0.35) 80%,
+        transparent
+    );
+    transform: scaleX(0);
+    transform-origin: left;
+    animation: hr-zen-draw 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes hr-zen-draw {
+    to {
+        transform: scaleX(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hr-zen::after {
+        animation: none;
+        transform: scaleX(1);
+    }
+}
+
+/* Custom cursor support */
+@media (pointer: fine) {
+    body.custom-cursor-enabled,
+    body.custom-cursor-enabled * {
+        cursor: none !important;
+    }
 }

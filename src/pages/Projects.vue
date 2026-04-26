@@ -12,6 +12,9 @@ import {
     staggerContainer,
     fadeUp,
 } from "@/utils/motion";
+import SiteNav from "@/components/SiteNav.vue";
+import EnsoLoader from "@/components/EnsoLoader.vue";
+import SiteFooter from "@/components/SiteFooter.vue";
 
 const repos = ref([]);
 const reposCached = readLocalCache(CACHE_KEYS.GITHUB_REPOS);
@@ -99,12 +102,7 @@ const repoContainer = staggerContainer(0.04);
                 animate="visible"
             >
                 <motion.div :variants="fadeUp" class="mb-2">
-                    <router-link
-                        to="/"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors"
-                    >
-                        ← home
-                    </router-link>
+                    <SiteNav />
                 </motion.div>
 
                 <motion.h1
@@ -141,8 +139,9 @@ const repoContainer = staggerContainer(0.04);
                 </motion.div>
             </motion.div>
 
-            <div v-if="loading" class="text-sm text-catppuccin-subtle">
-                loading…
+            <div v-if="loading" class="flex items-center gap-3 text-sm text-catppuccin-subtle py-4">
+                <EnsoLoader :size="20" />
+                <span>loading projects</span>
             </div>
 
             <template v-else>
@@ -236,6 +235,8 @@ const repoContainer = staggerContainer(0.04);
                     </motion.div>
                 </div>
             </template>
+
+            <SiteFooter />
         </div>
     </div>
 </template>

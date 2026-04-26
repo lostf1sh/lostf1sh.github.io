@@ -31,6 +31,12 @@ const slugify = (text) => {
         .trim();
 };
 
+const escapeAttribute = (text) => text
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
 let codeBlockCounter = 0;
 
 export const marked = new Marked({
@@ -38,12 +44,13 @@ export const marked = new Marked({
         heading({ tokens, depth }) {
             const text = this.parser.parseInline(tokens);
             const id = slugify(text);
+            const plainText = text.replace(/<[^>]+>/g, "").trim();
             const classes = {
                 1: "text-2xl font-bold text-catppuccin-text mt-8 mb-4",
                 2: "text-xl font-semibold text-catppuccin-blue mt-8 mb-4",
                 3: "text-lg font-semibold text-catppuccin-mauve mt-6 mb-3",
             };
-            return `<h${depth} id="${id}" class="${classes[depth] || ''}">${text}</h${depth}>`;
+            return `<h${depth} id="${id}" data-heading-text="${escapeAttribute(plainText)}" class="${classes[depth] || ""}">${text}<a href="#${id}" class="heading-anchor no-external" aria-label="Link to ${escapeAttribute(plainText)}">#</a></h${depth}>`;
         },
         paragraph({ tokens }) {
             const text = this.parser.parseInline(tokens);

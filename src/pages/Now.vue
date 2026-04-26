@@ -14,6 +14,8 @@ import {
     staggerContainer,
     fadeUp,
 } from "@/utils/motion";
+import SiteNav from "@/components/SiteNav.vue";
+import SiteFooter from "@/components/SiteFooter.vue";
 import nowRaw from "/content/now.md?raw";
 
 const events = ref([]);
@@ -79,12 +81,7 @@ const sectionContainer = staggerContainer(0.04);
                 animate="visible"
             >
                 <motion.div :variants="fadeUp" class="mb-2">
-                    <router-link
-                        to="/"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors"
-                    >
-                        ← home
-                    </router-link>
+                    <SiteNav />
                 </motion.div>
 
                 <motion.h1
@@ -193,6 +190,8 @@ const sectionContainer = staggerContainer(0.04);
                     </div>
                 </motion.div>
             </div>
+
+            <SiteFooter />
         </div>
     </div>
 </template>
@@ -209,6 +208,27 @@ const sectionContainer = staggerContainer(0.04);
     color: rgb(var(--color-text));
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+
+.now-prose :deep(.heading-anchor) {
+    opacity: 0;
+    font-family: "Karla", sans-serif;
+    font-size: 0.75em;
+    color: rgb(var(--color-subtle));
+    text-decoration: none;
+    transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.now-prose :deep(h2:hover .heading-anchor),
+.now-prose :deep(.heading-anchor:focus-visible) {
+    opacity: 1;
+}
+
+.now-prose :deep(.heading-anchor:hover) {
+    color: rgb(var(--color-mauve));
 }
 
 .now-prose :deep(ul) {

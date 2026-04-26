@@ -5,6 +5,8 @@ import {
     staggerContainer,
     fadeUp,
 } from "@/utils/motion";
+import SiteNav from "@/components/SiteNav.vue";
+import SiteFooter from "@/components/SiteFooter.vue";
 
 const headerContainer = staggerContainer(0.06);
 const sectionContainer = staggerContainer(0.04);
@@ -21,12 +23,7 @@ const sectionContainer = staggerContainer(0.04);
                 animate="visible"
             >
                 <motion.div :variants="fadeUp" class="mb-2">
-                    <router-link
-                        to="/"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors"
-                    >
-                        ← home
-                    </router-link>
+                    <SiteNav />
                 </motion.div>
 
                 <motion.h1
@@ -214,6 +211,8 @@ const sectionContainer = staggerContainer(0.04);
                     </div>
                 </motion.div>
             </div>
+
+            <SiteFooter />
         </div>
     </div>
 </template>

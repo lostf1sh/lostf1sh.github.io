@@ -41,7 +41,7 @@ const skeletonItem = {
                 to="/projects"
                 class="text-xs text-catppuccin-subtle hover:text-catppuccin-mauve transition-colors flex-shrink-0"
             >
-                all projects →
+                all projects <span class="arrow-drift">→</span>
             </router-link>
         </div>
 

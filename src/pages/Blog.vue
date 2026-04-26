@@ -1,10 +1,12 @@
 <script setup>
 import { nextTick, onBeforeUnmount, onMounted, ref, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { motion, AnimatePresence } from "motion-v";
+import { motion } from "motion-v";
 import "prismjs/themes/prism-tomorrow.css";
 import { renderMarkdown } from "@/utils/markdown";
 import TableOfContents from "@/components/TableOfContents.vue";
+import SiteNav from "@/components/SiteNav.vue";
+import SiteFooter from "@/components/SiteFooter.vue";
 import {
     getAllPosts,
     getPostBySlug,
@@ -19,6 +21,8 @@ const currentPost = ref(null);
 const posts = ref([]);
 const articleContentRef = ref(null);
 const headings = ref([]);
+const toastMessage = ref("");
+let toastTimeoutId = null;
 let PrismInstance = null;
 
 const readingProgress = ref(0);
@@ -146,9 +150,11 @@ const handleCopyClick = async (e) => {
     if (!codeEl) return;
     try {
         await navigator.clipboard.writeText(codeEl.textContent);
-        const originalText = button.textContent;
-        button.textContent = "copied!";
-        setTimeout(() => { button.textContent = originalText; }, 2000);
+        toastMessage.value = "copied to clipboard";
+        if (toastTimeoutId) clearTimeout(toastTimeoutId);
+        toastTimeoutId = setTimeout(() => {
+            toastMessage.value = "";
+        }, 2200);
     } catch { /* noop */ }
 };
 
@@ -166,7 +172,7 @@ const extractHeadings = () => {
         const els = articleContentRef.value.querySelectorAll("h2, h3");
         headings.value = Array.from(els).map(el => ({
             id: el.id,
-            text: el.textContent,
+            text: el.dataset.headingText || el.textContent.replace(/#$/, "").trim(),
             level: parseInt(el.tagName[1]),
         }));
     });
@@ -196,6 +202,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
     window.removeEventListener("scroll", updateReadingProgress);
     if (rafId) cancelAnimationFrame(rafId);
+    if (toastTimeoutId) clearTimeout(toastTimeoutId);
     removeJsonLd("article");
 });
 
@@ -224,7 +231,6 @@ const listItemsContainer = staggerContainer(0.06);
 
 const viewEnter = { opacity: 0, y: 12 };
 const viewAnimate = { opacity: 1, y: 0 };
-const viewExit = { opacity: 0, y: -8 };
 </script>
 
 <template>
@@ -240,17 +246,20 @@ const viewExit = { opacity: 0, y: -8 };
         </div>
     </Teleport>
 
+    <Teleport to="body">
+        <div v-if="toastMessage" class="copy-toast" role="status" aria-live="polite">
+            {{ toastMessage }}
+        </div>
+    </Teleport>
+
     <div class="w-full min-h-screen">
         <div class="max-w-3xl mx-auto px-6 sm:px-8 py-16 md:py-24">
-            <AnimatePresence mode="wait">
-
                 <!-- ── Post list ─────────────────────────────────────────── -->
                 <motion.div
                     v-if="view === 'list'"
                     key="list"
                     :initial="viewEnter"
                     :animate="viewAnimate"
-                    :exit="viewExit"
                     :transition="springs.gentle"
                 >
                     <motion.div
@@ -259,14 +268,9 @@ const viewExit = { opacity: 0, y: -8 };
                         initial="hidden"
                         animate="visible"
                     >
-                        <motion.div :variants="fadeUp" class="mb-2">
-                            <router-link
-                                to="/"
-                                class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors"
-                            >
-                                ← home
-                            </router-link>
-                        </motion.div>
+                    <motion.div :variants="fadeUp" class="mb-2">
+                        <SiteNav />
+                    </motion.div>
 
                         <motion.h1
                             :variants="fadeUp"
@@ -324,7 +328,7 @@ const viewExit = { opacity: 0, y: -8 };
                                             </span>
                                         </div>
                                     </div>
-                                    <span class="text-xs text-catppuccin-subtle/40 group-hover:text-catppuccin-mauve transition-colors flex-shrink-0 pt-1 opacity-0 group-hover:opacity-100">
+                                    <span class="text-xs text-catppuccin-subtle/40 group-hover:text-catppuccin-mauve transition-colors flex-shrink-0 pt-1 opacity-0 group-hover:opacity-100 arrow-drift">
                                         →
                                     </span>
                                 </div>
@@ -341,9 +345,9 @@ const viewExit = { opacity: 0, y: -8 };
                 >
                     <button
                         @click="goBack"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors mb-10 cursor-pointer block"
+                        class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors mb-10 cursor-pointer block group"
                     >
-                        ← back to index
+                        <span class="arrow-drift inline-block">←</span> back to index
                     </button>
 
                     <div class="flex flex-col md:flex-row gap-8 md:gap-12">
@@ -400,7 +404,7 @@ const viewExit = { opacity: 0, y: -8 };
                                         @click="openPost(adjacentPosts.prev.slug)"
                                         class="group text-left min-w-0 flex-1 cursor-pointer"
                                     >
-                                        <div class="text-[10px] text-catppuccin-subtle mb-1 uppercase tracking-wider">← older</div>
+                                        <div class="text-[10px] text-catppuccin-subtle mb-1 uppercase tracking-wider"><span class="arrow-drift inline-block">←</span> older</div>
                                         <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
                                             {{ adjacentPosts.prev.title }}
                                         </div>
@@ -412,7 +416,7 @@ const viewExit = { opacity: 0, y: -8 };
                                         @click="openPost(adjacentPosts.next.slug)"
                                         class="group text-right min-w-0 flex-1 cursor-pointer"
                                     >
-                                        <div class="text-[10px] text-catppuccin-subtle mb-1 uppercase tracking-wider">newer →</div>
+                                        <div class="text-[10px] text-catppuccin-subtle mb-1 uppercase tracking-wider">newer <span class="arrow-drift inline-block">→</span></div>
                                         <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
                                             {{ adjacentPosts.next.title }}
                                         </div>
@@ -450,32 +454,69 @@ const viewExit = { opacity: 0, y: -8 };
 
                             <button
                                 @click="goBack"
-                                class="mt-6 text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors cursor-pointer block"
+                                class="mt-6 text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors cursor-pointer block group"
                             >
-                                ← back to index
+                                <span class="arrow-drift inline-block">←</span> back to index
                             </button>
                         </div>
                     </div>
                 </div>
 
-            </AnimatePresence>
+            <SiteFooter />
         </div>
     </div>
 </template>
 
 <style scoped>
-/* ── Post detail entrance (CSS only, no motion-v transforms) ── */
+.copy-toast {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 9998;
+    border: 1px solid rgb(var(--color-surface));
+    background: rgb(var(--color-base) / 0.9);
+    color: rgb(var(--color-text));
+    padding: 0.65rem 0.85rem;
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgb(var(--color-crust) / 0.2);
+    animation: copy-toast-in 0.24s ease both;
+    font-size: 0.75rem;
+}
+
+@keyframes copy-toast-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Post detail entrance ── */
 .post-detail-enter {
-    animation: post-detail-in 0.35s ease both;
+    animation: post-detail-in 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes post-detail-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .post-detail-enter {
+        animation: none;
+    }
+
+    .copy-toast {
         animation: none;
     }
 }
@@ -537,6 +578,32 @@ const viewExit = { opacity: 0, y: -8 };
     padding-bottom: 0.5rem;
     border-bottom: 1px solid rgb(var(--color-surface) / 0.5);
     scroll-margin-top: 1.5rem;
+}
+
+.prose-blog :deep(h2),
+.prose-blog :deep(h3) {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.prose-blog :deep(.heading-anchor) {
+    opacity: 0;
+    font-family: "Karla", sans-serif;
+    font-size: 0.75em;
+    color: rgb(var(--color-subtle));
+    text-decoration: none;
+    transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.prose-blog :deep(h2:hover .heading-anchor),
+.prose-blog :deep(h3:hover .heading-anchor),
+.prose-blog :deep(.heading-anchor:focus-visible) {
+    opacity: 1;
+}
+
+.prose-blog :deep(.heading-anchor:hover) {
+    color: rgb(var(--color-mauve));
 }
 
 .prose-blog :deep(h3) {

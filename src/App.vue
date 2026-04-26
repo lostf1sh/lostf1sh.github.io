@@ -1,28 +1,77 @@
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRoute } from "vue-router";
 import ThemeToggle from "@/components/ThemeToggle.vue";
-import CommandPalette from "@/components/CommandPalette.vue";
 import BootSequence from "@/components/BootSequence.vue";
+import BackToTop from "@/components/BackToTop.vue";
+import CustomCursor from "@/components/CustomCursor.vue";
 
 const route = useRoute();
 const pageKey = ref(0);
 let initialized = false;
 
-// Bump key on route change to re-trigger CSS animation (skip first)
-watch(() => route.path, () => {
+const canUseViewTransitions = () => {
+    if (typeof document === "undefined" || typeof window === "undefined") {
+        return false;
+    }
+
+    return "startViewTransition" in document &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+};
+
+watch(() => route.fullPath, async () => {
     if (!initialized) {
         initialized = true;
         return;
     }
+
+    if (canUseViewTransitions()) {
+        const transition = document.startViewTransition(async () => {
+            pageKey.value++;
+            await nextTick();
+        });
+
+        try {
+            await transition.finished;
+        } catch {
+            // Ignore aborted transitions and fall back silently.
+        }
+        return;
+    }
+
     pageKey.value++;
+});
+
+const showBackToTop = ref(false);
+let scrollRaf = null;
+
+const onScroll = () => {
+    if (scrollRaf) return;
+    scrollRaf = requestAnimationFrame(() => {
+        showBackToTop.value = window.scrollY > window.innerHeight * 0.6;
+        scrollRaf = null;
+    });
+};
+
+onMounted(() => {
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    if (canUseViewTransitions()) {
+        document.documentElement.classList.add("view-transitions-enabled");
+    }
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener("scroll", onScroll);
+    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    document.documentElement.classList.remove("view-transitions-enabled");
 });
 </script>
 
 <template>
+    <CustomCursor />
     <BootSequence />
     <ThemeToggle />
-    <CommandPalette />
     <router-view v-slot="{ Component, route }" id="main-content">
         <div
             :key="pageKey"
@@ -31,6 +80,7 @@ watch(() => route.path, () => {
             <component v-if="Component" :is="Component" />
         </div>
     </router-view>
+    <BackToTop :visible="showBackToTop" />
 </template>
 
 <style>
@@ -60,14 +110,57 @@ html {
     background: rgb(var(--color-overlay) / 0.5);
 }
 
-/* Page transition — no transforms, preserves sticky */
+/* Page transition — fade + subtle lift */
 .page-transition {
-    animation: page-fade-in 0.35s ease both;
+    animation: page-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-@keyframes page-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+html.view-transitions-enabled .page-transition {
+    animation: none;
+    view-transition-name: page-root;
+}
+
+@keyframes page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@supports (view-transition-name: none) {
+    ::view-transition-old(page-root) {
+        animation: view-old 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    ::view-transition-new(page-root) {
+        animation: view-new 0.38s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @keyframes view-old {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+    }
+
+    @keyframes view-new {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -193,7 +193,7 @@ onBeforeUnmount(() => {
     if (heroRaf) cancelAnimationFrame(heroRaf);
 });
 
-const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 0, 0, 0);
+const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 6, 6, 0);
 const getTurkeyWallClockMs = () =>
     Date.parse(new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" }));
 

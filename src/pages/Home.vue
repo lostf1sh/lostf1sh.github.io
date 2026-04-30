@@ -193,13 +193,14 @@ onBeforeUnmount(() => {
     if (heroRaf) cancelAnimationFrame(heroRaf);
 });
 
-const BIRTH_DATE = new Date("2008-06-06T00:00:00");
+const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 0, 0, 0);
+const getTurkeyWallClockMs = () =>
+    Date.parse(new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" }));
 
 const currentAge = ref(0);
 
 const updateAge = () => {
-    const now = new Date();
-    const diffMs = now - BIRTH_DATE;
+    const diffMs = getTurkeyWallClockMs() - BIRTH_DATE_IN_TURKEY;
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
     currentAge.value = diffDays / 365.25;
 };

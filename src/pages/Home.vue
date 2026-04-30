@@ -194,8 +194,36 @@ onBeforeUnmount(() => {
 });
 
 const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 6, 6, 0);
-const getTurkeyWallClockMs = () =>
-    Date.parse(new Date().toLocaleString("en-US", { timeZone: "Europe/Istanbul" }));
+const turkeyDateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Istanbul",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+    hour12: false,
+    hourCycle: "h23",
+});
+
+const getTurkeyWallClockMs = () => {
+    const now = new Date();
+    const parts = Object.fromEntries(
+        turkeyDateTimeFormatter
+            .formatToParts(now)
+            .map(({ type, value }) => [type, value]),
+    );
+
+    return Date.UTC(
+        Number(parts.year),
+        Number(parts.month) - 1,
+        Number(parts.day),
+        Number(parts.hour),
+        Number(parts.minute),
+        Number(parts.second),
+        now.getMilliseconds(),
+    );
+};
 
 const currentAge = ref(0);
 

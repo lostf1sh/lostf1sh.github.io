@@ -31,6 +31,7 @@ export const toggleTheme = () => {
     setTheme(theme.value === "dark" ? "light" : "dark");
 };
 
-// Initialize immediately on module load
+// Initialize ref only — inline <script> in index.html already sets data-theme + colorScheme.
+// Calling setTheme() here would trigger redundant DOM mutations + RAF cycle during initial render.
 const saved = localStorage.getItem("theme") || "dark";
-setTheme(saved);
+theme.value = saved;

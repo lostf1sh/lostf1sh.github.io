@@ -53,21 +53,18 @@ body::before {
     }
 }
 
-/* Smooth theme transition */
+/* Smooth theme transition — only on root elements to avoid Blink cascade invalidation storm */
 html.theme-transitioning,
-html.theme-transitioning *,
-html.theme-transitioning *::before,
-html.theme-transitioning *::after {
+html.theme-transitioning body,
+html.theme-transitioning body::before {
     transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
                 color 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
     html.theme-transitioning,
-    html.theme-transitioning *,
-    html.theme-transitioning *::before,
-    html.theme-transitioning *::after {
+    html.theme-transitioning body,
+    html.theme-transitioning body::before {
         transition: none !important;
     }
 }

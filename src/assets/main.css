@@ -29,6 +29,13 @@ body {
     line-height: 1.75;
     letter-spacing: 0.015em;
     position: relative;
+    caret-color: transparent;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+    caret-color: auto;
 }
 
 /* Subtle grain overlay — wabi-sabi texture */

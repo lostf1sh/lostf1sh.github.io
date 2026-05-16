@@ -193,44 +193,16 @@ onBeforeUnmount(() => {
     if (heroRaf) cancelAnimationFrame(heroRaf);
 });
 
+// Turkey is permanently on UTC+3 (no DST since 2016); June 2008 was EEST (also UTC+3),
+// so the offset is constant across birth-to-now. Avoid Intl.DateTimeFormat in the
+// per-frame path — it's ~orders of magnitude slower in Gecko than V8.
 const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 6, 6, 0);
-const turkeyDateTimeFormatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Europe/Istanbul",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-    hour12: false,
-    hourCycle: "h23",
-});
-
-const getTurkeyWallClockMs = () => {
-    const now = new Date();
-    const parts = Object.fromEntries(
-        turkeyDateTimeFormatter
-            .formatToParts(now)
-            .map(({ type, value }) => [type, value]),
-    );
-
-    return Date.UTC(
-        Number(parts.year),
-        Number(parts.month) - 1,
-        Number(parts.day),
-        Number(parts.hour),
-        Number(parts.minute),
-        Number(parts.second),
-        now.getMilliseconds(),
-    );
-};
+const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
 
 const currentAge = ref(0);
 
 const updateAge = () => {
-    const diffMs = getTurkeyWallClockMs() - BIRTH_DATE_IN_TURKEY;
-    const diffDays = diffMs / (1000 * 60 * 60 * 24);
-    currentAge.value = diffDays / 365.25;
+    currentAge.value = (Date.now() - (BIRTH_DATE_IN_TURKEY - 3 * 3600 * 1000)) / MS_PER_YEAR;
 };
 
 const heroContainer = staggerContainer(0.08);

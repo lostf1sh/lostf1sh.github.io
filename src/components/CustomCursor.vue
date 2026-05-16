@@ -24,27 +24,29 @@ const updateCursor = () => {
     rafId = requestAnimationFrame(updateCursor);
 };
 
+const INTERACTIVE_SELECTOR =
+    "a, button, [role='button'], input, textarea, select, [data-cursor-hover]";
+
 const onMouseMove = (e) => {
     target.x = e.clientX;
     target.y = e.clientY;
 };
 
-const onMouseEnterInteractive = () => {
-    if (cursorRef.value) cursorRef.value.classList.add("cursor-hover");
+const onPointerOver = (e) => {
+    const t = e.target;
+    if (t && t.closest && t.closest(INTERACTIVE_SELECTOR)) {
+        cursorRef.value?.classList.add("cursor-hover");
+    }
 };
 
-const onMouseLeaveInteractive = () => {
-    if (cursorRef.value) cursorRef.value.classList.remove("cursor-hover");
-};
-
-const bindInteractiveElements = () => {
-    const interactives = document.querySelectorAll(
-        "a, button, [role='button'], input, textarea, select, [data-cursor-hover]"
-    );
-    interactives.forEach((el) => {
-        el.addEventListener("mouseenter", onMouseEnterInteractive);
-        el.addEventListener("mouseleave", onMouseLeaveInteractive);
-    });
+const onPointerOut = (e) => {
+    const t = e.target;
+    const r = e.relatedTarget;
+    const from = t && t.closest && t.closest(INTERACTIVE_SELECTOR);
+    const to = r && r.closest && r.closest(INTERACTIVE_SELECTOR);
+    if (from && from !== to) {
+        cursorRef.value?.classList.remove("cursor-hover");
+    }
 };
 
 onMounted(() => {
@@ -53,54 +55,40 @@ onMounted(() => {
 
     document.body.classList.add("custom-cursor-enabled");
     window.addEventListener("mousemove", onMouseMove, { passive: true });
+    document.addEventListener("mouseover", onPointerOver, { passive: true });
+    document.addEventListener("mouseout", onPointerOut, { passive: true });
     rafId = requestAnimationFrame(updateCursor);
-
-    // Bind existing interactive elements
-    bindInteractiveElements();
-
-    // Re-bind for dynamically added elements (simple MutationObserver)
-    const observer = new MutationObserver(() => {
-        bindInteractiveElements();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    onBeforeUnmount(() => {
-        observer.disconnect();
-    });
 });
 
 onBeforeUnmount(() => {
     if (isTouch) return;
     window.removeEventListener("mousemove", onMouseMove);
+    document.removeEventListener("mouseover", onPointerOver);
+    document.removeEventListener("mouseout", onPointerOut);
     if (rafId) cancelAnimationFrame(rafId);
     document.body.classList.remove("custom-cursor-enabled");
 });
 </script>
 
 <template>
-    <div v-if="!isTouch" class="custom-cursor-wrapper" aria-hidden="true">
-        <div ref="cursorRef" class="cursor-ring"></div>
-        <div ref="cursorDotRef" class="cursor-dot"></div>
-    </div>
+    <template v-if="!isTouch">
+        <div ref="cursorRef" class="cursor-ring" aria-hidden="true"></div>
+        <div ref="cursorDotRef" class="cursor-dot" aria-hidden="true"></div>
+    </template>
 </template>
 
 <style scoped>
-.custom-cursor-wrapper {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 99999;
-    mix-blend-mode: difference;
-}
-
 .cursor-ring {
-    position: absolute;
+    position: fixed;
     top: -16px;
     left: -16px;
     width: 32px;
     height: 32px;
     border: 1px solid rgb(var(--color-mauve) / 0.6);
     border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    mix-blend-mode: difference;
     transition: width 0.25s ease, height 0.25s ease, top 0.25s ease, left 0.25s ease, border-color 0.25s ease;
     will-change: transform;
 }
@@ -114,13 +102,16 @@ onBeforeUnmount(() => {
 }
 
 .cursor-dot {
-    position: absolute;
+    position: fixed;
     top: -3px;
     left: -3px;
     width: 6px;
     height: 6px;
     background: rgb(var(--color-mauve));
     border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    mix-blend-mode: difference;
     will-change: transform;
 }
 

@@ -7,8 +7,8 @@ const routes = [
     name: "Home",
     component: () => import("@/pages/Home.vue"),
     meta: {
-      title: "Personal Website | f1sh.v.recipes",
-      description: "Personal portfolio and creative space of Moli, showcasing projects, photography, and digital experiences.",
+      title: "moli — developer blog & terminal portfolio",
+      description: "moli's terminal-styled personal site: projects, blog posts, live status, music, and developer notes.",
     },
   },
   {
@@ -16,7 +16,7 @@ const routes = [
     name: "Blog",
     component: () => import("@/pages/Blog.vue"),
     meta: {
-      title: "Blog | f1sh.v.recipes",
+      title: "Blog | moli",
       description: "Thoughts on code, tools, and random stuff.",
     },
   },
@@ -25,7 +25,7 @@ const routes = [
     name: "Projects",
     component: () => import("@/pages/Projects.vue"),
     meta: {
-      title: "Projects | f1sh.v.recipes",
+      title: "Projects | moli",
       description: "Open source projects and experiments.",
     },
   },
@@ -34,7 +34,7 @@ const routes = [
     name: "Now",
     component: () => import("@/pages/Now.vue"),
     meta: {
-        title: "Now | f1sh.v.recipes",
+        title: "Now | moli",
         description: "What I'm currently working on.",
     },
   },
@@ -43,7 +43,7 @@ const routes = [
     name: "Uses",
     component: () => import("@/pages/Uses.vue"),
     meta: {
-        title: "Uses | f1sh.v.recipes",
+        title: "Uses | moli",
         description: "Tools, hardware, and software I use daily.",
     },
   },
@@ -52,7 +52,7 @@ const routes = [
     name: "NotFound",
     component: () => import("@/pages/NotFound.vue"),
     meta: {
-      title: "404 Not Found | f1sh.v.recipes",
+      title: "404 Not Found | moli",
     },
   },
 ];

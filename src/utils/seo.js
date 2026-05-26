@@ -1,6 +1,6 @@
 const defaults = {
-  title: "Personal Website | f1sh.v.recipes",
-  description: "Personal portfolio and creative space of Moli.",
+  title: "moli — developer blog & terminal portfolio",
+  description: "moli's terminal-styled personal site: projects, blog posts, live status, music, and developer notes.",
   url: "https://f1sh.v.recipes",
   image: "https://f1sh.v.recipes/screenshot.png",
 };

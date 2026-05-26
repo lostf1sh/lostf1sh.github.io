@@ -1,25 +1,36 @@
-# f1sh.dev
+# f1sh.v.recipes
 
-minimalist personal website with terminal aesthetic.
+minimal personal site + blog with terminal aesthetic.
 
-## tech stack
+## stack
 
-vue 3 | tailwind | vite | catppuccin mocha
+vue 3 · vite · tailwind css · catppuccin · bun
+
+## features
+
+- live discord / spotify / editor status via lanyard
+- github projects + contribution graph
+- last.fm recent tracks
+- markdown blog with related posts
+- command palette, theme toggle, boot sequence
+- generated rss, sitemap, robots assets
+- spa fallback for static hosting
 
 ## setup
 
 ```bash
-git clone https://github.com/lostf1sh/website
-cd website
+git clone https://github.com/lostf1sh/lostf1sh.github.io
+cd lostf1sh.github.io
 bun install
 bun run dev
 ```
 
-## features
+## scripts
 
-- real-time discord/spotify/vscode/zed status via lanyard
-- github projects from api
-- last.fm recent tracks
-- monospace terminal design
+```bash
+bun run dev      # start vite dev server
+bun run build    # build site + seo assets + spa fallback
+bun run preview  # preview production build
+```
 
-live at [f1sh.dev](https://f1sh.dev)
+live: [f1sh.v.recipes](https://f1sh.v.recipes)

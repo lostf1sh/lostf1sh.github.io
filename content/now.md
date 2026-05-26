@@ -2,19 +2,18 @@
 lastUpdated: 2026-04-09
 ---
 
-rebuilding my personal site piece by piece — new layouts, animations, api integrations. having fun with vue and motion-v.
+working on this site in small passes: layout cleanup, terminal-ish ui details, music/status widgets, and tiny things that make it feel more mine.
 
-switched to zed from neovim. feels like home. still tweaking my terminal setup constantly.
+using zed more than neovim lately. still keeping my terminal setup simple and fixing whatever annoys me after a few days of real use.
 
-picking up rust on the side. writing small cli tools, slowly getting the hang of ownership.
+writing small web things and scripts when i need them. trying not to overbuild every idea before it is useful.
 
-table tennis practice is going well. cooking whenever i get the chance.
+playing table tennis when i can. cooking basic stuff more often and slowly getting better at not making a mess.
 
-## goals
+## next
 
-- land my first freelance project
-- get comfortable reading other people's codebases
-- hit 1000 github contributions this year
-- learn enough rust to stop reaching for python
-- write a blog post that actually gets shared
-- cook something i've never tried before
+- finish the rough edges on this site
+- write shorter posts instead of waiting for perfect ideas
+- clean up old repos that are half-finished
+- keep learning by shipping small things
+- cook a few meals without looking up the recipe every time

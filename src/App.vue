@@ -5,6 +5,7 @@ import ThemeToggle from "@/components/ThemeToggle.vue";
 import BootSequence from "@/components/BootSequence.vue";
 import BackToTop from "@/components/BackToTop.vue";
 import CustomCursor from "@/components/CustomCursor.vue";
+import CommandPalette from "@/components/CommandPalette.vue";
 
 const route = useRoute();
 const pageKey = ref(0);
@@ -34,7 +35,6 @@ watch(() => route.fullPath, async () => {
         try {
             await transition.finished;
         } catch {
-            // Ignore aborted transitions and fall back silently.
         }
         return;
     }
@@ -71,6 +71,7 @@ onBeforeUnmount(() => {
 <template>
     <CustomCursor />
     <BootSequence />
+    <CommandPalette />
     <ThemeToggle />
     <router-view v-slot="{ Component, route }" id="main-content">
         <div
@@ -89,12 +90,12 @@ body {
 }
 
 ::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 
 html {
     scrollbar-width: thin;
-    scrollbar-color: rgb(var(--color-overlay) / 0.3) transparent;
+    scrollbar-color: rgb(var(--color-overlay) / 0.25) transparent;
 }
 
 ::-webkit-scrollbar-track {
@@ -102,17 +103,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgb(var(--color-overlay) / 0.3);
-    border-radius: 3px;
+    background: rgb(var(--color-overlay) / 0.25);
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgb(var(--color-overlay) / 0.5);
-}
-
-/* Page transition — fade + subtle lift */
+/* Page transition */
 .page-transition {
-    animation: page-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+    animation: page-enter 0.25s ease both;
 }
 
 html.view-transitions-enabled .page-transition {
@@ -121,45 +117,27 @@ html.view-transitions-enabled .page-transition {
 }
 
 @keyframes page-enter {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @supports (view-transition-name: none) {
     ::view-transition-old(page-root) {
-        animation: view-old 0.32s cubic-bezier(0.4, 0, 0.2, 1) both;
+        animation: view-old 0.2s ease both;
     }
 
     ::view-transition-new(page-root) {
-        animation: view-new 0.38s cubic-bezier(0.4, 0, 0.2, 1) both;
+        animation: view-new 0.25s ease both;
     }
 
     @keyframes view-old {
-        from {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        to {
-            opacity: 0;
-            transform: translateY(-6px);
-        }
+        from { opacity: 1; }
+        to { opacity: 0; }
     }
 
     @keyframes view-new {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 }
 

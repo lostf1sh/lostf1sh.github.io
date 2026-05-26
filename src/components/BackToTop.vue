@@ -14,13 +14,10 @@ const scrollToTop = () => {
         type="button"
         @click="scrollToTop"
         aria-label="Back to top"
-        class="back-to-top no-external"
+        class="back-to-top"
     >
         <span class="sr-only">Back to top</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 19V5"/>
-            <path d="M5 12l7-7 7 7"/>
-        </svg>
+        [↑]
     </button>
 </template>
 
@@ -30,30 +27,28 @@ const scrollToTop = () => {
     bottom: 1.5rem;
     right: 1.5rem;
     z-index: 9997;
-    width: 36px;
-    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
     border: 1px solid rgb(var(--color-surface));
-    background: rgb(var(--color-base) / 0.8);
-    backdrop-filter: blur(8px);
+    background: rgb(var(--color-base) / 0.95);
     color: rgb(var(--color-subtle));
-    transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, opacity 0.3s ease;
+    padding: 6px 8px;
+    transition: color 0.15s ease, border-color 0.15s ease, opacity 0.3s ease;
     opacity: 0;
-    animation: btt-in 0.3s ease forwards;
+    animation: btt-in 0.2s ease forwards;
 }
 
 .back-to-top:hover {
-    color: rgb(var(--color-mauve));
-    border-color: rgb(var(--color-mauve) / 0.4);
-    transform: translateY(-2px);
+    color: rgb(var(--color-text));
+    border-color: rgb(var(--color-overlay));
 }
 
 @keyframes btt-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .sr-only {

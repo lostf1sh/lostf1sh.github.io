@@ -3,8 +3,8 @@ export default {
   content: ["./index.html", "./src/**/*.{vue,js}"],
   theme: {
     fontFamily: {
-      serif: ['"Cormorant Garamond"', "Georgia", "serif"],
-      sans: ['"Karla"', '"Helvetica Neue"', "Arial", "sans-serif"],
+      serif: ['"JetBrains Mono"', "monospace"],
+      sans: ['"JetBrains Mono"', "monospace"],
       mono: ['"JetBrains Mono"', "monospace"],
     },
     colors: {

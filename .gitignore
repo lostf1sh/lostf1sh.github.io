@@ -5,3 +5,4 @@ dist/
 .env
 CLAUDE.md
 package-lock.json
+test-results/

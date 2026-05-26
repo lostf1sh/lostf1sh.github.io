@@ -1,218 +1,82 @@
 <script setup>
 import { motion } from "motion-v";
-import {
-    springs,
-    staggerContainer,
-    fadeUp,
-} from "@/utils/motion";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import SiteNav from "@/components/SiteNav.vue";
-import SiteFooter from "@/components/SiteFooter.vue";
 
 const headerContainer = staggerContainer(0.06);
-const sectionContainer = staggerContainer(0.04);
 </script>
 
 <template>
     <div class="w-full min-h-screen">
-        <div class="max-w-3xl mx-auto px-6 sm:px-8 py-16 md:py-24">
-            <!-- Page header -->
-            <motion.div
-                class="mb-12"
-                :variants="headerContainer"
-                initial="hidden"
-                animate="visible"
-            >
-                <motion.div :variants="fadeUp" class="mb-2">
-                    <SiteNav />
-                </motion.div>
-
-                <motion.h1
-                    :variants="fadeUp"
-                    class="font-serif text-3xl md:text-4xl font-semibold text-catppuccin-text tracking-tight mb-2"
-                >
-                    uses
-                </motion.h1>
-
-                <motion.p :variants="fadeUp" class="text-sm text-catppuccin-subtle">
-                    tools, hardware, and software i use daily
-                </motion.p>
+        <div class="max-w-4xl mx-auto px-5 sm:px-8 py-12 md:py-20">
+            <h1 class="sr-only">uses</h1>
+            <motion.div :variants="headerContainer" initial="hidden" animate="visible">
+                <motion.div :variants="fadeUp"><SiteNav /></motion.div>
             </motion.div>
 
-            <div class="grid md:grid-cols-2 gap-10">
-                <!-- Code editors -->
-                <motion.div
-                    :variants="sectionContainer"
-                    whileInView="visible"
-                    initial="hidden"
-                    :inViewOptions="{ once: true }"
-                >
-                    <motion.div :variants="fadeUp" class="section-label mb-3">editors</motion.div>
-                    <div class="space-y-2 text-sm">
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">zed</span>
-                            <span class="text-catppuccin-subtle">primary editor</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">android studio</span>
-                            <span class="text-catppuccin-subtle">mobile dev</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">claude code</span>
-                            <span class="text-catppuccin-subtle">ai coding</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">codex</span>
-                            <span class="text-catppuccin-subtle">openai agent</span>
-                        </motion.div>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="tui-panel">
+                    <span class="tui-panel-title">editors</span>
+                    <div class="space-y-1.5 text-xs pt-1">
+                        <div class="flex justify-between"><span class="text-catppuccin-text">zed</span><span class="text-catppuccin-subtle/30">primary</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">android studio</span><span class="text-catppuccin-subtle/30">mobile</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">claude code</span><span class="text-catppuccin-subtle/30">ai</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">codex</span><span class="text-catppuccin-subtle/30">agent</span></div>
                     </div>
-                </motion.div>
+                </div>
 
-                <!-- Terminal -->
-                <motion.div
-                    :variants="sectionContainer"
-                    whileInView="visible"
-                    initial="hidden"
-                    :inViewOptions="{ once: true }"
-                >
-                    <motion.div :variants="fadeUp" class="section-label mb-3">terminal</motion.div>
-                    <div class="space-y-2 text-sm">
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">ghostty</span>
-                            <span class="text-catppuccin-subtle">fast, native</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">zsh</span>
-                            <span class="text-catppuccin-subtle">shell + plugins</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">tmux</span>
-                            <span class="text-catppuccin-subtle">multiplexer</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">starship</span>
-                            <span class="text-catppuccin-subtle">minimal prompt</span>
-                        </motion.div>
+                <div class="tui-panel">
+                    <span class="tui-panel-title">terminal</span>
+                    <div class="space-y-1.5 text-xs pt-1">
+                        <div class="flex justify-between"><span class="text-catppuccin-text">ghostty</span><span class="text-catppuccin-subtle/30">emulator</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">zsh</span><span class="text-catppuccin-subtle/30">shell</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">tmux</span><span class="text-catppuccin-subtle/30">mux</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">starship</span><span class="text-catppuccin-subtle/30">prompt</span></div>
                     </div>
-                </motion.div>
+                </div>
 
-                <!-- Dev tools -->
-                <motion.div
-                    :variants="sectionContainer"
-                    whileInView="visible"
-                    initial="hidden"
-                    :inViewOptions="{ once: true }"
-                >
-                    <motion.div :variants="fadeUp" class="section-label mb-3">dev tools</motion.div>
-                    <div class="space-y-2 text-sm">
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">vue 3</span>
-                            <span class="text-catppuccin-subtle">frontend</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">tailwind</span>
-                            <span class="text-catppuccin-subtle">styling</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">bun</span>
-                            <span class="text-catppuccin-subtle">runtime + package manager</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">vite</span>
-                            <span class="text-catppuccin-subtle">build tool</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">docker</span>
-                            <span class="text-catppuccin-subtle">containers</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">git</span>
-                            <span class="text-catppuccin-subtle">version control</span>
-                        </motion.div>
+                <div class="tui-panel">
+                    <span class="tui-panel-title">dev tools</span>
+                    <div class="space-y-1.5 text-xs pt-1">
+                        <div class="flex justify-between"><span class="text-catppuccin-text">vue 3</span><span class="text-catppuccin-subtle/30">frontend</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">tailwind</span><span class="text-catppuccin-subtle/30">css</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">bun</span><span class="text-catppuccin-subtle/30">runtime</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">vite</span><span class="text-catppuccin-subtle/30">build</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">docker</span><span class="text-catppuccin-subtle/30">containers</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">git</span><span class="text-catppuccin-subtle/30">vcs</span></div>
                     </div>
-                </motion.div>
+                </div>
 
-                <!-- Languages -->
-                <motion.div
-                    :variants="sectionContainer"
-                    whileInView="visible"
-                    initial="hidden"
-                    :inViewOptions="{ once: true }"
-                >
-                    <motion.div :variants="fadeUp" class="section-label mb-3">languages</motion.div>
-                    <div class="space-y-2 text-sm">
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">javascript / typescript</span>
-                            <span class="text-catppuccin-subtle">primary</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">python</span>
-                            <span class="text-catppuccin-subtle">scripting</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">dart</span>
-                            <span class="text-catppuccin-subtle">flutter</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">bash</span>
-                            <span class="text-catppuccin-subtle">shell scripts</span>
-                        </motion.div>
+                <div class="tui-panel">
+                    <span class="tui-panel-title">languages</span>
+                    <div class="space-y-1.5 text-xs pt-1">
+                        <div class="flex justify-between"><span class="text-catppuccin-text">js / ts</span><span class="text-catppuccin-subtle/30">primary</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">python</span><span class="text-catppuccin-subtle/30">scripting</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">dart</span><span class="text-catppuccin-subtle/30">flutter</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">bash</span><span class="text-catppuccin-subtle/30">shell</span></div>
                     </div>
-                </motion.div>
+                </div>
 
-                <!-- System -->
-                <motion.div
-                    :variants="sectionContainer"
-                    whileInView="visible"
-                    initial="hidden"
-                    :inViewOptions="{ once: true }"
-                >
-                    <motion.div :variants="fadeUp" class="section-label mb-3">system</motion.div>
-                    <div class="space-y-2 text-sm">
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">cachyos</span>
-                            <span class="text-catppuccin-subtle">arch-based, daily driver</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">catppuccin</span>
-                            <span class="text-catppuccin-subtle">theme everywhere</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">jetbrains mono</span>
-                            <span class="text-catppuccin-subtle">monospace font</span>
-                        </motion.div>
+                <div class="tui-panel">
+                    <span class="tui-panel-title">system</span>
+                    <div class="space-y-1.5 text-xs pt-1">
+                        <div class="flex justify-between"><span class="text-catppuccin-text">cachyos</span><span class="text-catppuccin-subtle/30">arch</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">catppuccin</span><span class="text-catppuccin-subtle/30">theme</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">jetbrains mono</span><span class="text-catppuccin-subtle/30">font</span></div>
                     </div>
-                </motion.div>
+                </div>
 
-                <!-- Apps -->
-                <motion.div
-                    :variants="sectionContainer"
-                    whileInView="visible"
-                    initial="hidden"
-                    :inViewOptions="{ once: true }"
-                >
-                    <motion.div :variants="fadeUp" class="section-label mb-3">apps</motion.div>
-                    <div class="space-y-2 text-sm">
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">firefox</span>
-                            <span class="text-catppuccin-subtle">browser</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">obsidian</span>
-                            <span class="text-catppuccin-subtle">notes</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">spotify</span>
-                            <span class="text-catppuccin-subtle">music</span>
-                        </motion.div>
-                        <motion.div :variants="fadeUp" class="flex items-start gap-3">
-                            <span class="text-catppuccin-text font-medium">discord</span>
-                            <span class="text-catppuccin-subtle">comms</span>
-                        </motion.div>
+                <div class="tui-panel">
+                    <span class="tui-panel-title">apps</span>
+                    <div class="space-y-1.5 text-xs pt-1">
+                        <div class="flex justify-between"><span class="text-catppuccin-text">firefox</span><span class="text-catppuccin-subtle/30">browser</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">obsidian</span><span class="text-catppuccin-subtle/30">notes</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">spotify</span><span class="text-catppuccin-subtle/30">music</span></div>
+                        <div class="flex justify-between"><span class="text-catppuccin-text">discord</span><span class="text-catppuccin-subtle/30">comms</span></div>
                     </div>
-                </motion.div>
+                </div>
             </div>
 
-            <SiteFooter />
         </div>
     </div>
 </template>

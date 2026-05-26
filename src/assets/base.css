@@ -5,41 +5,39 @@
 @layer base {
     :root {
         color-scheme: dark;
-        /* Ma — dark mode (warm charcoal, like ink on dark paper) */
-        --color-crust: 14 13 13;
-        --color-base: 21 20 19;
-        --color-surface: 34 32 30;
-        --color-overlay: 56 53 49;
-        --color-subtle: 124 117 108;
-        --color-text: 232 225 214;
-        --color-gold: 206 147 80;
-        --color-pink: 194 130 110;
-        --color-mauve: 206 147 80;
-        --color-red: 190 110 95;
-        --color-yellow: 206 174 110;
-        --color-peach: 206 147 80;
-        --color-green: 140 168 120;
-        --color-blue: 130 155 180;
-        --color-gray: 150 143 132;
+        --color-crust: 10 10 10;
+        --color-base: 14 14 14;
+        --color-surface: 28 28 28;
+        --color-overlay: 48 48 48;
+        --color-subtle: 102 102 102;
+        --color-text: 224 224 224;
+        --color-gold: 255 255 255;
+        --color-pink: 255 255 255;
+        --color-mauve: 255 255 255;
+        --color-red: 220 80 80;
+        --color-yellow: 230 190 70;
+        --color-peach: 255 255 255;
+        --color-green: 80 200 120;
+        --color-blue: 100 160 220;
+        --color-gray: 80 80 80;
     }
 
     [data-theme="light"] {
         color-scheme: light;
-        /* Ma — light mode (warm cream, like washi paper) */
-        --color-crust: 244 240 234;
-        --color-base: 250 247 242;
-        --color-surface: 234 229 221;
-        --color-overlay: 200 193 182;
-        --color-subtle: 140 132 120;
-        --color-text: 48 44 40;
-        --color-gold: 160 108 50;
-        --color-pink: 170 100 80;
-        --color-mauve: 160 108 50;
-        --color-red: 165 85 70;
-        --color-yellow: 160 130 60;
-        --color-peach: 160 108 50;
-        --color-green: 95 130 75;
-        --color-blue: 85 115 150;
-        --color-gray: 140 132 120;
+        --color-crust: 238 238 238;
+        --color-base: 245 245 245;
+        --color-surface: 215 215 215;
+        --color-overlay: 185 185 185;
+        --color-subtle: 110 110 110;
+        --color-text: 20 20 20;
+        --color-gold: 0 0 0;
+        --color-pink: 0 0 0;
+        --color-mauve: 0 0 0;
+        --color-red: 180 50 50;
+        --color-yellow: 170 130 20;
+        --color-peach: 0 0 0;
+        --color-green: 40 140 70;
+        --color-blue: 50 100 160;
+        --color-gray: 140 140 140;
     }
 }

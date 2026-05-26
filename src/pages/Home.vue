@@ -20,16 +20,13 @@ import {
     readLocalCache,
     writeLocalCache,
 } from "@/utils/apiLocalCache";
-import {
-    staggerContainer,
-    fadeUp,
-} from "@/utils/motion";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 
 import StatusSection from "@/components/StatusSection.vue";
 import ProjectsGrid from "@/components/ProjectsGrid.vue";
 import RecentTracks from "@/components/RecentTracks.vue";
 import ContributionGraph from "@/components/ContributionGraph.vue";
-import SiteFooter from "@/components/SiteFooter.vue";
+import EightyEightButtons from "@/components/EightyEightButtons.vue";
 
 const discordStatusColor = computed(() => lanyardData.discordStatusColor);
 const spotify = computed(() => lanyardData.spotify);
@@ -59,9 +56,8 @@ if (contribCached?.value?.length) {
 }
 const contributionsLoading = ref(!contributions.value.length);
 const contributionsRevalidating = ref(false);
-let ageRafId = null;
+let ageRafId = 0;
 
-// Now playing from Lanyard Spotify (real-time via WebSocket)
 const currentTrack = computed(() => {
     const sp = lanyardData.spotify;
     if (!sp) return null;
@@ -72,7 +68,6 @@ const currentTrack = computed(() => {
     };
 });
 
-// Past tracks from LastFM (excludes any nowplaying entry)
 const consolidatedTracks = computed(() => {
     const tracks = lastfmTracks.value.filter(
         (track) => !track["@attr"]?.nowplaying,
@@ -118,16 +113,12 @@ const pinnedOrder = [
     "lostf1sh/clp",
     "lostf1sh/v-recipes",
 ];
-const pinnedSet = new Set(pinnedOrder);
 
 const displayedRepos = computed(() => {
     if (!repos.value.length) return [];
-
-    const pinned = pinnedOrder
+    return pinnedOrder
         .map(name => repos.value.find(r => r.full_name === name))
         .filter(Boolean);
-
-    return pinned;
 });
 
 const fetchProjects = async () => {
@@ -179,182 +170,117 @@ const fetchContributions = async () => {
 onMounted(() => {
     fetchProjects();
     fetchContributions();
-    const tickAge = () => {
-        updateAge();
-        ageRafId = requestAnimationFrame(tickAge);
-    };
     tickAge();
-    window.addEventListener("scroll", onHeroScroll, { passive: true });
 });
 
 onBeforeUnmount(() => {
     if (ageRafId) cancelAnimationFrame(ageRafId);
-    window.removeEventListener("scroll", onHeroScroll);
-    if (heroRaf) cancelAnimationFrame(heroRaf);
 });
 
-// Turkey is permanently on UTC+3 (no DST since 2016); June 2008 was EEST (also UTC+3),
-// so the offset is constant across birth-to-now. Avoid Intl.DateTimeFormat in the
-// per-frame path — it's ~orders of magnitude slower in Gecko than V8.
 const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 6, 6, 0);
 const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
-
 const currentAge = ref(0);
-
 const updateAge = () => {
     currentAge.value = (Date.now() - (BIRTH_DATE_IN_TURKEY - 3 * 3600 * 1000)) / MS_PER_YEAR;
 };
-
-const heroContainer = staggerContainer(0.08);
-
-// Scroll-driven hero fade
-const heroOpacity = ref(1);
-const heroOffset = ref(0);
-let heroRaf = null;
-
-const onHeroScroll = () => {
-    if (heroRaf) return;
-    heroRaf = requestAnimationFrame(() => {
-        const scrollY = window.scrollY;
-        const threshold = 300;
-        const progress = Math.min(scrollY / threshold, 1);
-        heroOpacity.value = 1 - progress * 0.6;
-        heroOffset.value = -progress * 16;
-        heroRaf = null;
-    });
+const tickAge = () => {
+    updateAge();
+    ageRafId = requestAnimationFrame(tickAge);
 };
 
+const heroContainer = staggerContainer(0.06);
+
+const stackItems = [
+    { name: "Vue", icon: "https://cdn.simpleicons.org/vuedotjs" },
+    { name: "Next.js", icon: "https://cdn.simpleicons.org/nextdotjs" },
+    { name: "TypeScript", icon: "https://cdn.simpleicons.org/typescript" },
+    { name: "Rust", icon: "https://cdn.simpleicons.org/rust" },
+    { name: "Go", icon: "https://cdn.simpleicons.org/go" },
+    { name: "Kotlin", icon: "https://cdn.simpleicons.org/kotlin" },
+];
 </script>
 
 <template>
     <div class="w-full min-h-screen">
-        <div class="max-w-3xl mx-auto px-6 sm:px-8 py-16 md:py-24">
+        <div class="max-w-4xl mx-auto px-5 sm:px-8 py-12 md:py-20">
+            <h1 class="sr-only">moli</h1>
 
             <!-- Hero -->
             <motion.div
-                class="mb-16"
                 :variants="heroContainer"
                 initial="hidden"
                 animate="visible"
-                :style="{ opacity: heroOpacity }"
             >
-                <motion.h1
-                    :variants="fadeUp"
-                    class="font-serif text-4xl md:text-5xl font-semibold text-catppuccin-text tracking-tight"
-                >
-                    moli
-                </motion.h1>
-                <motion.p
-                    :variants="fadeUp"
-                    class="text-catppuccin-subtle mt-2 text-sm"
-                >
-                    junior developer · turkey
-                </motion.p>
+                <!-- About panel -->
+                <motion.div :variants="fadeUp" class="tui-panel mb-5">
+                    <span class="tui-panel-title">about</span>
+                    <div class="pt-1">
+                        <div class="text-catppuccin-text text-lg font-medium mb-0.5 tracking-tight">moli</div>
+                        <div class="text-[11px] text-catppuccin-subtle/50 mb-3">junior developer // turkey</div>
+                        <div class="text-xs text-catppuccin-text/80 leading-relaxed">
+                            <span class="text-catppuccin-text" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> years in.
+                            i build small tools, ship web experiments, and keep notes on what i learn.
+                            usually somewhere between code, table tennis, and cooking.
+                        </div>
+                    </div>
+                </motion.div>
 
-                <!-- Nav links -->
-                <motion.nav
-                    :variants="fadeUp"
-                    class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
-                >
-                    <router-link
-                        to="/blog"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
-                    >
-                        blog
-                    </router-link>
-                    <router-link
-                        to="/projects"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
-                    >
-                        projects
-                    </router-link>
-                    <router-link
-                        to="/now"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
-                    >
-                        now
-                    </router-link>
-                    <router-link
-                        to="/uses"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
-                    >
-                        uses
-                    </router-link>
-                    <span class="text-catppuccin-surface">·</span>
-                    <a
-                        href="https://github.com/lostf1sh"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
-                    >
-                        github
-                    </a>
-                    <a
-                        href="https://www.instagram.com/kawaiimoli"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-catppuccin-subtle hover:text-catppuccin-text transition-colors link-underline"
-                    >
-                        instagram
-                    </a>
-                </motion.nav>
+                <!-- Nav row -->
+                <motion.div :variants="fadeUp" class="flex flex-wrap items-center gap-2 mb-8 text-xs">
+                    <router-link to="/blog" class="nav-btn">blog</router-link>
+                    <router-link to="/projects" class="nav-btn">projects</router-link>
+                    <router-link to="/now" class="nav-btn">now</router-link>
+                    <router-link to="/uses" class="nav-btn">uses</router-link>
+                    <span class="text-catppuccin-surface/40 px-0.5">│</span>
+                    <a href="https://github.com/lostf1sh" target="_blank" rel="noopener noreferrer" class="nav-btn">github</a>
+                    <a href="https://www.instagram.com/kawaiimoli" target="_blank" rel="noopener noreferrer" class="nav-btn">instagram</a>
+                </motion.div>
             </motion.div>
 
-            <!-- About -->
-            <motion.div
-                class="mb-6"
-                :initial="{ opacity: 0, y: 10 }"
-                :animate="{ opacity: 1, y: 0 }"
-                :transition="{ type: 'spring', stiffness: 200, damping: 20, delay: 0.3 }"
-            >
-                <div class="section-label mb-2">about</div>
-                <p class="text-catppuccin-text leading-relaxed">
-                    <span class="text-catppuccin-mauve font-medium" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> years old.
-                    building things and learning along the way.
-                    code, table tennis, cooking.
-                </p>
-            </motion.div>
+            <!-- Status + Stack -->
+            <div class="grid md:grid-cols-2 gap-4 mb-5">
+                <motion.div
+                    :initial="{ opacity: 0 }"
+                    :animate="{ opacity: 1 }"
+                    :transition="{ delay: 0.2 }"
+                >
+                    <StatusSection
+                        :isLoading="isLoading"
+                        :isConnected="lanyardConnected"
+                        :isReconnecting="lanyardReconnecting"
+                        :presenceUnavailable="lanyardUnavailable"
+                        :usingCachedPresence="lanyardStalePresence"
+                        :discordUser="discordUser"
+                        :discordStatus="discordStatus"
+                        :discordStatusColor="discordStatusColor"
+                        :spotify="spotify"
+                        :editorActivity="editorActivity"
+                    />
+                </motion.div>
 
-            <!-- Divider -->
-            <div class="hr-zen mb-6"></div>
+                <motion.div
+                    :initial="{ opacity: 0 }"
+                    :animate="{ opacity: 1 }"
+                    :transition="{ delay: 0.25 }"
+                    class="tui-panel"
+                >
+                    <span class="tui-panel-title">stack</span>
+                    <div class="stack-icons pt-1" aria-label="Technology stack">
+                        <span
+                            v-for="item in stackItems"
+                            :key="item.name"
+                            class="stack-icon"
+                            :style="{ '--stack-icon': `url(${item.icon})` }"
+                            :title="item.name"
+                            :aria-label="item.name"
+                            role="img"
+                        ></span>
+                    </div>
+                </motion.div>
+            </div>
 
-            <!-- Status -->
-            <StatusSection
-                :isLoading="isLoading"
-                :isConnected="lanyardConnected"
-                :isReconnecting="lanyardReconnecting"
-                :presenceUnavailable="lanyardUnavailable"
-                :usingCachedPresence="lanyardStalePresence"
-                :discordUser="discordUser"
-                :discordStatus="discordStatus"
-                :discordStatusColor="discordStatusColor"
-                :spotify="spotify"
-                :editorActivity="editorActivity"
-            />
-
-            <!-- Tools -->
-            <motion.div
-                class="mb-6"
-                :initial="{ opacity: 0, y: 10 }"
-                :animate="{ opacity: 1, y: 0 }"
-                :transition="{ type: 'spring', stiffness: 200, damping: 20, delay: 0.5 }"
-            >
-                <div class="section-label mb-2">tools</div>
-                <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-catppuccin-subtle">
-                    <span>vue</span>
-                    <span>nextjs</span>
-                    <span>typescript</span>
-                    <span>rust</span>
-                    <span>go</span>
-                    <span>kotlin</span>
-                </div>
-            </motion.div>
-
-            <!-- Divider -->
-            <div class="hr-zen mb-6"></div>
-
-            <!-- Projects & Tracks grid -->
-            <div class="grid lg:grid-cols-2 gap-8 lg:gap-10">
+            <!-- Projects & Tracks -->
+            <div class="grid lg:grid-cols-2 gap-4 mb-5">
                 <ProjectsGrid
                     :repos="displayedRepos"
                     :loading="reposLoading"
@@ -378,7 +304,47 @@ const onHeroScroll = () => {
                 :revalidating="contributionsRevalidating"
             />
 
-            <SiteFooter />
+            <EightyEightButtons />
         </div>
     </div>
 </template>
+
+<style scoped>
+.nav-btn {
+    padding: 0.3rem 0.65rem;
+    border: 1px solid rgb(var(--color-surface) / 0.5);
+    color: rgb(var(--color-subtle) / 0.6);
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    font-size: 11px;
+}
+
+.nav-btn:hover {
+    color: rgb(var(--color-text));
+    border-color: rgb(var(--color-overlay) / 0.6);
+    background: rgb(var(--color-surface) / 0.15);
+}
+
+.stack-icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.7rem;
+}
+
+.stack-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    background: rgb(var(--color-subtle) / 0.62);
+    -webkit-mask: var(--stack-icon) center / contain no-repeat;
+    mask: var(--stack-icon) center / contain no-repeat;
+    transition: background-color 0.14s ease, transform 0.14s ease;
+}
+
+.stack-icon:hover {
+    background: rgb(var(--color-text));
+    transform: translateY(-1px);
+}
+</style>

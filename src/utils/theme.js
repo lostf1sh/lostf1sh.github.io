@@ -1,8 +1,8 @@
 import { ref } from "vue";
 
 const themeColors = {
-    dark: "#11111b",
-    light: "#dce0e8",
+    dark: "#0e0e0e",
+    light: "#f5f5f5",
 };
 
 export const theme = ref("dark");

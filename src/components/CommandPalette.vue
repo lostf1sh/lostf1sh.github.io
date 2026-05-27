@@ -50,6 +50,16 @@ const openRandomPost = async () => {
     if (randomPost) go({ name: "Blog", params: { slug: randomPost.slug } });
 };
 
+const toggleAquarium = () => {
+    window.dispatchEvent(new CustomEvent("aquarium:toggle"));
+    closePalette();
+};
+
+const feedAquarium = () => {
+    window.dispatchEvent(new CustomEvent("aquarium:feed"));
+    closePalette();
+};
+
 const commands = computed(() => {
     return [
         { id: "home", label: "open home", hint: "cd ~", action: () => go({ name: "Home" }) },
@@ -68,6 +78,8 @@ const commands = computed(() => {
         },
         { id: "copy", label: "copy url", hint: copied.value ? "copied" : "clipboard", action: copyUrl },
         { id: "random", label: "random post", hint: "shuffle posts", action: openRandomPost },
+        { id: "aquarium-toggle", label: "toggle aquarium", hint: "fishtank", action: toggleAquarium },
+        { id: "aquarium-feed", label: "feed fish", hint: "drop pellets", action: feedAquarium },
     ].filter(Boolean);
 });
 

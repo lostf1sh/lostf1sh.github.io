@@ -89,7 +89,6 @@ const openPost = (slug) => {
             author: { "@type": "Person", name: "Moli" },
             mainEntityOfPage: `https://f1sh.v.recipes/blog/${slug}`,
             url: `https://f1sh.v.recipes/blog/${slug}`,
-            image: "https://f1sh.v.recipes/screenshot.png",
         });
         void highlightCodeBlocks();
     } else if (route.params.slug || route.query.post) {

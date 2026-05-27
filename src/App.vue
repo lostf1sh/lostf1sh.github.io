@@ -6,6 +6,7 @@ import BootSequence from "@/components/BootSequence.vue";
 import BackToTop from "@/components/BackToTop.vue";
 import CustomCursor from "@/components/CustomCursor.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
+import DigitalAquarium from "@/components/DigitalAquarium.vue";
 
 const route = useRoute();
 const pageKey = ref(0);
@@ -69,6 +70,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+    <DigitalAquarium />
     <CustomCursor />
     <BootSequence />
     <CommandPalette />

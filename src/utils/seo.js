@@ -2,14 +2,13 @@ const defaults = {
   title: "moli — developer blog & terminal portfolio",
   description: "moli's terminal-styled personal site: projects, blog posts, live status, music, and developer notes.",
   url: "https://f1sh.v.recipes",
-  image: "https://f1sh.v.recipes/screenshot.png",
 };
 
 export const updateMeta = ({ title, description, url, image } = {}) => {
   const t = title || defaults.title;
   const d = description || defaults.description;
   const u = url || defaults.url;
-  const img = image || defaults.image;
+  const img = image || null;
 
   document.title = t;
 
@@ -29,8 +28,21 @@ export const updateMeta = ({ title, description, url, image } = {}) => {
   setContent('meta[name="twitter:url"]', u);
   document.querySelector('link[rel="canonical"]')?.setAttribute("href", u);
 
-  setContent('meta[property="og:image"]', img);
-  setContent('meta[name="twitter:image"]', img);
+  const removeMeta = (selector) => {
+    document.querySelector(selector)?.remove();
+  };
+
+  if (img) {
+    setContent('meta[property="og:image"]', img);
+    setContent('meta[name="twitter:image"]', img);
+  } else {
+    removeMeta('meta[property="og:image"]');
+    removeMeta('meta[property="og:image:alt"]');
+    removeMeta('meta[property="og:image:width"]');
+    removeMeta('meta[property="og:image:height"]');
+    removeMeta('meta[name="twitter:image"]');
+    removeMeta('meta[name="twitter:image:alt"]');
+  }
 };
 
 export const setJsonLd = (id, data) => {

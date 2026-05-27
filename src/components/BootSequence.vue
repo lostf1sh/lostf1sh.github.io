@@ -19,15 +19,31 @@ const bootLines = [
     { text: "moli // junior developer // turkey", delay: 120 },
 ];
 
+const getBooted = () => {
+    try {
+        return window.sessionStorage?.getItem("booted") === "true";
+    } catch {
+        return false;
+    }
+};
+
+const setBooted = () => {
+    try {
+        window.sessionStorage?.setItem("booted", "true");
+    } catch {
+        // Storage can be unavailable on some mobile/private browsers.
+    }
+};
+
 onMounted(() => {
-    if (sessionStorage.getItem("booted")) {
+    if (getBooted()) {
         done.value = true;
         return;
     }
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) {
-        sessionStorage.setItem("booted", "true");
+        setBooted();
         done.value = true;
         return;
     }
@@ -53,7 +69,7 @@ onMounted(() => {
     Promise.all([dataReady, minTime]).then(() => {
         showCursor.value = false;
         setTimeout(() => {
-            sessionStorage.setItem("booted", "true");
+            setBooted();
             done.value = true;
         }, 400);
     });
@@ -94,7 +110,7 @@ onMounted(() => {
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
-    background-color: rgb(var(--color-crust));
+    background-color: #0a0a0a;
     padding: 2rem;
     transition: opacity 0.4s ease;
     font-family: "JetBrains Mono", monospace;
@@ -107,21 +123,21 @@ onMounted(() => {
 .boot-content {
     position: relative;
     min-width: min(420px, calc(100vw - 4rem));
-    border: 1px solid rgb(var(--color-surface));
+    border: 1px solid #1c1c1c;
     padding: 1.1rem 1.25rem 1rem;
     font-size: 13px;
     line-height: 1.8;
-    color: rgb(var(--color-subtle));
+    color: #666;
 }
 
 .boot-frame-label {
     position: absolute;
     top: -0.65em;
     left: 0.9rem;
-    background: rgb(var(--color-crust));
+    background: #0a0a0a;
     padding: 0 0.45rem;
     font-size: 10px;
-    color: rgb(var(--color-subtle) / 0.55);
+    color: rgb(102 102 102 / 0.55);
 }
 
 .boot-line {
@@ -129,24 +145,24 @@ onMounted(() => {
 }
 
 .text-ok {
-    color: rgb(var(--color-text) / 0.6);
+    color: rgb(224 224 224 / 0.6);
 }
 
 .text-boot {
-    color: rgb(var(--color-text) / 0.4);
+    color: rgb(224 224 224 / 0.4);
 }
 
 .text-done {
-    color: rgb(var(--color-text));
+    color: rgb(224 224 224);
 }
 
 .text-cmd {
-    color: rgb(var(--color-text));
+    color: rgb(224 224 224);
     margin-top: 0.25rem;
 }
 
 .boot-cursor {
-    color: rgb(var(--color-text));
+    color: rgb(224 224 224);
     animation: cursor-blink 1s step-end infinite;
 }
 

@@ -12,7 +12,7 @@ const buttons = [
         src: "https://boo.kim/88x31/bookim.gif",
     },
     {
-        label: "moli button",
+        label: "aureal",
         href: "https://aureal.dev/",
         src: "https://raw.githubusercontent.com/NPSummers/NPSummers/refs/heads/main/button.png",
     },
@@ -25,6 +25,11 @@ const buttons = [
         label: "assuming",
         href: "https://assumi.ng/",
         src: "https://assumi.ng/assets/88x31/assuming.gif",
+    },
+    {
+        label: "arch linux",
+        href: "https://archlinux.org/",
+        src: "/88x31/archlinux.png",
     },
 ];
 </script>
@@ -71,6 +76,7 @@ const buttons = [
 .button-grid {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 6px;
 }
 

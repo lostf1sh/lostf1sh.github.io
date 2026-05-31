@@ -165,8 +165,7 @@ onBeforeUnmount(() => {
             :key="bubble.id"
             class="aquarium-bubble"
             :style="{
-                left: `${bubble.x}%`,
-                top: `${bubble.y}%`,
+                transform: `translate3d(${bubble.x}vw, ${bubble.y}vh, 0)`,
                 opacity: bubble.opacity,
                 transitionDelay: `${bubble.delay}s`,
             }"
@@ -177,10 +176,8 @@ onBeforeUnmount(() => {
             :key="item.id"
             class="aquarium-fish"
             :style="{
-                left: `${item.x}%`,
-                top: `${item.y + Math.sin(item.phase) * 1.8}%`,
                 opacity: item.depth,
-                transform: `translate(-50%, -50%) scaleX(${item.direction}) scale(${0.78 + item.depth * 0.42})`,
+                transform: `translate3d(calc(${item.x}vw - 50%), calc(${item.y + Math.sin(item.phase) * 1.8}vh - 50%), 0) scaleX(${item.direction}) scale(${0.78 + item.depth * 0.42})`,
             }"
         >{{ item.glyph }}</span>
 
@@ -189,8 +186,7 @@ onBeforeUnmount(() => {
             :key="pellet.id"
             class="aquarium-food"
             :style="{
-                left: `${pellet.x}%`,
-                top: `${pellet.y}%`,
+                transform: `translate3d(${pellet.x}vw, ${pellet.y}vh, 0)`,
             }"
         >·</span>
 
@@ -225,9 +221,11 @@ onBeforeUnmount(() => {
 .aquarium-bubble,
 .aquarium-food {
     position: absolute;
+    top: 0;
+    left: 0;
     display: inline-block;
     user-select: none;
-    will-change: transform, left, top;
+    will-change: transform;
 }
 
 .aquarium-fish {

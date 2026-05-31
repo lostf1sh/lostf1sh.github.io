@@ -1,47 +1,11 @@
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
-import { useRoute } from "vue-router";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import ThemeToggle from "@/components/ThemeToggle.vue";
 import BootSequence from "@/components/BootSequence.vue";
 import BackToTop from "@/components/BackToTop.vue";
 import CustomCursor from "@/components/CustomCursor.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import DigitalAquarium from "@/components/DigitalAquarium.vue";
-
-const route = useRoute();
-const pageKey = ref(0);
-let initialized = false;
-
-const canUseViewTransitions = () => {
-    if (typeof document === "undefined" || typeof window === "undefined") {
-        return false;
-    }
-
-    return "startViewTransition" in document &&
-        !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-};
-
-watch(() => route.fullPath, async () => {
-    if (!initialized) {
-        initialized = true;
-        return;
-    }
-
-    if (canUseViewTransitions()) {
-        const transition = document.startViewTransition(async () => {
-            pageKey.value++;
-            await nextTick();
-        });
-
-        try {
-            await transition.finished;
-        } catch {
-        }
-        return;
-    }
-
-    pageKey.value++;
-});
 
 const showBackToTop = ref(false);
 let scrollRaf = null;
@@ -56,16 +20,11 @@ const onScroll = () => {
 
 onMounted(() => {
     window.addEventListener("scroll", onScroll, { passive: true });
-
-    if (canUseViewTransitions()) {
-        document.documentElement.classList.add("view-transitions-enabled");
-    }
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener("scroll", onScroll);
     if (scrollRaf) cancelAnimationFrame(scrollRaf);
-    document.documentElement.classList.remove("view-transitions-enabled");
 });
 </script>
 
@@ -75,9 +34,10 @@ onBeforeUnmount(() => {
     <BootSequence />
     <CommandPalette />
     <ThemeToggle />
-    <router-view v-slot="{ Component, route }" id="main-content">
+    <router-view v-slot="{ Component, route }">
         <div
-            :key="pageKey"
+            id="main-content"
+            :key="route.fullPath"
             class="page-transition"
         >
             <component v-if="Component" :is="Component" />
@@ -110,37 +70,12 @@ html {
 
 /* Page transition */
 .page-transition {
-    animation: page-enter 0.25s ease both;
-}
-
-html.view-transitions-enabled .page-transition {
-    animation: none;
-    view-transition-name: page-root;
+    animation: page-enter 0.16s ease-out both;
 }
 
 @keyframes page-enter {
     from { opacity: 0; }
     to { opacity: 1; }
-}
-
-@supports (view-transition-name: none) {
-    ::view-transition-old(page-root) {
-        animation: view-old 0.2s ease both;
-    }
-
-    ::view-transition-new(page-root) {
-        animation: view-new 0.25s ease both;
-    }
-
-    @keyframes view-old {
-        from { opacity: 1; }
-        to { opacity: 0; }
-    }
-
-    @keyframes view-new {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {

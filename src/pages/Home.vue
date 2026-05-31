@@ -56,7 +56,8 @@ if (contribCached?.value?.length) {
 }
 const contributionsLoading = ref(!contributions.value.length);
 const contributionsRevalidating = ref(false);
-let ageRafId = 0;
+const AGE_UPDATE_INTERVAL_MS = 250;
+let ageTimerId = 0;
 
 const currentTrack = computed(() => {
     const sp = lanyardData.spotify;
@@ -170,11 +171,12 @@ const fetchContributions = async () => {
 onMounted(() => {
     fetchProjects();
     fetchContributions();
-    tickAge();
+    updateAge();
+    ageTimerId = window.setInterval(updateAge, AGE_UPDATE_INTERVAL_MS);
 });
 
 onBeforeUnmount(() => {
-    if (ageRafId) cancelAnimationFrame(ageRafId);
+    if (ageTimerId) window.clearInterval(ageTimerId);
 });
 
 const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 6, 6, 0);
@@ -182,10 +184,6 @@ const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
 const currentAge = ref(0);
 const updateAge = () => {
     currentAge.value = (Date.now() - (BIRTH_DATE_IN_TURKEY - 3 * 3600 * 1000)) / MS_PER_YEAR;
-};
-const tickAge = () => {
-    updateAge();
-    ageRafId = requestAnimationFrame(tickAge);
 };
 
 const heroContainer = staggerContainer(0.06);

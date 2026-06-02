@@ -18,8 +18,8 @@ const buttons = [
     },
     {
         label: "akryst",
-        href: "https://akryst.lol/",
-        src: "https://akryst.lol/88x31/akryst.gif",
+        href: "https://akryst.moe/",
+        src: "https://akryst.moe/88x31/akryst.gif",
     },
     {
         label: "assuming",

@@ -1,4 +1,4 @@
-# f1sh.v.recipes
+# moli.codes
 
 minimal personal site + blog with terminal aesthetic.
 
@@ -33,4 +33,4 @@ bun run build    # build site + seo assets + spa fallback
 bun run preview  # preview production build
 ```
 
-live: [f1sh.v.recipes](https://f1sh.v.recipes)
+live: [moli.codes](https://moli.codes)

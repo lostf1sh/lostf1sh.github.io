@@ -7,7 +7,7 @@ const lines = ref([]);
 const showCursor = ref(true);
 
 const bootLines = [
-    { text: "[boot] moliOS // f1sh.v.recipes", delay: 0 },
+    { text: "[boot] moliOS // moli.codes", delay: 0 },
     { text: "[ok]   mounted /home/moli", delay: 180 },
     { text: "[ok]   loaded posts/index", delay: 180 },
     { text: "[ok]   linked github repos", delay: 220 },

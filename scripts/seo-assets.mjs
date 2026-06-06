@@ -1,7 +1,7 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-export const BASE_URL = "https://f1sh.v.recipes";
+export const BASE_URL = "https://moli.codes";
 
 const escapeXml = (value = "") => {
   return String(value)
@@ -72,7 +72,7 @@ export const buildRss = (posts) => {
     })
     .join("");
 
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>f1sh.v.recipes blog</title>\n    <link>${BASE_URL}/blog</link>\n    <description>Thoughts on code, tools, and random stuff.</description>\n    <language>en-us</language>\n    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}\n  </channel>\n</rss>\n`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>moli.codes blog</title>\n    <link>${BASE_URL}/blog</link>\n    <description>Thoughts on code, tools, and random stuff.</description>\n    <language>en-us</language>\n    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>${items}\n  </channel>\n</rss>\n`;
 };
 
 export const buildSitemap = (posts) => {

@@ -69,7 +69,7 @@ router.beforeEach((to, _, next) => {
   updateMeta({
     title: to.meta.title,
     description: to.meta.description,
-    url: `https://f1sh.v.recipes${to.path}`,
+    url: `https://moli.codes${to.path}`,
   });
   next();
 });

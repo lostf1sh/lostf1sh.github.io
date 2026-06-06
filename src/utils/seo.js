@@ -1,7 +1,7 @@
 const defaults = {
   title: "moli — developer blog & terminal portfolio",
   description: "moli's terminal-styled personal site: projects, blog posts, live status, music, and developer notes.",
-  url: "https://f1sh.v.recipes",
+  url: "https://moli.codes",
 };
 
 export const updateMeta = ({ title, description, url, image } = {}) => {

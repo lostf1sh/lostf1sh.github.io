@@ -75,9 +75,9 @@ const openPost = (slug) => {
             router.replace({ name: "Blog", params: { slug }, query: nextQuery });
         }
         updateMeta({
-            title: `${currentPost.value.title} | f1sh.v.recipes`,
+            title: `${currentPost.value.title} | moli.codes`,
             description: currentPost.value.excerpt,
-            url: `https://f1sh.v.recipes/blog/${slug}`,
+            url: `https://moli.codes/blog/${slug}`,
         });
         setJsonLd("article", {
             "@context": "https://schema.org",
@@ -87,8 +87,8 @@ const openPost = (slug) => {
             datePublished: currentPost.value.date,
             dateModified: currentPost.value.date,
             author: { "@type": "Person", name: "Moli" },
-            mainEntityOfPage: `https://f1sh.v.recipes/blog/${slug}`,
-            url: `https://f1sh.v.recipes/blog/${slug}`,
+            mainEntityOfPage: `https://moli.codes/blog/${slug}`,
+            url: `https://moli.codes/blog/${slug}`,
         });
         void highlightCodeBlocks();
     } else if (route.params.slug || route.query.post) {
@@ -102,9 +102,9 @@ const goBack = ({ skipQueryUpdate = false } = {}) => {
     currentPost.value = null;
     window.scrollTo({ top: 0, behavior: "smooth" });
     updateMeta({
-        title: "Blog | f1sh.v.recipes",
+        title: "Blog | moli.codes",
         description: "Thoughts on code, tools, and random stuff.",
-        url: "https://f1sh.v.recipes/blog",
+        url: "https://moli.codes/blog",
     });
     removeJsonLd("article");
     if (!skipQueryUpdate && (route.params.slug || route.query.post)) {

@@ -17,7 +17,9 @@ const scrollToTop = () => {
         class="back-to-top"
     >
         <span class="sr-only">Back to top</span>
-        [↑]
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 19V5M12 5l-6 6M12 5l6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
     </button>
 </template>
 
@@ -30,20 +32,21 @@ const scrollToTop = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: "JetBrains Mono", monospace;
-    font-size: 12px;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
     border: 1px solid rgb(var(--color-surface));
-    background: rgb(var(--color-base) / 0.95);
+    background: rgb(var(--color-base) / 0.92);
+    backdrop-filter: blur(6px);
     color: rgb(var(--color-subtle));
-    padding: 6px 8px;
     transition: color 0.15s ease, border-color 0.15s ease, opacity 0.3s ease;
     opacity: 0;
     animation: btt-in 0.2s ease forwards;
 }
 
 .back-to-top:hover {
-    color: rgb(var(--color-text));
-    border-color: rgb(var(--color-overlay));
+    color: rgb(var(--color-mint));
+    border-color: rgb(var(--color-mint) / 0.5);
 }
 
 @keyframes btt-in {

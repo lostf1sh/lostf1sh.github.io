@@ -1,7 +1,5 @@
 <script setup>
 import { computed } from "vue";
-import { motion } from "motion-v";
-import { springs } from "@/utils/motion";
 import {
     getContributionLevel,
     getGitHubContributionUrl,
@@ -10,113 +8,101 @@ import {
 const props = defineProps({
     contributions: { type: Array, required: true },
     loading: Boolean,
-    revalidating: Boolean,
 });
 
-const contributionWeeks = computed(() => {
-    const weeks = [];
+const weeks = computed(() => {
+    const out = [];
     for (let i = 0; i < props.contributions.length; i += 7) {
-        weeks.push(props.contributions.slice(i, i + 7));
+        out.push(props.contributions.slice(i, i + 7));
     }
-    return weeks;
+    return out;
 });
 
-const totalContributions = computed(() => {
-    return props.contributions.reduce((sum, day) => sum + day.count, 0);
-});
+const total = computed(() =>
+    props.contributions.reduce((sum, day) => sum + day.count, 0),
+);
+
+const LEVEL_ALPHA = [0, 0.3, 0.5, 0.72, 1];
+const cellStyle = (count) => {
+    const lvl = getContributionLevel(count);
+    if (lvl === 0) return { backgroundColor: "rgb(var(--color-surface) / 0.55)" };
+    return { backgroundColor: `rgb(var(--color-mint) / ${LEVEL_ALPHA[lvl]})` };
+};
 </script>
 
 <template>
-    <motion.div
-        class="tui-panel mt-4"
-        :whileInView="{ opacity: 1 }"
-        :initial="{ opacity: 0 }"
-        :transition="springs.gentle"
-        :inViewOptions="{ once: true }"
-    >
-        <span class="tui-panel-title">
-            contributions
-            <span v-if="revalidating && !loading" class="text-ink-subtle"> [syncing]</span>
-        </span>
-
-        <div class="pt-1">
-            <div v-if="!loading" class="flex items-center justify-between mb-2">
-                <span class="text-[10px] text-ink-subtle">{{ totalContributions }} in the last year</span>
-                <div class="flex items-center gap-1.5 text-[10px] text-ink-subtle">
-                    <span>less</span>
-                    <div class="flex gap-px">
-                        <div class="w-[7px] h-[7px] bg-ink-surface/60"></div>
-                        <div class="w-[7px] h-[7px] bg-ink-text/10"></div>
-                        <div class="w-[7px] h-[7px] bg-ink-text/25"></div>
-                        <div class="w-[7px] h-[7px] bg-ink-text/45"></div>
-                        <div class="w-[7px] h-[7px] bg-ink-text/70"></div>
-                    </div>
-                    <span>more</span>
+    <div>
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-ink-subtle">
+                <template v-if="!loading">{{ total }} contributions in the last year</template>
+                <template v-else>loading activity</template>
+            </span>
+            <div class="hidden sm:flex items-center gap-1.5 text-xs text-ink-subtle">
+                <span>less</span>
+                <div class="flex gap-[2px]">
+                    <span class="legend-cell" :style="cellStyle(0)"></span>
+                    <span class="legend-cell" :style="{ backgroundColor: 'rgb(var(--color-mint) / 0.3)' }"></span>
+                    <span class="legend-cell" :style="{ backgroundColor: 'rgb(var(--color-mint) / 0.5)' }"></span>
+                    <span class="legend-cell" :style="{ backgroundColor: 'rgb(var(--color-mint) / 0.72)' }"></span>
+                    <span class="legend-cell" :style="{ backgroundColor: 'rgb(var(--color-mint) / 1)' }"></span>
                 </div>
+                <span>more</span>
             </div>
+        </div>
 
-            <div v-if="loading">
-                <div class="h-[60px] bg-ink-surface/15 cursor-blink"></div>
-            </div>
+        <div v-if="loading" class="skeleton-pulse h-[68px] bg-ink-surface/20"></div>
 
-            <div v-else>
-                <div class="overflow-x-auto md:overflow-visible pb-1 md:pb-0 scrollbar-thin">
-                    <div class="inline-flex md:flex gap-[2px] md:gap-[3px]" style="min-width: max-content;">
-                        <div
-                            v-for="(week, weekIndex) in contributionWeeks"
-                            :key="weekIndex"
-                            class="flex flex-col gap-[2px] md:gap-[3px] md:flex-1"
+        <div v-else class="overflow-x-auto md:overflow-visible pb-1 scrollbar-thin">
+            <div class="inline-flex md:flex gap-[3px]" style="min-width: max-content;">
+                <div
+                    v-for="(week, wi) in weeks"
+                    :key="wi"
+                    class="flex flex-col gap-[3px] md:flex-1"
+                >
+                    <template v-for="(day, di) in week" :key="di">
+                        <a
+                            v-if="day.count > 0"
+                            :href="getGitHubContributionUrl(day.date)"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="contrib-cell"
+                            :style="cellStyle(day.count)"
+                            :aria-label="`${day.date}: ${day.count} contributions`"
                         >
-                            <template v-for="(day, dayIndex) in week" :key="dayIndex">
-                                <a
-                                    v-if="day.count > 0"
-                                    :href="getGitHubContributionUrl(day.date)"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="contrib-cell no-external w-[7px] h-[7px] md:w-auto md:h-auto md:aspect-square transition-[background-color,outline] hover:outline hover:outline-1 hover:outline-ink-text/30 relative group"
-                                    :class="[
-                                        getContributionLevel(day.count) === 1
-                                            ? 'bg-ink-text/10 hover:bg-ink-text/20'
-                                            : getContributionLevel(day.count) === 2
-                                              ? 'bg-ink-text/25 hover:bg-ink-text/35'
-                                              : getContributionLevel(day.count) === 3
-                                                ? 'bg-ink-text/45 hover:bg-ink-text/55'
-                                                : 'bg-ink-text/70 hover:bg-ink-text/85',
-                                    ]"
-                                    :aria-label="`${day.date}: ${day.count} contributions`"
-                                >
-                                    <span class="contrib-tip" :data-tip="`${day.date}: ${day.count}`"></span>
-                                </a>
-                                <div
-                                    v-else
-                                    class="w-[7px] h-[7px] md:w-auto md:h-auto md:aspect-square bg-ink-surface/25"
-                                    :title="`${day.date}: 0 contributions`"
-                                ></div>
-                            </template>
-                        </div>
-                    </div>
+                            <span class="contrib-tip" :data-tip="`${day.date} · ${day.count}`"></span>
+                        </a>
+                        <div
+                            v-else
+                            class="contrib-cell"
+                            :style="cellStyle(0)"
+                            :title="`${day.date}: 0 contributions`"
+                        ></div>
+                    </template>
                 </div>
             </div>
         </div>
-    </motion.div>
+    </div>
 </template>
 
 <style scoped>
-.contrib-cell:hover .contrib-tip::after {
-    content: attr(data-tip);
-    position: absolute;
-    bottom: calc(100% + 4px);
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 2px 6px;
-    font-size: 10px;
-    font-family: 'JetBrains Mono', monospace;
-    white-space: nowrap;
-    background: rgb(var(--color-surface));
-    color: rgb(var(--color-text));
-    border: 1px solid rgb(var(--color-overlay));
-    z-index: 10;
-    pointer-events: none;
+.contrib-cell {
+    width: 9px;
+    height: 9px;
+    position: relative;
+    transition: outline 0.12s ease;
+}
+
+@media (min-width: 768px) {
+    .contrib-cell {
+        width: auto;
+        height: auto;
+        aspect-ratio: 1;
+    }
+}
+
+a.contrib-cell:hover {
+    outline: 1px solid rgb(var(--color-mint) / 0.6);
+    outline-offset: 1px;
 }
 
 .contrib-tip {
@@ -125,9 +111,29 @@ const totalContributions = computed(() => {
     inset: 0;
 }
 
+.contrib-cell:hover .contrib-tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 2px 7px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    background: rgb(var(--color-surface));
+    color: rgb(var(--color-text));
+    border: 1px solid rgb(var(--color-overlay));
+    z-index: 10;
+    pointer-events: none;
+}
+
+.legend-cell {
+    width: 9px;
+    height: 9px;
+    display: inline-block;
+}
+
 @media (hover: none) {
-    .contrib-cell:hover .contrib-tip::after {
-        display: none;
-    }
+    .contrib-cell:hover .contrib-tip::after { display: none; }
 }
 </style>

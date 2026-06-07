@@ -72,7 +72,13 @@ const onClick = (e) => {
 };
 
 onMounted(() => {
+    const isTouchDevice =
+        (navigator.maxTouchPoints || 0) > 0 ||
+        window.matchMedia("(pointer: coarse)").matches ||
+        window.matchMedia("(hover: none)").matches;
+
     const canUseCursor =
+        !isTouchDevice &&
         window.matchMedia("(pointer: fine)").matches &&
         window.matchMedia("(hover: hover)").matches &&
         !window.matchMedia("(prefers-reduced-motion: reduce)").matches;

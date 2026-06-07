@@ -59,7 +59,6 @@ const persistEnabled = () => {
     try {
         localStorage.setItem(STORAGE_KEY, String(enabled.value));
     } catch {
-        // ignore private mode / storage failures
     }
 };
 

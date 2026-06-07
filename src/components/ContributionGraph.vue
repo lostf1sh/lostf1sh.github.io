@@ -36,27 +36,27 @@ const totalContributions = computed(() => {
     >
         <span class="tui-panel-title">
             contributions
-            <span v-if="revalidating && !loading" class="text-catppuccin-subtle/40"> [syncing]</span>
+            <span v-if="revalidating && !loading" class="text-ink-subtle/40"> [syncing]</span>
         </span>
 
         <div class="pt-1">
             <div v-if="!loading" class="flex items-center justify-between mb-2">
-                <span class="text-[10px] text-catppuccin-subtle/40">{{ totalContributions }} in the last year</span>
-                <div class="flex items-center gap-1.5 text-[10px] text-catppuccin-subtle/40">
+                <span class="text-[10px] text-ink-subtle/40">{{ totalContributions }} in the last year</span>
+                <div class="flex items-center gap-1.5 text-[10px] text-ink-subtle/40">
                     <span>less</span>
                     <div class="flex gap-px">
-                        <div class="w-[7px] h-[7px] bg-catppuccin-surface/60"></div>
-                        <div class="w-[7px] h-[7px] bg-catppuccin-text/10"></div>
-                        <div class="w-[7px] h-[7px] bg-catppuccin-text/25"></div>
-                        <div class="w-[7px] h-[7px] bg-catppuccin-text/45"></div>
-                        <div class="w-[7px] h-[7px] bg-catppuccin-text/70"></div>
+                        <div class="w-[7px] h-[7px] bg-ink-surface/60"></div>
+                        <div class="w-[7px] h-[7px] bg-ink-text/10"></div>
+                        <div class="w-[7px] h-[7px] bg-ink-text/25"></div>
+                        <div class="w-[7px] h-[7px] bg-ink-text/45"></div>
+                        <div class="w-[7px] h-[7px] bg-ink-text/70"></div>
                     </div>
                     <span>more</span>
                 </div>
             </div>
 
             <div v-if="loading">
-                <div class="h-[60px] bg-catppuccin-surface/15 cursor-blink"></div>
+                <div class="h-[60px] bg-ink-surface/15 cursor-blink"></div>
             </div>
 
             <div v-else>
@@ -73,15 +73,15 @@ const totalContributions = computed(() => {
                                     :href="getGitHubContributionUrl(day.date)"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="contrib-cell no-external w-[7px] h-[7px] md:w-auto md:h-auto md:aspect-square transition-[background-color,outline] hover:outline hover:outline-1 hover:outline-catppuccin-text/30 relative group"
+                                    class="contrib-cell no-external w-[7px] h-[7px] md:w-auto md:h-auto md:aspect-square transition-[background-color,outline] hover:outline hover:outline-1 hover:outline-ink-text/30 relative group"
                                     :class="[
                                         getContributionLevel(day.count) === 1
-                                            ? 'bg-catppuccin-text/10 hover:bg-catppuccin-text/20'
+                                            ? 'bg-ink-text/10 hover:bg-ink-text/20'
                                             : getContributionLevel(day.count) === 2
-                                              ? 'bg-catppuccin-text/25 hover:bg-catppuccin-text/35'
+                                              ? 'bg-ink-text/25 hover:bg-ink-text/35'
                                               : getContributionLevel(day.count) === 3
-                                                ? 'bg-catppuccin-text/45 hover:bg-catppuccin-text/55'
-                                                : 'bg-catppuccin-text/70 hover:bg-catppuccin-text/85',
+                                                ? 'bg-ink-text/45 hover:bg-ink-text/55'
+                                                : 'bg-ink-text/70 hover:bg-ink-text/85',
                                     ]"
                                     :aria-label="`${day.date}: ${day.count} contributions`"
                                 >
@@ -89,7 +89,7 @@ const totalContributions = computed(() => {
                                 </a>
                                 <div
                                     v-else
-                                    class="w-[7px] h-[7px] md:w-auto md:h-auto md:aspect-square bg-catppuccin-surface/25"
+                                    class="w-[7px] h-[7px] md:w-auto md:h-auto md:aspect-square bg-ink-surface/25"
                                     :title="`${day.date}: 0 contributions`"
                                 ></div>
                             </template>

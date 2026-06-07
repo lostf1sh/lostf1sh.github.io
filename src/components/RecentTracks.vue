@@ -33,27 +33,27 @@ const appleMusicUrl = (track) =>
     >
         <span class="tui-panel-title">
             listening
-            <span v-if="revalidating" class="text-catppuccin-subtle/40"> [syncing]</span>
+            <span v-if="revalidating" class="text-ink-subtle/40"> [syncing]</span>
         </span>
 
         <div class="pt-1">
-            <div v-if="staleFailed && (tracks.length || currentTrack)" class="text-[10px] text-catppuccin-subtle/40 mb-2">
+            <div v-if="staleFailed && (tracks.length || currentTrack)" class="text-[10px] text-ink-subtle/40 mb-2">
                 [cached]
             </div>
 
             <!-- Now playing -->
             <div
                 v-if="currentTrack"
-                class="group block py-1.5 border-b border-catppuccin-surface/20 text-xs"
+                class="group block py-1.5 border-b border-ink-surface/20 text-xs"
             >
                 <div class="flex items-center justify-between gap-2">
-                    <span class="text-catppuccin-text truncate">
+                    <span class="text-ink-text truncate">
                         ♪ {{ currentTrack.name }}
                     </span>
-                    <span class="text-catppuccin-green flex-shrink-0">[NOW]</span>
+                    <span class="text-ink-green flex-shrink-0">[NOW]</span>
                 </div>
                 <div class="flex items-center justify-between gap-2 mt-0.5">
-                    <span class="text-catppuccin-subtle/40 truncate">
+                    <span class="text-ink-subtle/40 truncate">
                         {{ currentTrack.artist["#text"] }}
                     </span>
                     <span class="provider-links">
@@ -66,17 +66,17 @@ const appleMusicUrl = (track) =>
             <!-- Loading -->
             <div v-if="loading" class="space-y-1">
                 <div v-for="i in (currentTrack ? 5 : 6)" :key="i" class="py-1.5">
-                    <div class="skeleton-pulse h-3 bg-catppuccin-surface/40" :style="{ width: ['130px', '160px', '110px', '145px', '120px', '135px'][i - 1] }"></div>
+                    <div class="skeleton-pulse h-3 bg-ink-surface/40" :style="{ width: ['130px', '160px', '110px', '145px', '120px', '135px'][i - 1] }"></div>
                 </div>
             </div>
 
             <!-- Error -->
-            <div v-else-if="error && !tracks.length" class="text-xs text-catppuccin-subtle py-2">
+            <div v-else-if="error && !tracks.length" class="text-xs text-ink-subtle py-2">
                 [ERR] couldn't load tracks
             </div>
 
             <!-- No tracks -->
-            <div v-else-if="!tracks.length && !currentTrack" class="text-xs text-catppuccin-subtle py-2">
+            <div v-else-if="!tracks.length && !currentTrack" class="text-xs text-ink-subtle py-2">
                 (silent)
             </div>
 
@@ -88,18 +88,18 @@ const appleMusicUrl = (track) =>
                     :initial="{ opacity: 0 }"
                     :animate="{ opacity: 1 }"
                     :transition="{ delay: index * 0.03 }"
-                    class="block py-1.5 border-b border-catppuccin-surface/20 last:border-0 text-xs"
+                    class="block py-1.5 border-b border-ink-surface/20 last:border-0 text-xs"
                 >
                     <div class="flex items-center justify-between gap-2">
-                        <span class="text-catppuccin-text truncate">
+                        <span class="text-ink-text truncate">
                             {{ track.name }}
                         </span>
-                        <span v-if="track.playcount > 1" class="text-catppuccin-subtle flex-shrink-0">
+                        <span v-if="track.playcount > 1" class="text-ink-subtle flex-shrink-0">
                             x{{ track.playcount }}
                         </span>
                     </div>
                     <div class="flex items-center justify-between gap-2 mt-0.5">
-                        <span class="text-catppuccin-subtle/40 truncate">
+                        <span class="text-ink-subtle/40 truncate">
                             {{ track.artist["#text"] }}
                         </span>
                         <span class="provider-links">

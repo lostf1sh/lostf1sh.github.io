@@ -97,14 +97,14 @@ const repoContainer = staggerContainer(0.03);
                     @click="toggleLanguage(lang)"
                     class="px-2 py-0.5 text-[10px] border transition-colors cursor-pointer"
                     :class="activeLanguage === lang
-                        ? 'bg-catppuccin-text/8 border-catppuccin-text/20 text-catppuccin-text'
-                        : 'bg-transparent border-catppuccin-surface/50 text-catppuccin-subtle/50 hover:text-catppuccin-text hover:border-catppuccin-overlay/40'"
+                        ? 'bg-ink-text/8 border-ink-text/20 text-ink-text'
+                        : 'bg-transparent border-ink-surface/50 text-ink-subtle/50 hover:text-ink-text hover:border-ink-overlay/40'"
                 >
                     {{ lang.toLowerCase() }}({{ count }})
                 </button>
             </div>
 
-            <div v-if="loading" class="text-xs text-catppuccin-subtle/40 py-4">loading...</div>
+            <div v-if="loading" class="text-xs text-ink-subtle/40 py-4">loading...</div>
 
             <template v-else>
                 <div v-if="pinnedRepos.length && !activeLanguage" class="tui-panel mb-5">
@@ -117,16 +117,16 @@ const repoContainer = staggerContainer(0.03);
                             target="_blank"
                             rel="noopener noreferrer"
                             :variants="fadeUp"
-                            class="group block py-2 border-b border-catppuccin-surface/15 last:border-0 text-xs"
+                            class="group block py-2 border-b border-ink-surface/15 last:border-0 text-xs"
                         >
                             <div class="flex items-center justify-between gap-2">
-                                <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">{{ repo.name }}</span>
-                                <div class="flex items-center gap-3 flex-shrink-0 text-catppuccin-subtle/30">
+                                <span class="text-ink-text group-hover:text-ink-accent transition-colors truncate">{{ repo.name }}</span>
+                                <div class="flex items-center gap-3 flex-shrink-0 text-ink-subtle/30">
                                     <span v-if="repo.stargazers_count > 0">★{{ repo.stargazers_count }}</span>
                                     <span v-if="repo.language">{{ repo.language.toLowerCase() }}</span>
                                 </div>
                             </div>
-                            <div class="text-catppuccin-subtle/30 truncate mt-0.5">{{ repo.description || "--" }}</div>
+                            <div class="text-ink-subtle/30 truncate mt-0.5">{{ repo.description || "--" }}</div>
                         </motion.a>
                     </motion.div>
                 </div>
@@ -134,9 +134,9 @@ const repoContainer = staggerContainer(0.03);
                 <div class="tui-panel">
                     <span class="tui-panel-title">{{ activeLanguage ? activeLanguage.toLowerCase() : 'all' }}</span>
 
-                    <div v-if="!filteredRepos.length" class="text-xs text-catppuccin-subtle/40 py-3 pt-2">
+                    <div v-if="!filteredRepos.length" class="text-xs text-ink-subtle/40 py-3 pt-2">
                         (no projects found)
-                        <button v-if="activeLanguage" @click="activeLanguage = null" class="text-catppuccin-text ml-2 cursor-pointer">[clear]</button>
+                        <button v-if="activeLanguage" @click="activeLanguage = null" class="text-ink-text ml-2 cursor-pointer">[clear]</button>
                     </div>
 
                     <motion.div v-else :variants="repoContainer" initial="hidden" animate="visible" class="pt-1">
@@ -147,16 +147,16 @@ const repoContainer = staggerContainer(0.03);
                             target="_blank"
                             rel="noopener noreferrer"
                             :variants="fadeUp"
-                            class="group block py-2 border-b border-catppuccin-surface/10 last:border-0 text-xs"
+                            class="group block py-2 border-b border-ink-surface/10 last:border-0 text-xs"
                         >
                             <div class="flex items-center justify-between gap-2">
-                                <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">{{ repo.name }}</span>
-                                <div class="flex items-center gap-3 flex-shrink-0 text-catppuccin-subtle/30">
+                                <span class="text-ink-text group-hover:text-ink-accent transition-colors truncate">{{ repo.name }}</span>
+                                <div class="flex items-center gap-3 flex-shrink-0 text-ink-subtle/30">
                                     <span v-if="repo.stargazers_count > 0">★{{ repo.stargazers_count }}</span>
                                     <span v-if="repo.language">{{ repo.language.toLowerCase() }}</span>
                                 </div>
                             </div>
-                            <div class="text-catppuccin-subtle/30 truncate mt-0.5">{{ repo.description || "--" }}</div>
+                            <div class="text-ink-subtle/30 truncate mt-0.5">{{ repo.description || "--" }}</div>
                         </motion.a>
                     </motion.div>
                 </div>

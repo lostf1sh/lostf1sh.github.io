@@ -132,7 +132,7 @@ onBeforeUnmount(() => {
             <div class="command-palette" role="dialog" aria-modal="true" aria-label="Command palette">
                 <div class="palette-title">command</div>
                 <div class="palette-input-row">
-                    <span class="text-catppuccin-subtle/45">$</span>
+                    <span class="text-ink-subtle/45">$</span>
                     <input
                         ref="inputRef"
                         v-model="query"

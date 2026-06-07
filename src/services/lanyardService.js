@@ -11,7 +11,7 @@ const lanyardData = reactive({
   discordUser: null,
   spotify: null,
   discordStatus: "offline",
-  discordStatusColor: "text-catppuccin-subtle",
+  discordStatusColor: "text-ink-subtle",
   editorActivity: null,
   isConnected: false,
   isLoading: true,
@@ -44,8 +44,8 @@ function applyPresencePayload(data) {
     lanyardData.discordStatus = data.discord_status;
     lanyardData.discordStatusColor =
       data.discord_status === "online"
-        ? "text-catppuccin-gold"
-        : "text-catppuccin-subtle";
+        ? "text-ink-accent"
+        : "text-ink-subtle";
   }
 
   lanyardData.editorActivity = data.activities?.find(

@@ -156,12 +156,12 @@ onBeforeUnmount(() => {
 }
 
 .cursor-fish.cursor-hover {
-    color: rgb(var(--color-mauve));
+    color: rgb(var(--color-accent));
     opacity: 1;
 }
 
 .cursor-fish.cursor-hover .fish-wake {
-    color: rgb(var(--color-mauve) / 0.55);
+    color: rgb(var(--color-accent) / 0.55);
 }
 
 .cursor-fish.is-splashing {

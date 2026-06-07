@@ -4,7 +4,7 @@ minimal personal site + blog with terminal aesthetic.
 
 ## stack
 
-vue 3 · vite · tailwind css · catppuccin · bun
+vue 3 · vite · tailwind css · bun
 
 ## features
 
@@ -14,7 +14,7 @@ vue 3 · vite · tailwind css · catppuccin · bun
 - markdown blog with related posts
 - command palette, theme toggle, boot sequence
 - generated rss, sitemap, robots assets
-- spa fallback via `_redirects` (cloudflare pages)
+- spa routing (cloudflare pages auto-serves index.html when no 404.html exists)
 
 ## setup
 

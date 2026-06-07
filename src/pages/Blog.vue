@@ -207,8 +207,8 @@ const viewAnimate = { opacity: 1 };
 <template>
     <!-- Reading progress bar -->
     <Teleport to="body">
-        <div v-if="view === 'post' && currentPost" class="fixed top-0 left-0 w-full z-[9998] h-[2px] bg-catppuccin-surface/20">
-            <div class="h-full bg-catppuccin-text/40 transition-[width] duration-150" :style="{ width: progressPercent + '%' }"></div>
+        <div v-if="view === 'post' && currentPost" class="fixed top-0 left-0 w-full z-[9998] h-[2px] bg-ink-surface/20">
+            <div class="h-full bg-ink-text/40 transition-[width] duration-150" :style="{ width: progressPercent + '%' }"></div>
         </div>
     </Teleport>
 
@@ -239,15 +239,15 @@ const viewAnimate = { opacity: 1 };
 
             <div class="tui-panel mb-4">
                 <span class="tui-panel-title">writing</span>
-                <div class="pt-1 flex items-center justify-between text-[10px] text-catppuccin-subtle/40 mb-2">
+                <div class="pt-1 flex items-center justify-between text-[10px] text-ink-subtle/40 mb-2">
                     <span>{{ posts.length }} posts // thoughts on code, tools, and systems</span>
                     <div class="flex gap-2">
-                        <a href="/rss.xml" class="hover:text-catppuccin-text transition-colors" target="_blank" rel="noopener noreferrer">[rss]</a>
-                        <a href="https://github.com/lostf1sh" class="hover:text-catppuccin-text transition-colors" target="_blank" rel="noopener noreferrer">[github]</a>
+                        <a href="/rss.xml" class="hover:text-ink-text transition-colors" target="_blank" rel="noopener noreferrer">[rss]</a>
+                        <a href="https://github.com/lostf1sh" class="hover:text-ink-text transition-colors" target="_blank" rel="noopener noreferrer">[github]</a>
                     </div>
                 </div>
 
-                <div v-if="!posts.length" class="text-xs text-catppuccin-subtle py-4">(empty)</div>
+                <div v-if="!posts.length" class="text-xs text-ink-subtle py-4">(empty)</div>
 
                 <motion.div v-else :variants="listItemsContainer" initial="hidden" animate="visible">
                     <motion.div
@@ -259,23 +259,23 @@ const viewAnimate = { opacity: 1 };
                         <button
                             type="button"
                             @click="openPost(post.slug)"
-                            class="w-full text-left py-2.5 border-b border-catppuccin-surface/20 cursor-pointer block last:border-0"
+                            class="w-full text-left py-2.5 border-b border-ink-surface/20 cursor-pointer block last:border-0"
                         >
                             <div class="flex items-start justify-between gap-3">
                                 <div class="flex-1 min-w-0">
-                                    <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors leading-snug">
+                                    <div class="text-xs text-ink-text group-hover:text-ink-accent transition-colors leading-snug">
                                         {{ post.title }}
                                     </div>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-[10px] text-catppuccin-subtle/40">{{ formatDate(post.date) }}</span>
-                                        <span v-if="post.tags.length" class="text-[10px] text-catppuccin-subtle/30">
+                                        <span class="text-[10px] text-ink-subtle/40">{{ formatDate(post.date) }}</span>
+                                        <span v-if="post.tags.length" class="text-[10px] text-ink-subtle/30">
                                             <span v-for="(tag, ti) in post.tags" :key="tag">
                                                 {{ tag }}<span v-if="ti < post.tags.length - 1">,</span>
                                             </span>
                                         </span>
                                     </div>
                                 </div>
-                                <span class="text-[10px] text-catppuccin-subtle/20 group-hover:text-catppuccin-subtle transition-colors flex-shrink-0 pt-0.5">
+                                <span class="text-[10px] text-ink-subtle/20 group-hover:text-ink-subtle transition-colors flex-shrink-0 pt-0.5">
                                     →
                                 </span>
                             </div>
@@ -288,7 +288,7 @@ const viewAnimate = { opacity: 1 };
 
         <!-- Post detail -->
         <div v-else-if="view === 'post' && currentPost" key="post" class="post-detail-enter">
-            <button @click="goBack" class="text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors mb-4 cursor-pointer block">
+            <button @click="goBack" class="text-ink-subtle hover:text-ink-text text-xs transition-colors mb-4 cursor-pointer block">
                 [← back]
             </button>
 
@@ -299,21 +299,21 @@ const viewAnimate = { opacity: 1 };
                         <span class="tui-panel-title">meta</span>
                         <div class="flex flex-row md:flex-col gap-3 flex-wrap text-[10px] pt-1">
                             <div>
-                                <div class="text-catppuccin-subtle/40">issue</div>
-                                <div class="text-catppuccin-text">#{{ currentPostNumber }}</div>
+                                <div class="text-ink-subtle/40">issue</div>
+                                <div class="text-ink-text">#{{ currentPostNumber }}</div>
                             </div>
                             <div>
-                                <div class="text-catppuccin-subtle/40">date</div>
-                                <div class="text-catppuccin-text">{{ formatDate(currentPost.date) }}</div>
+                                <div class="text-ink-subtle/40">date</div>
+                                <div class="text-ink-text">{{ formatDate(currentPost.date) }}</div>
                             </div>
                             <div>
-                                <div class="text-catppuccin-subtle/40">read</div>
-                                <div class="text-catppuccin-text">~{{ readingTime(currentPost.content) }}m</div>
+                                <div class="text-ink-subtle/40">read</div>
+                                <div class="text-ink-text">~{{ readingTime(currentPost.content) }}m</div>
                             </div>
                             <div v-if="currentPost.tags.length">
-                                <div class="text-catppuccin-subtle/40">tags</div>
+                                <div class="text-ink-subtle/40">tags</div>
                                 <div class="flex flex-row flex-wrap gap-1 md:flex-col">
-                                    <span v-for="tag in currentPost.tags" :key="tag" class="text-catppuccin-subtle">{{ tag }}</span>
+                                    <span v-for="tag in currentPost.tags" :key="tag" class="text-ink-subtle">{{ tag }}</span>
                                 </div>
                             </div>
                         </div>
@@ -324,7 +324,7 @@ const viewAnimate = { opacity: 1 };
                 <div class="flex-1 min-w-0">
                     <div class="tui-panel">
                         <span class="tui-panel-title">post</span>
-                        <h1 class="text-sm md:text-base font-semibold text-catppuccin-text leading-snug mb-3 pt-1">
+                        <h1 class="text-sm md:text-base font-semibold text-ink-text leading-snug mb-3 pt-1">
                             {{ currentPost.title }}
                         </h1>
                         <article ref="articleContentRef" class="prose-blog pt-2" v-html="renderMarkdown(currentPost.content)"></article>
@@ -338,7 +338,7 @@ const viewAnimate = { opacity: 1 };
                             class="group text-left tui-panel cursor-pointer"
                         >
                             <span class="tui-panel-title">← older</span>
-                            <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate pt-1">
+                            <div class="text-xs text-ink-text group-hover:text-ink-accent transition-colors truncate pt-1">
                                 {{ adjacentPosts.prev.title }}
                             </div>
                         </button>
@@ -350,7 +350,7 @@ const viewAnimate = { opacity: 1 };
                             class="group text-right tui-panel cursor-pointer"
                         >
                             <span class="tui-panel-title" style="left: auto; right: 0.75rem;">newer →</span>
-                            <div class="text-xs text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate pt-1">
+                            <div class="text-xs text-ink-text group-hover:text-ink-accent transition-colors truncate pt-1">
                                 {{ adjacentPosts.next.title }}
                             </div>
                         </button>
@@ -364,15 +364,15 @@ const viewAnimate = { opacity: 1 };
                                 v-for="post in relatedPosts"
                                 :key="post.slug"
                                 @click="openPost(post.slug)"
-                                class="group w-full text-left py-1.5 border-b border-catppuccin-surface/20 last:border-0 cursor-pointer text-xs"
+                                class="group w-full text-left py-1.5 border-b border-ink-surface/20 last:border-0 cursor-pointer text-xs"
                             >
-                                <div class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">{{ post.title }}</div>
-                                <div class="text-[10px] text-catppuccin-subtle/40">{{ formatDate(post.date) }}</div>
+                                <div class="text-ink-text group-hover:text-ink-accent transition-colors truncate">{{ post.title }}</div>
+                                <div class="text-[10px] text-ink-subtle/40">{{ formatDate(post.date) }}</div>
                             </button>
                         </div>
                     </div>
 
-                    <button @click="goBack" class="mt-4 text-catppuccin-subtle hover:text-catppuccin-text text-xs transition-colors cursor-pointer block">
+                    <button @click="goBack" class="mt-4 text-ink-subtle hover:text-ink-text text-xs transition-colors cursor-pointer block">
                         [← back]
                     </button>
                 </div>

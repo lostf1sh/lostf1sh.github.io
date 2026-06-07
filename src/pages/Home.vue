@@ -214,10 +214,10 @@ const stackItems = [
                 <motion.div :variants="fadeUp" class="tui-panel mb-5">
                     <span class="tui-panel-title">about</span>
                     <div class="pt-1">
-                        <div class="text-catppuccin-text text-lg font-medium mb-0.5 tracking-tight">moli</div>
-                        <div class="text-[11px] text-catppuccin-subtle/50 mb-3">junior developer // turkey</div>
-                        <div class="text-xs text-catppuccin-text/80 leading-relaxed">
-                            <span class="text-catppuccin-text" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> years in.
+                        <div class="text-ink-text text-lg font-medium mb-0.5 tracking-tight">moli</div>
+                        <div class="text-[11px] text-ink-subtle/50 mb-3">junior developer // turkey</div>
+                        <div class="text-xs text-ink-text/80 leading-relaxed">
+                            <span class="text-ink-text" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> years in.
                             i build small tools, ship web experiments, and keep notes on what i learn.
                             usually somewhere between code, table tennis, and cooking.
                         </div>
@@ -230,7 +230,7 @@ const stackItems = [
                     <router-link to="/projects" class="nav-btn">projects</router-link>
                     <router-link to="/now" class="nav-btn">now</router-link>
                     <router-link to="/uses" class="nav-btn">uses</router-link>
-                    <span class="text-catppuccin-surface/40 px-0.5">│</span>
+                    <span class="text-ink-surface/40 px-0.5">│</span>
                     <a href="https://github.com/lostf1sh" target="_blank" rel="noopener noreferrer" class="nav-btn">github</a>
                     <a href="https://www.instagram.com/kawaiimoli" target="_blank" rel="noopener noreferrer" class="nav-btn">instagram</a>
                 </motion.div>

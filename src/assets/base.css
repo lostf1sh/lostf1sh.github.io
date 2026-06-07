@@ -11,12 +11,9 @@
         --color-overlay: 48 48 48;
         --color-subtle: 102 102 102;
         --color-text: 224 224 224;
-        --color-gold: 255 255 255;
-        --color-pink: 255 255 255;
-        --color-mauve: 255 255 255;
+        --color-accent: 255 255 255;
         --color-red: 220 80 80;
         --color-yellow: 230 190 70;
-        --color-peach: 255 255 255;
         --color-green: 80 200 120;
         --color-blue: 100 160 220;
     }
@@ -29,12 +26,9 @@
         --color-overlay: 185 185 185;
         --color-subtle: 110 110 110;
         --color-text: 20 20 20;
-        --color-gold: 0 0 0;
-        --color-pink: 0 0 0;
-        --color-mauve: 0 0 0;
+        --color-accent: 0 0 0;
         --color-red: 180 50 50;
         --color-yellow: 170 130 20;
-        --color-peach: 0 0 0;
         --color-green: 40 140 70;
         --color-blue: 50 100 160;
     }

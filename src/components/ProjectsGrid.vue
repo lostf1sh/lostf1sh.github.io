@@ -25,16 +25,16 @@ const repoContainer = staggerContainer(0.03);
     >
         <span class="tui-panel-title">
             projects
-            <span v-if="revalidating" class="text-catppuccin-subtle/40"> [syncing]</span>
+            <span v-if="revalidating" class="text-ink-subtle/40"> [syncing]</span>
         </span>
 
         <div v-if="loading" class="space-y-1">
             <div v-for="i in 6" :key="i" class="py-1.5">
-                <div class="skeleton-pulse h-3 bg-catppuccin-surface/40" :style="{ width: ['140px', '170px', '120px', '180px', '110px', '150px'][i - 1] }"></div>
+                <div class="skeleton-pulse h-3 bg-ink-surface/40" :style="{ width: ['140px', '170px', '120px', '180px', '110px', '150px'][i - 1] }"></div>
             </div>
         </div>
 
-        <div v-else-if="!repos.length" class="text-xs text-catppuccin-subtle py-2">
+        <div v-else-if="!repos.length" class="text-xs text-ink-subtle py-2">
             (empty)
         </div>
 
@@ -51,17 +51,17 @@ const repoContainer = staggerContainer(0.03);
                 target="_blank"
                 rel="noopener noreferrer"
                 :variants="fadeUp"
-                class="group block py-1.5 border-b border-catppuccin-surface/20 last:border-0 text-xs"
+                class="group block py-1.5 border-b border-ink-surface/20 last:border-0 text-xs"
             >
                 <div class="flex items-center justify-between gap-2">
-                    <span class="text-catppuccin-text group-hover:text-catppuccin-mauve transition-colors truncate">
+                    <span class="text-ink-text group-hover:text-ink-accent transition-colors truncate">
                         {{ repo.name }}
                     </span>
-                    <span v-if="repo.stargazers_count > 0" class="text-catppuccin-subtle flex-shrink-0">
+                    <span v-if="repo.stargazers_count > 0" class="text-ink-subtle flex-shrink-0">
                         ★{{ repo.stargazers_count }}
                     </span>
                 </div>
-                <div class="text-catppuccin-subtle/40 truncate mt-0.5" :title="repo.description">
+                <div class="text-ink-subtle/40 truncate mt-0.5" :title="repo.description">
                     {{ repo.description || "--" }}
                 </div>
             </motion.a>

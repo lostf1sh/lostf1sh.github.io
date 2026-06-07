@@ -24,7 +24,6 @@ export default {
       "catppuccin-peach": "rgb(var(--color-peach) / <alpha-value>)",
       "catppuccin-green": "rgb(var(--color-green) / <alpha-value>)",
       "catppuccin-blue": "rgb(var(--color-blue) / <alpha-value>)",
-      "catppuccin-gray": "rgb(var(--color-gray) / <alpha-value>)",
     },
   },
   plugins: [],

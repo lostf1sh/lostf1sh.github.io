@@ -19,7 +19,6 @@
         --color-peach: 255 255 255;
         --color-green: 80 200 120;
         --color-blue: 100 160 220;
-        --color-gray: 80 80 80;
     }
 
     [data-theme="light"] {
@@ -38,6 +37,5 @@
         --color-peach: 0 0 0;
         --color-green: 40 140 70;
         --color-blue: 50 100 160;
-        --color-gray: 140 140 140;
     }
 }

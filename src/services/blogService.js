@@ -100,14 +100,6 @@ export const getRelatedPosts = (slug, limit = 3) => {
   return [...withSignal, ...fallback];
 };
 
-export const getAllTags = () => {
-  const tags = new Set();
-  getAllPosts().forEach((post) => {
-    post.tags.forEach((tag) => tags.add(tag));
-  });
-  return Array.from(tags).sort();
-};
-
 export const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
     year: "numeric",

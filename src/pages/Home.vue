@@ -261,7 +261,7 @@ const stackItems = [
                     :initial="{ opacity: 0 }"
                     :animate="{ opacity: 1 }"
                     :transition="{ delay: 0.25 }"
-                    class="tui-panel"
+                    class="tui-panel stack-panel"
                 >
                     <span class="tui-panel-title">stack</span>
                     <div class="stack-icons pt-1" aria-label="Technology stack">
@@ -323,13 +323,24 @@ const stackItems = [
     background: rgb(var(--color-surface) / 0.15);
 }
 
+/* make the stack panel a column so the icon row can grow to fill it
+   when the grid stretches this box to match a taller status box */
+.stack-panel {
+    display: flex;
+    flex-direction: column;
+}
+
 .stack-icons {
     display: flex;
     flex-wrap: wrap;
     gap: 0.8rem;
     align-items: center;
+    align-content: center;
     justify-content: center;
     min-height: 2.7rem;
+    /* fill the panel's height so the icons stay vertically centered
+       even when the box is taller than its content */
+    flex: 1 1 auto;
 }
 
 .stack-icon {

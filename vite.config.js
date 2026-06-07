@@ -4,7 +4,6 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { generateSeoAssets, renderSeoAssets } from "./scripts/seo-assets.mjs";
 
-const buildDate = new Date().toISOString();
 const rootDir = fileURLToPath(new URL(".", import.meta.url));
 
 const seoAssetsPlugin = () => ({
@@ -37,9 +36,6 @@ const seoAssetsPlugin = () => ({
 
 export default defineConfig({
   base: "/",
-  define: {
-    __BUILD_DATE__: JSON.stringify(buildDate),
-  },
   plugins: [vue(), seoAssetsPlugin()],
   resolve: {
     alias: {

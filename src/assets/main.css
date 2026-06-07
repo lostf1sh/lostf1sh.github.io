@@ -117,15 +117,6 @@ a {
     text-transform: lowercase;
 }
 
-/* ═══ Section labels ═══ */
-
-.section-label {
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    color: rgb(var(--color-subtle) / 0.5);
-    font-family: "JetBrains Mono", monospace;
-}
-
 /* ═══ Terminal cursor blink ═══ */
 
 @keyframes cursor-blink {

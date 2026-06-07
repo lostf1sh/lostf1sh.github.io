@@ -39,7 +39,7 @@ const escapeAttribute = (text) => text
 
 let codeBlockCounter = 0;
 
-export const marked = new Marked({
+const marked = new Marked({
     renderer: {
         heading({ tokens, depth }) {
             const text = this.parser.parseInline(tokens);

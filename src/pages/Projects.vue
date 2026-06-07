@@ -7,7 +7,7 @@ import {
     readLocalCache,
     writeLocalCache,
 } from "@/utils/apiLocalCache";
-import { springs, staggerContainer, fadeUp } from "@/utils/motion";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import SiteNav from "@/components/SiteNav.vue";
 
 const repos = ref([]);

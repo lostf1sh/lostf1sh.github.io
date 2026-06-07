@@ -14,7 +14,7 @@ vue 3 · vite · tailwind css · catppuccin · bun
 - markdown blog with related posts
 - command palette, theme toggle, boot sequence
 - generated rss, sitemap, robots assets
-- spa fallback for static hosting
+- spa fallback via `_redirects` (cloudflare pages)
 
 ## setup
 
@@ -29,7 +29,7 @@ bun run dev
 
 ```bash
 bun run dev      # start vite dev server
-bun run build    # build site + seo assets + spa fallback
+bun run build    # build site + seo assets
 bun run preview  # preview production build
 ```
 

@@ -1,6 +1,6 @@
 <script setup>
 import { motion } from "motion-v";
-import { springs, staggerContainer, fadeUp } from "@/utils/motion";
+import { springs } from "@/utils/motion";
 
 defineProps({
     currentTrack: Object,

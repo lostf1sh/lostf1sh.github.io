@@ -9,7 +9,7 @@ import {
     writeLocalCache,
 } from "@/utils/apiLocalCache";
 import { parseFrontmatter, renderMarkdown } from "@/utils/markdown";
-import { springs, staggerContainer, fadeUp } from "@/utils/motion";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import SiteNav from "@/components/SiteNav.vue";
 import nowRaw from "/content/now.md?raw";
 

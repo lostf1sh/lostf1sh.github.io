@@ -270,4 +270,4 @@ const lanyardService = new LanyardService();
 void fetchRestPresence();
 lanyardService.connect();
 
-export { lanyardService, lanyardData };
+export { lanyardData };

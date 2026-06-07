@@ -1,19 +1,16 @@
 ---
-lastUpdated: 2026-04-09
+lastUpdated: 2026-06-08
 ---
 
-working on this site in small passes: layout cleanup, terminal-ish ui details, music/status widgets, and tiny things that make it feel more mine.
+just turned 18. life looks pretty much the same as last week — building things, learning as i go, keeping it simple.
 
-using zed more than neovim lately. still keeping my terminal setup simple and fixing whatever annoys me after a few days of real use.
+mostly i'm rebuilding this site right now. it used to lean hard into a terminal look; i'm moving it somewhere quieter and more minimal, keeping the parts i actually care about and cutting the rest. still working through the rough edges page by page.
 
-writing small web things and scripts when i need them. trying not to overbuild every idea before it is useful.
+coding in zed almost full time. i write small web experiments and scripts whenever i need them, and i'm trying to stop overbuilding ideas before they earn it.
 
-playing table tennis when i can. cooking basic stuff more often and slowly getting better at not making a mess.
+off the screen: table tennis when i get the chance, more cooking than before, and slowly learning to not wreck the kitchen every time.
 
 ## next
-
-- finish the rough edges on this site
-- write shorter posts instead of waiting for perfect ideas
-- clean up old repos that are half-finished
-- keep learning by shipping small things
-- cook a few meals without looking up the recipe every time
+- write shorter posts instead of waiting for the perfect idea
+- clean up the repos i left half-finished
+- get properly comfortable with rust

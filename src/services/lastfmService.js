@@ -9,10 +9,6 @@ const BASE_URL = "https://ws.audioscrobbler.com/2.0/";
 const POLL_INTERVAL = 60_000;
 
 export const tracks = ref([]);
-export const isLoading = ref(true);
-export const isRevalidating = ref(false);
-export const error = ref(null);
-export const revalidateFailed = ref(false);
 
 let initialHydrated = false;
 let pollTimer = null;
@@ -27,20 +23,36 @@ function hydrateFromCache() {
   const row = readLocalCache(CACHE_KEYS.LASTFM_TRACKS);
   if (!row?.value?.length) return false;
   tracks.value = row.value;
-  isLoading.value = false;
   initialHydrated = true;
   markReady("songs");
   return true;
 }
 
-const fetchTracks = async () => {
-  const empty = tracks.value.length === 0;
-  if (empty) {
-    isLoading.value = true;
-  } else {
-    isRevalidating.value = true;
+export const getTopTracks = async (period = "7day", limit = 6) => {
+  const params = new URLSearchParams({
+    method: "user.gettoptracks",
+    user: USER,
+    api_key: API_KEY,
+    period,
+    limit,
+    format: "json",
+  });
+  const response = await fetch(`${BASE_URL}?${params}`);
+  if (!response.ok) {
+    throw new Error(`Last.fm top tracks request failed with ${response.status}`);
   }
+  const data = await response.json();
+  const raw = data?.toptracks?.track;
+  const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+  return list.map((t) => ({
+    name: t.name,
+    artist: t.artist?.name || "",
+    playcount: Number(t.playcount) || 0,
+    url: t.url,
+  }));
+};
 
+const fetchTracks = async () => {
   try {
     const params = new URLSearchParams({
       method: "user.getrecenttracks",
@@ -58,22 +70,12 @@ const fetchTracks = async () => {
     const data = await response.json();
     const list = normalizeTrackList(data);
     tracks.value = list;
-    revalidateFailed.value = false;
-    error.value = null;
     if (list.length) {
       writeLocalCache(CACHE_KEYS.LASTFM_TRACKS, list);
     }
   } catch (err) {
     if (import.meta.env.DEV) console.error("Failed to load recent tracks:", err);
-    if (tracks.value.length) {
-      revalidateFailed.value = true;
-      error.value = null;
-    } else {
-      error.value = "couldn't load tracks";
-    }
   } finally {
-    isLoading.value = false;
-    isRevalidating.value = false;
     if (!initialHydrated) {
       initialHydrated = true;
       markReady("songs");

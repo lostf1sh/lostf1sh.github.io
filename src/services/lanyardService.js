@@ -37,6 +37,8 @@ function applyPresencePayload(data) {
         song: data.spotify.song,
         artist: data.spotify.artist,
         track_id: data.spotify.track_id,
+        album_art_url: data.spotify.album_art_url || null,
+        timestamps: data.spotify.timestamps || null,
       }
     : null;
 
@@ -239,27 +241,6 @@ class LanyardService {
     );
 
     this.reconnectTimeout = setTimeout(() => this.connect(), delay);
-  }
-
-  disconnect() {
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-      this.reconnectTimeout = null;
-    }
-
-    this.clearFirstMessageTimer();
-
-    if (this.heartbeat) {
-      clearInterval(this.heartbeat);
-      this.heartbeat = null;
-    }
-
-    if (this.ws) {
-      this.ws.close(1000, "Manual disconnect");
-      this.ws = null;
-    }
-
-    lanyardData.isConnected = false;
   }
 }
 

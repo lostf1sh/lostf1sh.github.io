@@ -4,7 +4,9 @@ export const CACHE_KEYS = {
   GITHUB_REPOS: "github.repos.merged.v1",
   GITHUB_CONTRIBUTIONS: "github.contributions.v1",
   LASTFM_TRACKS: "lastfm.recent.v1",
+  LASTFM_TOP: "lastfm.top.v1",
   GITHUB_EVENTS: "github.events.v1",
+  GITHUB_STATS: "github.stats.v1",
 };
 
 function canUseStorage() {
@@ -31,7 +33,6 @@ export function writeLocalCache(key, value) {
       JSON.stringify({ v: value, t: Date.now() }),
     );
   } catch {
-    /* quota / private mode */
   }
 }
 
@@ -57,6 +58,5 @@ export function writeSessionCache(key, value) {
       JSON.stringify({ v: value, t: Date.now() }),
     );
   } catch {
-    /* */
   }
 }

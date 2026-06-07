@@ -56,8 +56,7 @@ if (contribCached?.value?.length) {
 }
 const contributionsLoading = ref(!contributions.value.length);
 const contributionsRevalidating = ref(false);
-const AGE_UPDATE_INTERVAL_MS = 250;
-let ageTimerId = 0;
+let ageRafId = 0;
 
 const currentTrack = computed(() => {
     const sp = lanyardData.spotify;
@@ -171,19 +170,21 @@ const fetchContributions = async () => {
 onMounted(() => {
     fetchProjects();
     fetchContributions();
-    updateAge();
-    ageTimerId = window.setInterval(updateAge, AGE_UPDATE_INTERVAL_MS);
+    tickAge();
 });
 
 onBeforeUnmount(() => {
-    if (ageTimerId) window.clearInterval(ageTimerId);
+    if (ageRafId) window.cancelAnimationFrame(ageRafId);
 });
 
-const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 6, 6, 0);
+// 6 June 2008, 01:00 Turkey time (UTC+3)
+const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 1, 0, 0);
 const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
-const currentAge = ref(0);
-const updateAge = () => {
-    currentAge.value = (Date.now() - (BIRTH_DATE_IN_TURKEY - 3 * 3600 * 1000)) / MS_PER_YEAR;
+const BIRTH_INSTANT_MS = BIRTH_DATE_IN_TURKEY - 3 * 3600 * 1000;
+const currentAge = ref((Date.now() - BIRTH_INSTANT_MS) / MS_PER_YEAR);
+const tickAge = () => {
+    currentAge.value = (Date.now() - BIRTH_INSTANT_MS) / MS_PER_YEAR;
+    ageRafId = window.requestAnimationFrame(tickAge);
 };
 
 const heroContainer = staggerContainer(0.06);

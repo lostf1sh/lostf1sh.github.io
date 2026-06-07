@@ -46,9 +46,9 @@ const marked = new Marked({
             const id = slugify(text);
             const plainText = text.replace(/<[^>]+>/g, "").trim();
             const classes = {
-                1: "text-2xl font-bold text-ink-text mt-8 mb-4",
-                2: "text-xl font-semibold text-ink-blue mt-8 mb-4",
-                3: "text-lg font-semibold text-ink-accent mt-6 mb-3",
+                1: "text-2xl font-semibold text-ink-text mt-8 mb-4",
+                2: "text-xl font-semibold text-ink-text mt-8 mb-4",
+                3: "text-lg font-medium text-ink-text mt-6 mb-3",
             };
             return `<h${depth} id="${id}" data-heading-text="${escapeAttribute(plainText)}" class="${classes[depth] || ""}">${text}<a href="#${id}" class="heading-anchor no-external" aria-label="Link to ${escapeAttribute(plainText)}">#</a></h${depth}>`;
         },
@@ -58,26 +58,26 @@ const marked = new Marked({
         },
         link({ href, tokens }) {
             const text = this.parser.parseInline(tokens);
-            return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-ink-blue hover:text-ink-accent underline transition-colors">${text}</a>`;
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-ink-text underline decoration-ink-subtle/40 underline-offset-2 hover:text-ink-mint hover:decoration-ink-mint transition-colors">${text}</a>`;
         },
         image({ href, text }) {
-            return `<img src="${href}" alt="${text}" loading="lazy" class="rounded border border-ink-surface my-4 max-w-full h-auto">`;
+            return `<img src="${href}" alt="${text}" loading="lazy" class="border border-ink-surface my-4 max-w-full h-auto">`;
         },
         code({ text, lang }) {
             const id = `code-block-${codeBlockCounter++}`;
             const languageClass = lang ? `language-${lang.toLowerCase()}` : "";
             const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
             return `<div class="relative group">
-                <button data-copy-target="${id}" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-ink-subtle hover:text-ink-accent px-2 py-1 bg-ink-crust border border-ink-surface rounded hover:bg-ink-accent/10 cursor-pointer z-10">copy</button>
-                <pre class="bg-ink-surface/50 border border-ink-overlay/30 rounded p-4 overflow-x-auto my-4"><code id="${id}" class="${languageClass}">${escaped}</code></pre>
+                <button data-copy-target="${id}" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-ink-subtle hover:text-ink-mint px-2 py-1 bg-ink-crust border border-ink-surface cursor-pointer z-10">copy</button>
+                <pre class="bg-ink-surface/40 border border-ink-surface p-4 overflow-x-auto my-4"><code id="${id}" class="${languageClass}">${escaped}</code></pre>
             </div>`;
         },
         codespan({ text }) {
-            return `<code class="bg-ink-surface/50 px-2 py-0.5 rounded text-ink-accent text-sm">${text}</code>`;
+            return `<code class="bg-ink-surface/50 px-1.5 py-0.5 text-ink-text text-[0.9em]">${text}</code>`;
         },
         blockquote({ tokens }) {
             const body = this.parser.parse(tokens);
-            return `<blockquote class="border-l-2 border-ink-accent pl-4 my-4 text-ink-subtle italic">${body}</blockquote>`;
+            return `<blockquote class="border-l-2 border-ink-mint/60 pl-4 my-4 text-ink-subtle italic">${body}</blockquote>`;
         },
         list({ items, ordered }) {
             const tag = ordered ? "ol" : "ul";
@@ -92,7 +92,7 @@ const marked = new Marked({
             let html = '<table class="w-full my-4 text-sm border-collapse"><thead><tr>';
             header.forEach(cell => {
                 const text = this.parser.parseInline(cell.tokens);
-                html += `<th class="border border-ink-surface px-3 py-2 text-left text-ink-accent bg-ink-surface/30">${text}</th>`;
+                html += `<th class="border border-ink-surface px-3 py-2 text-left text-ink-text font-medium bg-ink-surface/30">${text}</th>`;
             });
             html += '</tr></thead><tbody>';
             rows.forEach(row => {
@@ -111,11 +111,11 @@ const marked = new Marked({
         },
         strong({ tokens }) {
             const text = this.parser.parseInline(tokens);
-            return `<strong class="text-ink-accent font-semibold">${text}</strong>`;
+            return `<strong class="text-ink-text font-semibold">${text}</strong>`;
         },
         em({ tokens }) {
             const text = this.parser.parseInline(tokens);
-            return `<em class="text-ink-accent italic">${text}</em>`;
+            return `<em class="italic">${text}</em>`;
         },
     },
 });

@@ -24,12 +24,22 @@ html {
 body {
     background-color: rgb(var(--color-base));
     min-height: 100vh;
-    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
-    font-size: 13px;
-    line-height: 1.65;
-    letter-spacing: 0.01em;
+    font-family: "Geist Variable", system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
     position: relative;
     caret-color: transparent;
+}
+
+code,
+pre,
+kbd,
+samp {
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing: 0;
 }
 
 input,
@@ -38,7 +48,6 @@ textarea,
     caret-color: auto;
 }
 
-/* Theme transition */
 html.theme-transitioning,
 html.theme-transitioning body {
     transition: background-color 0.35s ease,
@@ -57,7 +66,6 @@ html.theme-transitioning body {
     color: rgb(var(--color-text));
 }
 
-/* Scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
     height: 3px;
 }
@@ -92,53 +100,6 @@ a {
     border: 0;
 }
 
-/* ═══ TUI Panel ═══ */
-
-.tui-panel {
-    border: 1px solid rgb(var(--color-surface) / 0.7);
-    position: relative;
-    padding: 1rem 1.25rem;
-    transition: border-color 0.2s ease;
-}
-
-.tui-panel:hover {
-    border-color: rgb(var(--color-surface));
-}
-
-.tui-panel-title {
-    position: absolute;
-    top: -0.55em;
-    left: 1rem;
-    background: rgb(var(--color-base));
-    padding: 0 0.5rem;
-    font-size: 10px;
-    color: rgb(var(--color-subtle));
-    letter-spacing: 0.06em;
-    text-transform: lowercase;
-}
-
-/* ═══ Terminal cursor blink ═══ */
-
-@keyframes cursor-blink {
-    0%, 49% { opacity: 1; }
-    50%, 100% { opacity: 0; }
-}
-
-.cursor-blink::after {
-    content: "█";
-    color: rgb(var(--color-subtle));
-    font-size: 0.85em;
-    animation: cursor-blink 1s step-end infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .cursor-blink::after {
-        animation: none;
-        opacity: 0.5;
-    }
-}
-
-/* Custom cursor */
 @media (pointer: fine) {
     body.custom-cursor-enabled,
     body.custom-cursor-enabled * {
@@ -146,7 +107,6 @@ a {
     }
 }
 
-/* ═══ Skeleton ═══ */
 
 .skeleton-pulse {
     animation: skeleton-shimmer 2s ease-in-out infinite;

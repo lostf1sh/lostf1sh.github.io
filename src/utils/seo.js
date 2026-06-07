@@ -1,6 +1,6 @@
 const defaults = {
-  title: "moli — developer blog & terminal portfolio",
-  description: "moli's terminal-styled personal site: projects, blog posts, live status, music, and developer notes.",
+  title: "moli - developer, blog & portfolio",
+  description: "moli's personal site: projects, blog posts, live status, music, and developer notes.",
   url: "https://moli.codes",
 };
 

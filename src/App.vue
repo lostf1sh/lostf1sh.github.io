@@ -35,15 +35,12 @@ onBeforeUnmount(() => {
     <CommandPalette />
     <ThemeToggle />
     <router-view v-slot="{ Component, route }">
-        <div
-            id="main-content"
-            :key="route.fullPath"
-            class="page-transition"
-        >
+        <div id="main-content" :key="route.fullPath">
             <component v-if="Component" :is="Component" />
         </div>
     </router-view>
     <BackToTop :visible="showBackToTop" />
+    <div class="grain" aria-hidden="true"></div>
 </template>
 
 <style>
@@ -68,19 +65,17 @@ html {
     background: rgb(var(--color-overlay) / 0.25);
 }
 
-/* Page transition */
-.page-transition {
-    animation: page-enter 0.16s ease-out both;
+.grain {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
 }
 
-@keyframes page-enter {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .page-transition {
-        animation: none;
-    }
+@media (prefers-reduced-transparency: reduce) {
+    .grain { display: none; }
 }
 </style>

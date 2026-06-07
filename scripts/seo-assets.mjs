@@ -76,7 +76,7 @@ export const buildRss = (posts) => {
 };
 
 export const buildSitemap = (posts) => {
-  const staticPages = ["/", "/blog", "/projects", "/now", "/uses"];
+  const staticPages = ["/", "/blog", "/projects", "/now"];
   const staticEntries = staticPages
     .map(
       (route) =>

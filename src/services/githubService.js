@@ -6,7 +6,6 @@ export const getAllReposWithLanguages = async () => {
     let page = 1;
     const perPage = 100;
 
-    // Fetch all repositories (handle pagination)
     while (true) {
       const response = await fetch(
         `https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=${perPage}&page=${page}`
@@ -23,7 +22,6 @@ export const getAllReposWithLanguages = async () => {
       page++;
     }
 
-    // Count languages across all repos
     const languageCounts = {};
 
     repos.forEach((repo) => {
@@ -33,7 +31,6 @@ export const getAllReposWithLanguages = async () => {
       }
     });
 
-    // Sort by count (descending) and format
     const sortedLanguages = Object.entries(languageCounts)
       .sort((a, b) => b[1] - a[1])
       .map(([language, count]) => ({ language, count }));
@@ -72,7 +69,6 @@ export const getContributionData = async () => {
   const today = new Date();
 
   try {
-    // Use GitHub's contribution calendar API (used by github skyline)
     const response = await fetch(
       `https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`
     );
@@ -83,7 +79,6 @@ export const getContributionData = async () => {
 
     const data = await response.json();
 
-    // Extract contributions from the response
     const contributions = [];
 
     if (data.contributions) {
@@ -95,9 +90,7 @@ export const getContributionData = async () => {
       });
     }
 
-    // If we got contributions, return them
     if (contributions.length > 0) {
-      // Ensure we have exactly 53 weeks (371 days) of data
       const targetDays = weeks * 7;
       const startDate = new Date(today);
       startDate.setDate(startDate.getDate() - targetDays + 1);
@@ -134,7 +127,6 @@ export const getContributionLevel = (count) => {
 };
 
 export const getGitHubContributionUrl = (date) => {
-  // Format: https://github.com/USERNAME?tab=overview&from=YYYY-MM-DD&to=YYYY-MM-DD
   return `https://github.com/${GITHUB_USERNAME}?tab=overview&from=${date}&to=${date}`;
 };
 

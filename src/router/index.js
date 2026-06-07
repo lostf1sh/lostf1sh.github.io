@@ -7,8 +7,8 @@ const routes = [
     name: "Home",
     component: () => import("@/pages/Home.vue"),
     meta: {
-      title: "moli — developer blog & terminal portfolio",
-      description: "moli's terminal-styled personal site: projects, blog posts, live status, music, and developer notes.",
+      title: "moli - developer, blog & portfolio",
+      description: "moli's personal site: projects, blog posts, live status, music, and developer notes.",
     },
   },
   {
@@ -36,15 +36,6 @@ const routes = [
     meta: {
         title: "Now | moli",
         description: "What I'm currently working on.",
-    },
-  },
-  {
-    path: "/uses",
-    name: "Uses",
-    component: () => import("@/pages/Uses.vue"),
-    meta: {
-        title: "Uses | moli",
-        description: "Tools, hardware, and software I use daily.",
     },
   },
   {

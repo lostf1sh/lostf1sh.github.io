@@ -1,360 +1,307 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount } from "vue";
 import { motion } from "motion-v";
-import { lanyardData } from "@/services/lanyardService";
-import {
-    tracks as lastfmTracks,
-    isLoading as lastfmLoading,
-    isRevalidating as lastfmRevalidating,
-    error as lastfmError,
-    revalidateFailed as lastfmRevalidateFailed,
-} from "@/services/lastfmService";
-import {
-    getAllReposWithLanguages,
-    getContributionData,
-    buildFallbackContributionYear,
-} from "@/services/githubService";
-import { markReady } from "@/services/preloader";
-import {
-    CACHE_KEYS,
-    readLocalCache,
-    writeLocalCache,
-} from "@/utils/apiLocalCache";
-import { staggerContainer, fadeUp } from "@/utils/motion";
 
-import StatusSection from "@/components/StatusSection.vue";
-import ProjectsGrid from "@/components/ProjectsGrid.vue";
-import RecentTracks from "@/components/RecentTracks.vue";
-import ContributionGraph from "@/components/ContributionGraph.vue";
+import { lanyardData } from "@/services/lanyardService";
+import { getAllPosts } from "@/services/blogService";
+import { markReady } from "@/services/preloader";
+import { staggerContainer, fadeUp } from "@/utils/motion";
+import NowPlaying from "@/components/NowPlaying.vue";
 import EightyEightButtons from "@/components/EightyEightButtons.vue";
 
-const discordStatusColor = computed(() => lanyardData.discordStatusColor);
-const spotify = computed(() => lanyardData.spotify);
-const discordStatus = computed(() => lanyardData.discordStatus);
-const discordUser = computed(() => lanyardData.discordUser);
-const editorActivity = computed(() => lanyardData.editorActivity);
-const isLoading = computed(() => lanyardData.isLoading);
-const lanyardConnected = computed(() => lanyardData.isConnected);
-const lanyardReconnecting = computed(() => lanyardData.isReconnecting);
-const lanyardUnavailable = computed(() => lanyardData.presenceUnavailable);
-const lanyardStalePresence = computed(() => lanyardData.usingCachedPresence);
+const isOnline = computed(() => lanyardData.discordStatus === "online");
 
-const repos = ref([]);
-const reposCached = readLocalCache(CACHE_KEYS.GITHUB_REPOS);
-if (reposCached?.value?.length) {
-    repos.value = reposCached.value;
-    markReady("projects");
-}
-const reposLoading = ref(!repos.value.length);
-const reposRevalidating = ref(false);
-
-const contributions = ref([]);
-const contribCached = readLocalCache(CACHE_KEYS.GITHUB_CONTRIBUTIONS);
-if (contribCached?.value?.length) {
-    contributions.value = contribCached.value;
-    markReady("contributions");
-}
-const contributionsLoading = ref(!contributions.value.length);
-const contributionsRevalidating = ref(false);
-let ageRafId = 0;
-
-const currentTrack = computed(() => {
-    const sp = lanyardData.spotify;
-    if (!sp) return null;
-    return {
-        name: sp.song,
-        artist: { "#text": sp.artist },
-        url: `https://open.spotify.com/track/${sp.track_id}`,
-    };
+const statusText = computed(() => {
+    switch (lanyardData.discordStatus) {
+        case "online": return "online";
+        case "idle": return "idle";
+        case "dnd": return "busy";
+        default: return "offline";
+    }
 });
 
-const consolidatedTracks = computed(() => {
-    const tracks = lastfmTracks.value.filter(
-        (track) => !track["@attr"]?.nowplaying,
-    );
-    const consolidated = [];
-    let currentKey = null;
-    let count = 1;
-
-    tracks.forEach((track, index) => {
-        const key = `${track.name}-${track.artist["#text"]}`;
-        if (currentKey === key) {
-            count++;
-        } else {
-            if (currentKey) {
-                const prevTrack = tracks[index - 1];
-                consolidated.push({
-                    ...prevTrack,
-                    playcount: count,
-                    date: prevTrack.date?.["#text"],
-                });
-            }
-            currentKey = key;
-            count = 1;
-        }
-        if (index === tracks.length - 1) {
-            consolidated.push({
-                ...track,
-                playcount: count,
-                date: track.date?.["#text"],
-            });
-        }
-    });
-
-    return consolidated.slice(0, 10);
+const editor = computed(() => {
+    const a = lanyardData.editorActivity;
+    if (!a?.name) return null;
+    const name =
+        a.name === "Zed"
+            ? "zed"
+            : a.name === "Visual Studio Code" || a.name === "Code"
+              ? "vs code"
+              : a.name.toLowerCase();
+    const file = (a.state || "").replace(/^(working on|editing|in)\s+/i, "").trim();
+    return file ? `${name} · ${file}` : name;
 });
 
-const externalToFetch = ["theovilardo/PixelPlayer"];
-const pinnedOrder = [
-    "theovilardo/PixelPlayer",
-    "lostf1sh/lostf1sh.github.io",
-    "lostf1sh/dusk",
-    "lostf1sh/pomo",
-    "lostf1sh/clp",
-    "lostf1sh/v-recipes",
+const statusLine = computed(() => editor.value || statusText.value);
+
+const statusColor = computed(() => {
+    switch (lanyardData.discordStatus) {
+        case "online": return "rgb(var(--color-mint))";
+        case "idle": return "rgb(var(--color-yellow))";
+        case "dnd": return "rgb(var(--color-red))";
+        default: return "rgb(var(--color-subtle) / 0.55)";
+    }
+});
+
+const latestPost = computed(() => getAllPosts()[0] || null);
+
+const BIRTH_INSTANT_MS = Date.UTC(2008, 5, 6, 1, 0, 0) - 3 * 3600 * 1000;
+const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
+
+const units = [
+    { key: "years", per: MS_PER_YEAR, dp: 8 },
+    { key: "days", per: 86_400_000, dp: 5 },
+    { key: "hours", per: 3_600_000, dp: 4 },
+    { key: "minutes", per: 60_000, dp: 2 },
 ];
+const unitIndex = ref(0);
+const elapsedMs = ref(Date.now() - BIRTH_INSTANT_MS);
 
-const displayedRepos = computed(() => {
-    if (!repos.value.length) return [];
-    return pinnedOrder
-        .map(name => repos.value.find(r => r.full_name === name))
-        .filter(Boolean);
+const ageValue = computed(() => {
+    const u = units[unitIndex.value];
+    return (elapsedMs.value / u.per).toFixed(u.dp);
+});
+const ageUnit = computed(() => units[unitIndex.value].key);
+const cycleUnit = () => { unitIndex.value = (unitIndex.value + 1) % units.length; };
+
+let ageRafId = 0;
+const tickAge = () => {
+    elapsedMs.value = Date.now() - BIRTH_INSTANT_MS;
+    ageRafId = window.requestAnimationFrame(tickAge);
+};
+
+const kbHint = computed(() => {
+    const mac = typeof navigator !== "undefined" &&
+        /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || "");
+    return mac ? "⌘K" : "Ctrl K";
 });
 
-const fetchProjects = async () => {
-    const firstPaint = repos.value.length === 0;
-    if (firstPaint) reposLoading.value = true;
-    reposRevalidating.value = !firstPaint;
-    try {
-        const [{ repos: ownRepos }, ...pinnedResults] = await Promise.all([
-            getAllReposWithLanguages(),
-            ...externalToFetch.map((r) =>
-                fetch(`https://api.github.com/repos/${r}`)
-                    .then((res) => (res.ok ? res.json() : null))
-                    .catch(() => null),
-            ),
-        ]);
-        const pinned = pinnedResults.filter(Boolean);
-        repos.value = [...pinned, ...ownRepos];
-        writeLocalCache(CACHE_KEYS.GITHUB_REPOS, repos.value);
-    } catch (error) {
-        if (import.meta.env.DEV) console.error("Failed to load repositories:", error);
-        if (!repos.value.length) repos.value = [];
-    } finally {
-        reposLoading.value = false;
-        reposRevalidating.value = false;
-        markReady("projects");
-    }
-};
-
-const fetchContributions = async () => {
-    const firstPaint = contributions.value.length === 0;
-    if (firstPaint) contributionsLoading.value = true;
-    contributionsRevalidating.value = !firstPaint;
-    try {
-        const data = await getContributionData();
-        contributions.value = data;
-        writeLocalCache(CACHE_KEYS.GITHUB_CONTRIBUTIONS, data);
-    } catch (error) {
-        if (import.meta.env.DEV) console.error("Failed to load contribution data:", error);
-        if (!contributions.value.length) {
-            contributions.value = buildFallbackContributionYear();
-        }
-    } finally {
-        contributionsLoading.value = false;
-        contributionsRevalidating.value = false;
-        markReady("contributions");
-    }
-};
+const heroContainer = staggerContainer(0.08);
 
 onMounted(() => {
-    fetchProjects();
-    fetchContributions();
+    markReady("projects");
+    markReady("contributions");
     tickAge();
 });
 
 onBeforeUnmount(() => {
     if (ageRafId) window.cancelAnimationFrame(ageRafId);
 });
-
-// 6 June 2008, 01:00 Turkey time (UTC+3)
-const BIRTH_DATE_IN_TURKEY = Date.UTC(2008, 5, 6, 1, 0, 0);
-const MS_PER_YEAR = 1000 * 60 * 60 * 24 * 365.25;
-const BIRTH_INSTANT_MS = BIRTH_DATE_IN_TURKEY - 3 * 3600 * 1000;
-const currentAge = ref((Date.now() - BIRTH_INSTANT_MS) / MS_PER_YEAR);
-const tickAge = () => {
-    currentAge.value = (Date.now() - BIRTH_INSTANT_MS) / MS_PER_YEAR;
-    ageRafId = window.requestAnimationFrame(tickAge);
-};
-
-const heroContainer = staggerContainer(0.06);
-
-const stackItems = [
-    { name: "Vue", icon: "https://cdn.simpleicons.org/vuedotjs" },
-    { name: "Next.js", icon: "https://cdn.simpleicons.org/nextdotjs" },
-    { name: "TypeScript", icon: "https://cdn.simpleicons.org/typescript" },
-    { name: "Rust", icon: "https://cdn.simpleicons.org/rust" },
-    { name: "Go", icon: "https://cdn.simpleicons.org/go" },
-    { name: "Kotlin", icon: "https://cdn.simpleicons.org/kotlin" },
-];
 </script>
 
 <template>
-    <div class="w-full min-h-screen">
-        <div class="max-w-4xl mx-auto px-5 sm:px-8 py-12 md:py-20">
-            <h1 class="sr-only">moli</h1>
+    <div class="home-root w-full min-h-[100dvh] flex items-center justify-center px-6 py-24">
+        <motion.div
+            class="w-full max-w-[30rem] mx-auto flex flex-col items-center text-center"
+            :variants="heroContainer"
+            initial="hidden"
+            animate="visible"
+        >
+            <motion.h1 :variants="fadeUp" class="name">moli</motion.h1>
+            <motion.p :variants="fadeUp" class="role">developer, turkey</motion.p>
 
-            <!-- Hero -->
-            <motion.div
-                :variants="heroContainer"
-                initial="hidden"
-                animate="visible"
-            >
-                <!-- About panel -->
-                <motion.div :variants="fadeUp" class="tui-panel mb-5">
-                    <span class="tui-panel-title">about</span>
-                    <div class="pt-1">
-                        <div class="text-ink-text text-lg font-medium mb-0.5 tracking-tight">moli</div>
-                        <div class="text-[11px] text-ink-subtle mb-3">junior developer // turkey</div>
-                        <div class="text-xs text-ink-text/80 leading-relaxed">
-                            <span class="text-ink-text" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> years in.
-                            i build small tools, ship web experiments, and keep notes on what i learn.
-                            usually somewhere between code, table tennis, and cooking.
-                        </div>
-                    </div>
-                </motion.div>
+            <motion.p :variants="fadeUp" class="intro">
+                i build small tools, ship web experiments, and write about what i learn.
+            </motion.p>
 
-                <!-- Nav row -->
-                <motion.div :variants="fadeUp" class="flex flex-wrap items-center gap-2 mb-8 text-xs">
-                    <router-link to="/blog" class="nav-btn">blog</router-link>
-                    <router-link to="/projects" class="nav-btn">projects</router-link>
-                    <router-link to="/now" class="nav-btn">now</router-link>
-                    <router-link to="/uses" class="nav-btn">uses</router-link>
-                    <span class="text-ink-subtle px-0.5">│</span>
-                    <a href="https://github.com/lostf1sh" target="_blank" rel="noopener noreferrer" class="nav-btn">github</a>
-                    <a href="https://www.instagram.com/kawaiimoli" target="_blank" rel="noopener noreferrer" class="nav-btn">instagram</a>
-                </motion.div>
+            <motion.div :variants="fadeUp" class="mt-9">
+                <NowPlaying />
             </motion.div>
 
-            <!-- Status + Stack -->
-            <div class="grid md:grid-cols-2 gap-4 mb-5">
-                <motion.div
-                    :initial="{ opacity: 0 }"
-                    :animate="{ opacity: 1 }"
-                    :transition="{ delay: 0.2 }"
-                >
-                    <StatusSection
-                        :isLoading="isLoading"
-                        :isConnected="lanyardConnected"
-                        :isReconnecting="lanyardReconnecting"
-                        :presenceUnavailable="lanyardUnavailable"
-                        :usingCachedPresence="lanyardStalePresence"
-                        :discordUser="discordUser"
-                        :discordStatus="discordStatus"
-                        :discordStatusColor="discordStatusColor"
-                        :spotify="spotify"
-                        :editorActivity="editorActivity"
-                    />
-                </motion.div>
+            <motion.dl :variants="fadeUp" class="living">
+                <dt>status</dt>
+                <dd>
+                    <span class="dot" :class="{ 'dot-pulse': isOnline }" :style="{ background: statusColor }" aria-hidden="true"></span>
+                    {{ statusLine }}
+                </dd>
 
-                <motion.div
-                    :initial="{ opacity: 0 }"
-                    :animate="{ opacity: 1 }"
-                    :transition="{ delay: 0.25 }"
-                    class="tui-panel stack-panel"
-                >
-                    <span class="tui-panel-title">stack</span>
-                    <div class="stack-icons pt-1" aria-label="Technology stack">
-                        <span
-                            v-for="item in stackItems"
-                            :key="item.name"
-                            class="stack-icon"
-                            :style="{ '--stack-icon': `url(${item.icon})` }"
-                            :title="item.name"
-                            :aria-label="item.name"
-                            role="img"
-                        ></span>
-                    </div>
-                </motion.div>
-            </div>
+                <template v-if="latestPost">
+                    <dt>latest</dt>
+                    <dd>
+                        <router-link :to="`/blog/${latestPost.slug}`" class="val-link">
+                            {{ latestPost.title }}
+                        </router-link>
+                    </dd>
+                </template>
 
-            <!-- Projects & Tracks -->
-            <div class="grid lg:grid-cols-2 gap-4 mb-5">
-                <ProjectsGrid
-                    :repos="displayedRepos"
-                    :loading="reposLoading"
-                    :revalidating="reposRevalidating"
-                />
+                <dt>age</dt>
+                <dd>
+                    <button type="button" class="age-btn" @click="cycleUnit" title="click to change units">
+                        <span class="num">{{ ageValue }}</span><span class="muted">&nbsp;{{ ageUnit }}</span>
+                    </button>
+                </dd>
+            </motion.dl>
 
-                <RecentTracks
-                    :currentTrack="currentTrack"
-                    :tracks="consolidatedTracks"
-                    :loading="lastfmLoading && !consolidatedTracks.length"
-                    :revalidating="lastfmRevalidating"
-                    :staleFailed="lastfmRevalidateFailed"
-                    :error="lastfmError"
-                />
-            </div>
+            <motion.div :variants="fadeUp" class="mt-10">
+                <EightyEightButtons />
+            </motion.div>
 
-            <!-- Contribution graph -->
-            <ContributionGraph
-                :contributions="contributions"
-                :loading="contributionsLoading"
-                :revalidating="contributionsRevalidating"
-            />
+            <motion.nav :variants="fadeUp" class="nav" aria-label="Primary">
+                <router-link to="/blog">blog</router-link>
+                <router-link to="/projects">projects</router-link>
+                <router-link to="/now">now</router-link>
+                <span class="nav-gap" aria-hidden="true"></span>
+                <a href="https://github.com/lostf1sh" target="_blank" rel="noopener noreferrer">github</a>
+                <a href="https://www.instagram.com/kawaiimoli" target="_blank" rel="noopener noreferrer">instagram</a>
+            </motion.nav>
 
-            <EightyEightButtons />
-        </div>
+            <motion.p :variants="fadeUp" class="kbd-hint">
+                press <kbd>{{ kbHint }}</kbd> to jump around
+            </motion.p>
+        </motion.div>
     </div>
 </template>
 
 <style scoped>
-.nav-btn {
-    padding: 0.3rem 0.65rem;
-    border: 1px solid rgb(var(--color-surface) / 0.5);
-    color: rgb(var(--color-subtle));
-    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
-    font-size: 11px;
+.home-root {
+    letter-spacing: -0.01em;
 }
 
-.nav-btn:hover {
+.name {
+    font-family: "Rowan", serif;
+    font-size: clamp(3rem, 9vw, 4.25rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.04em;
     color: rgb(var(--color-text));
-    border-color: rgb(var(--color-overlay) / 0.6);
-    background: rgb(var(--color-surface) / 0.15);
 }
 
-/* make the stack panel a column so the icon row can grow to fill it
-   when the grid stretches this box to match a taller status box */
-.stack-panel {
-    display: flex;
-    flex-direction: column;
+.role {
+    margin-top: 0.85rem;
+    font-size: 0.9rem;
+    color: rgb(var(--color-subtle));
 }
 
-.stack-icons {
+.intro {
+    margin-top: 2rem;
+    max-width: 26rem;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: rgb(var(--color-text) / 0.82);
+}
+
+.living {
+    margin-top: 2.75rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 1.5rem;
+    row-gap: 0.55rem;
+    text-align: left;
+    font-size: 0.875rem;
+    max-width: 100%;
+}
+
+.living dt {
+    text-align: right;
+    color: rgb(var(--color-subtle) / 0.75);
+    white-space: nowrap;
+}
+
+.living dd {
+    margin: 0;
+    min-width: 0;
+    color: rgb(var(--color-text));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.muted {
+    color: rgb(var(--color-subtle));
+}
+
+.num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+}
+
+.age-btn {
+    color: rgb(var(--color-text));
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.age-btn:hover,
+.age-btn:focus-visible {
+    color: rgb(var(--color-mint));
+}
+
+.val-link {
+    color: rgb(var(--color-text));
+    transition: color 0.15s ease;
+}
+
+.val-link:hover,
+.val-link:focus-visible {
+    color: rgb(var(--color-mint));
+}
+
+.dot {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.5rem;
+    border-radius: 9999px;
+    background: rgb(var(--color-subtle) / 0.55);
+    vertical-align: middle;
+    transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .dot-pulse {
+        animation: dot-pulse 2.4s ease-in-out infinite;
+    }
+}
+
+@keyframes dot-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgb(var(--color-mint) / 0.45); }
+    60% { box-shadow: 0 0 0 0.32rem rgb(var(--color-mint) / 0); }
+}
+
+.nav {
+    margin-top: 3rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.8rem;
     align-items: center;
-    align-content: center;
     justify-content: center;
-    min-height: 2.7rem;
-    /* fill the panel's height so the icons stay vertically centered
-       even when the box is taller than its content */
-    flex: 1 1 auto;
+    gap: 0.35rem 1.25rem;
+    font-size: 0.9rem;
 }
 
-.stack-icon {
-    width: 20px;
-    height: 20px;
-    flex: 0 0 20px;
-    background: rgb(var(--color-subtle) / 0.62);
-    -webkit-mask: var(--stack-icon) center / contain no-repeat;
-    mask: var(--stack-icon) center / contain no-repeat;
-    transition: background-color 0.14s ease, transform 0.14s ease;
+.nav a {
+    color: rgb(var(--color-subtle));
+    position: relative;
+    transition: color 0.15s ease;
 }
 
-.stack-icon:hover {
-    background: rgb(var(--color-text));
-    transform: translateY(-1px);
+.nav a:hover,
+.nav a:focus-visible {
+    color: rgb(var(--color-mint));
+}
+
+.nav-gap {
+    width: 1px;
+    height: 0.9rem;
+    background: rgb(var(--color-overlay) / 0.5);
+}
+
+@media (max-width: 420px) {
+    .nav-gap { display: none; }
+}
+
+.kbd-hint {
+    margin-top: 1.75rem;
+    font-size: 0.75rem;
+    color: rgb(var(--color-subtle) / 0.65);
+}
+
+.kbd-hint kbd {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.7rem;
+    color: rgb(var(--color-subtle));
+    border: 1px solid rgb(var(--color-surface));
+    border-radius: 4px;
+    padding: 0.05rem 0.3rem;
 }
 </style>

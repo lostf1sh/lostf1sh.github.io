@@ -2,7 +2,11 @@
 import { ref, computed, onMounted } from "vue";
 import { motion } from "motion-v";
 import { getAllPosts, formatDate as formatBlogDate } from "@/services/blogService";
-import { getRecentEvents } from "@/services/githubService";
+import {
+    getRecentEvents,
+    getContributionData,
+    buildFallbackContributionYear,
+} from "@/services/githubService";
 import {
     CACHE_KEYS,
     readLocalCache,
@@ -11,6 +15,10 @@ import {
 import { parseFrontmatter, renderMarkdown } from "@/utils/markdown";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 import SiteNav from "@/components/SiteNav.vue";
+import SiteFooter from "@/components/SiteFooter.vue";
+import ContributionGraph from "@/components/ContributionGraph.vue";
+import OnRepeat from "@/components/OnRepeat.vue";
+import ByTheNumbers from "@/components/ByTheNumbers.vue";
 import nowRaw from "/content/now.md?raw";
 
 const events = ref([]);
@@ -21,7 +29,15 @@ if (eventsCached?.value?.length) {
 const eventsLoading = ref(!events.value.length);
 const eventsRevalidating = ref(false);
 
-const recentPosts = computed(() => getAllPosts().slice(0, 3));
+const contributions = ref([]);
+const contribCached = readLocalCache(CACHE_KEYS.GITHUB_CONTRIBUTIONS);
+if (contribCached?.value?.length) {
+    contributions.value = contribCached.value;
+}
+const contributionsLoading = ref(!contributions.value.length);
+
+const recentPosts = computed(() => getAllPosts().slice(0, 4));
+const recentEvents = computed(() => events.value.slice(0, 4));
 
 const { frontmatter, content: nowBody } = parseFrontmatter(nowRaw);
 const lastUpdated = frontmatter.lastUpdated || "";
@@ -42,7 +58,7 @@ const formatRelativeTime = (dateStr) => {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-onMounted(async () => {
+const fetchEvents = async () => {
     const hadCache = events.value.length > 0;
     if (hadCache) eventsRevalidating.value = true;
     else eventsLoading.value = true;
@@ -58,106 +74,167 @@ onMounted(async () => {
         eventsLoading.value = false;
         eventsRevalidating.value = false;
     }
+};
+
+const fetchContributions = async () => {
+    if (contributions.value.length === 0) contributionsLoading.value = true;
+    try {
+        const data = await getContributionData();
+        contributions.value = data;
+        writeLocalCache(CACHE_KEYS.GITHUB_CONTRIBUTIONS, data);
+    } catch {
+        if (!contributions.value.length) {
+            contributions.value = buildFallbackContributionYear();
+        }
+    } finally {
+        contributionsLoading.value = false;
+    }
+};
+
+onMounted(() => {
+    fetchEvents();
+    fetchContributions();
 });
 
-const headerContainer = staggerContainer(0.06);
+const container = staggerContainer(0.06);
 </script>
 
 <template>
-    <div class="w-full min-h-screen">
-        <div class="max-w-4xl mx-auto px-5 sm:px-8 py-12 md:py-20">
-            <h1 class="sr-only">now</h1>
-            <motion.div :variants="headerContainer" initial="hidden" animate="visible">
-                <motion.div :variants="fadeUp"><SiteNav /></motion.div>
-            </motion.div>
+    <div class="w-full min-h-[100dvh]">
+        <div class="max-w-2xl mx-auto px-6 pt-12 pb-16">
+            <SiteNav />
 
-            <div class="tui-panel mb-5">
-                <span class="tui-panel-title">now <span v-if="lastUpdated" class="text-ink-subtle">// {{ lastUpdated }}</span></span>
-                <div class="now-prose text-xs text-ink-text/80 leading-relaxed pt-1" v-html="nowHtml"></div>
-            </div>
+            <motion.main :variants="container" initial="hidden" animate="visible" class="mt-12">
+                <motion.h1 :variants="fadeUp" class="text-3xl md:text-4xl font-medium tracking-tight text-ink-text">
+                    now
+                </motion.h1>
+                <motion.p v-if="lastUpdated" :variants="fadeUp" class="mt-2 text-ink-subtle">
+                    last updated {{ lastUpdated }}.
+                </motion.p>
 
-            <div class="grid md:grid-cols-2 gap-4">
-                <div class="tui-panel">
-                    <span class="tui-panel-title">recent writing</span>
-                    <div class="text-xs pt-1">
-                        <router-link
-                            v-for="post in recentPosts"
-                            :key="post.slug"
-                            :to="{ path: '/blog', query: { post: post.slug } }"
-                            class="group block py-2 border-b border-ink-surface/15 last:border-0"
-                        >
-                            <span class="text-ink-text group-hover:text-ink-accent transition-colors block truncate">
-                                {{ post.title }}
-                            </span>
-                            <span class="text-[10px] text-ink-subtle">
-                                {{ formatBlogDate(post.date) }}
-                            </span>
-                        </router-link>
-                    </div>
-                </div>
+                <motion.div :variants="fadeUp" class="now-prose mt-8 text-ink-text/85 leading-relaxed" v-html="nowHtml"></motion.div>
 
-                <div class="tui-panel">
-                    <span class="tui-panel-title">
-                        recent commits
-                        <span v-if="eventsRevalidating" class="text-ink-subtle"> [syncing]</span>
-                    </span>
+                <motion.p :variants="fadeUp" class="now-credit mt-8 text-xs text-ink-subtle leading-relaxed">
+                    this page is inspired by
+                    <a href="https://sivers.org/nowff" target="_blank" rel="noopener noreferrer">derek sivers' now page suggestion</a>
+                    and his
+                    <a href="https://nownownow.com" target="_blank" rel="noopener noreferrer">now now now movement</a>.
+                </motion.p>
 
-                    <div v-if="eventsLoading" class="text-xs pt-1 space-y-2">
-                        <div class="skeleton-pulse h-3 w-48 bg-ink-surface/30"></div>
-                        <div class="skeleton-pulse h-3 w-40 bg-ink-surface/25"></div>
-                    </div>
+                <motion.div :variants="fadeUp" class="mt-14 grid md:grid-cols-2 gap-x-12 gap-y-10">
+                    <section>
+                        <h2 class="text-ink-text font-medium mb-1">recent writing</h2>
+                        <div class="divide-y divide-ink-surface/30">
+                            <router-link
+                                v-for="post in recentPosts"
+                                :key="post.slug"
+                                :to="{ path: '/blog', query: { post: post.slug } }"
+                                class="group flex flex-col justify-center gap-1 min-h-[4rem]"
+                            >
+                                <span class="text-sm text-ink-text group-hover:text-ink-mint transition-colors truncate">
+                                    {{ post.title }}
+                                </span>
+                                <span class="text-xs text-ink-subtle">{{ formatBlogDate(post.date) }}</span>
+                            </router-link>
+                        </div>
+                    </section>
 
-                    <div v-else-if="!events.length" class="text-xs text-ink-subtle pt-1">(no activity)</div>
+                    <section>
+                        <h2 class="text-ink-text font-medium mb-1 flex items-center gap-2">
+                            recent commits
+                            <span v-if="eventsRevalidating" class="text-xs text-ink-subtle font-normal">syncing</span>
+                        </h2>
 
-                    <div v-else class="text-xs pt-1">
-                        <a
-                            v-for="(event, i) in events"
-                            :key="i"
-                            :href="event.repoUrl"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="group block py-2 border-b border-ink-surface/15 last:border-0"
-                        >
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-ink-text group-hover:text-ink-accent transition-colors truncate">{{ event.repo }}</span>
-                                <span class="text-[10px] text-ink-subtle flex-shrink-0">{{ formatRelativeTime(event.date) }}</span>
-                            </div>
-                            <span class="text-ink-subtle truncate block mt-0.5">{{ event.message }}</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
+                        <div v-if="eventsLoading" class="space-y-3 pt-3">
+                            <div v-for="i in 4" :key="i" class="skeleton-pulse h-3 bg-ink-surface/30" :style="{ width: ['70%','55%','62%','48%'][i - 1] }"></div>
+                        </div>
 
+                        <div v-else-if="!events.length" class="text-sm text-ink-subtle pt-3">no recent activity.</div>
+
+                        <div v-else class="divide-y divide-ink-surface/30">
+                            <a
+                                v-for="(event, i) in recentEvents"
+                                :key="i"
+                                :href="event.repoUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="group flex flex-col justify-center gap-1 min-h-[4rem]"
+                            >
+                                <div class="flex items-baseline justify-between gap-3">
+                                    <span class="text-sm text-ink-text group-hover:text-ink-mint transition-colors truncate">{{ event.repo }}</span>
+                                    <span class="text-xs text-ink-subtle flex-shrink-0">{{ formatRelativeTime(event.date) }}</span>
+                                </div>
+                                <span class="text-xs text-ink-subtle truncate block">{{ event.message }}</span>
+                            </a>
+                        </div>
+                    </section>
+                </motion.div>
+
+                <motion.section :variants="fadeUp" class="mt-14">
+                    <h2 class="text-ink-text font-medium mb-3">
+                        on repeat <span class="text-xs text-ink-subtle font-normal">this week</span>
+                    </h2>
+                    <OnRepeat />
+                </motion.section>
+
+                <motion.section :variants="fadeUp" class="mt-14">
+                    <h2 class="text-ink-text font-medium mb-4">by the numbers</h2>
+                    <ByTheNumbers :contributions="contributions" />
+                </motion.section>
+
+                <motion.section :variants="fadeUp" class="mt-14">
+                    <h2 class="text-ink-text font-medium mb-3">contributions</h2>
+                    <ContributionGraph :contributions="contributions" :loading="contributionsLoading" />
+                </motion.section>
+            </motion.main>
+
+            <SiteFooter />
         </div>
     </div>
 </template>
 
 <style scoped>
-.now-prose :deep(p) { margin-bottom: 0.5rem; }
+.now-prose :deep(p) { margin-bottom: 0.85rem; }
 
 .now-prose :deep(h2) {
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 500;
     color: rgb(var(--color-text));
-    margin-top: 1rem;
-    margin-bottom: 0.35rem;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .now-prose :deep(.heading-anchor) { display: none; }
 
-.now-prose :deep(ul) { list-style: none; padding-left: 0; }
+.now-prose :deep(ul) { list-style: none; padding-left: 0; margin: 0.5rem 0; }
 
 .now-prose :deep(li) {
-    padding-left: 1rem;
+    padding-left: 1.1rem;
     position: relative;
-    margin-bottom: 0.2rem;
-    color: rgb(var(--color-subtle) / 0.7);
+    margin-bottom: 0.35rem;
+    color: rgb(var(--color-text) / 0.75);
 }
 
 .now-prose :deep(li)::before {
-    content: "-";
+    content: "";
     position: absolute;
     left: 0;
-    color: rgb(var(--color-overlay));
+    top: 0.62em;
+    width: 0.32rem;
+    height: 1px;
+    background: rgb(var(--color-mint));
+}
+
+.now-credit a {
+    color: rgb(var(--color-text) / 0.7);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: rgb(var(--color-surface));
+    transition: color 0.15s ease;
+}
+
+.now-credit a:hover,
+.now-credit a:focus-visible {
+    color: rgb(var(--color-mint));
 }
 </style>

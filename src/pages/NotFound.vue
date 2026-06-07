@@ -1,49 +1,44 @@
-<template>
-    <div class="w-full min-h-screen">
-        <div class="max-w-4xl mx-auto px-5 sm:px-8 py-12 md:py-20">
-            <h1 class="sr-only">page not found</h1>
-            <SiteNav />
-
-            <div class="tui-panel mb-5">
-                <span class="tui-panel-title">shell</span>
-                <div class="pt-1 text-xs leading-relaxed">
-                    <div class="text-ink-subtle">$ cd {{ routePath }}</div>
-                    <div class="text-ink-red/80">cd: no such file or directory: {{ routePath }}</div>
-                    <div class="text-ink-subtle mt-3">$ ls ~</div>
-                    <div class="text-ink-text/80">blog/ projects/ now.md uses.md</div>
-                </div>
-            </div>
-
-            <div class="tui-panel">
-                <span class="tui-panel-title">recover</span>
-                <div class="space-y-0 text-xs pt-1">
-                    <router-link to="/" class="group flex items-center justify-between py-2 border-b border-ink-surface/10">
-                        <span class="text-ink-text group-hover:text-ink-accent transition-colors">cd ~</span>
-                        <span class="text-ink-subtle">home</span>
-                    </router-link>
-                    <router-link to="/blog" class="group flex items-center justify-between py-2 border-b border-ink-surface/10">
-                        <span class="text-ink-text group-hover:text-ink-accent transition-colors">ls posts</span>
-                        <span class="text-ink-subtle">~/blog</span>
-                    </router-link>
-                    <router-link to="/projects" class="group flex items-center justify-between py-2 border-b border-ink-surface/10">
-                        <span class="text-ink-text group-hover:text-ink-accent transition-colors">ls repos</span>
-                        <span class="text-ink-subtle">~/projects</span>
-                    </router-link>
-                    <router-link to="/now" class="group flex items-center justify-between py-2 border-b border-ink-surface/10">
-                        <span class="text-ink-text group-hover:text-ink-accent transition-colors">cat now.md</span>
-                        <span class="text-ink-subtle">~/now</span>
-                    </router-link>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import SiteNav from "@/components/SiteNav.vue";
+import SiteFooter from "@/components/SiteFooter.vue";
 
 const route = useRoute();
-const routePath = computed(() => route.fullPath || "/missing");
+const routePath = computed(() => route.fullPath || "/");
+
+const links = [
+    { to: "/", label: "home" },
+    { to: "/blog", label: "writing" },
+    { to: "/projects", label: "projects" },
+    { to: "/now", label: "now" },
+];
 </script>
+
+<template>
+    <div class="w-full min-h-[100dvh]">
+        <div class="max-w-2xl mx-auto px-6 pt-12 pb-16">
+            <SiteNav />
+
+            <main class="py-24 md:py-32 text-center">
+                <div class="text-6xl md:text-7xl font-medium tracking-tight text-ink-text">404</div>
+                <p class="mt-4 text-ink-subtle">
+                    nothing lives at
+                    <span class="text-ink-text break-all">{{ routePath }}</span>.
+                </p>
+                <nav class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm">
+                    <router-link
+                        v-for="link in links"
+                        :key="link.to"
+                        :to="link.to"
+                        class="text-ink-subtle hover:text-ink-mint transition-colors"
+                    >
+                        {{ link.label }}
+                    </router-link>
+                </nav>
+            </main>
+
+            <SiteFooter />
+        </div>
+    </div>
+</template>

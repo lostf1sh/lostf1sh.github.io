@@ -215,7 +215,7 @@ const stackItems = [
                     <span class="tui-panel-title">about</span>
                     <div class="pt-1">
                         <div class="text-ink-text text-lg font-medium mb-0.5 tracking-tight">moli</div>
-                        <div class="text-[11px] text-ink-subtle/50 mb-3">junior developer // turkey</div>
+                        <div class="text-[11px] text-ink-subtle mb-3">junior developer // turkey</div>
                         <div class="text-xs text-ink-text/80 leading-relaxed">
                             <span class="text-ink-text" style="font-variant-numeric: tabular-nums">{{ currentAge.toFixed(10) }}</span> years in.
                             i build small tools, ship web experiments, and keep notes on what i learn.
@@ -230,7 +230,7 @@ const stackItems = [
                     <router-link to="/projects" class="nav-btn">projects</router-link>
                     <router-link to="/now" class="nav-btn">now</router-link>
                     <router-link to="/uses" class="nav-btn">uses</router-link>
-                    <span class="text-ink-surface/40 px-0.5">│</span>
+                    <span class="text-ink-subtle px-0.5">│</span>
                     <a href="https://github.com/lostf1sh" target="_blank" rel="noopener noreferrer" class="nav-btn">github</a>
                     <a href="https://www.instagram.com/kawaiimoli" target="_blank" rel="noopener noreferrer" class="nav-btn">instagram</a>
                 </motion.div>
@@ -312,7 +312,7 @@ const stackItems = [
 .nav-btn {
     padding: 0.3rem 0.65rem;
     border: 1px solid rgb(var(--color-surface) / 0.5);
-    color: rgb(var(--color-subtle) / 0.6);
+    color: rgb(var(--color-subtle));
     transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
     font-size: 11px;
 }

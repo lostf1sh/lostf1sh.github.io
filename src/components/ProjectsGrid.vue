@@ -25,7 +25,7 @@ const repoContainer = staggerContainer(0.03);
     >
         <span class="tui-panel-title">
             projects
-            <span v-if="revalidating" class="text-ink-subtle/40"> [syncing]</span>
+            <span v-if="revalidating" class="text-ink-subtle"> [syncing]</span>
         </span>
 
         <div v-if="loading" class="space-y-1">
@@ -61,7 +61,7 @@ const repoContainer = staggerContainer(0.03);
                         ★{{ repo.stargazers_count }}
                     </span>
                 </div>
-                <div class="text-ink-subtle/40 truncate mt-0.5" :title="repo.description">
+                <div class="text-ink-subtle truncate mt-0.5" :title="repo.description">
                     {{ repo.description || "--" }}
                 </div>
             </motion.a>

@@ -36,13 +36,13 @@ const totalContributions = computed(() => {
     >
         <span class="tui-panel-title">
             contributions
-            <span v-if="revalidating && !loading" class="text-ink-subtle/40"> [syncing]</span>
+            <span v-if="revalidating && !loading" class="text-ink-subtle"> [syncing]</span>
         </span>
 
         <div class="pt-1">
             <div v-if="!loading" class="flex items-center justify-between mb-2">
-                <span class="text-[10px] text-ink-subtle/40">{{ totalContributions }} in the last year</span>
-                <div class="flex items-center gap-1.5 text-[10px] text-ink-subtle/40">
+                <span class="text-[10px] text-ink-subtle">{{ totalContributions }} in the last year</span>
+                <div class="flex items-center gap-1.5 text-[10px] text-ink-subtle">
                     <span>less</span>
                     <div class="flex gap-px">
                         <div class="w-[7px] h-[7px] bg-ink-surface/60"></div>

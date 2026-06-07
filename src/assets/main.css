@@ -112,7 +112,7 @@ a {
     background: rgb(var(--color-base));
     padding: 0 0.5rem;
     font-size: 10px;
-    color: rgb(var(--color-subtle) / 0.6);
+    color: rgb(var(--color-subtle));
     letter-spacing: 0.06em;
     text-transform: lowercase;
 }

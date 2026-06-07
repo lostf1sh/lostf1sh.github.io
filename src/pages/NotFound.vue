@@ -7,9 +7,9 @@
             <div class="tui-panel mb-5">
                 <span class="tui-panel-title">shell</span>
                 <div class="pt-1 text-xs leading-relaxed">
-                    <div class="text-ink-subtle/45">$ cd {{ routePath }}</div>
+                    <div class="text-ink-subtle">$ cd {{ routePath }}</div>
                     <div class="text-ink-red/80">cd: no such file or directory: {{ routePath }}</div>
-                    <div class="text-ink-subtle/45 mt-3">$ ls ~</div>
+                    <div class="text-ink-subtle mt-3">$ ls ~</div>
                     <div class="text-ink-text/80">blog/ projects/ now.md uses.md</div>
                 </div>
             </div>
@@ -19,19 +19,19 @@
                 <div class="space-y-0 text-xs pt-1">
                     <router-link to="/" class="group flex items-center justify-between py-2 border-b border-ink-surface/10">
                         <span class="text-ink-text group-hover:text-ink-accent transition-colors">cd ~</span>
-                        <span class="text-ink-subtle/20">home</span>
+                        <span class="text-ink-subtle">home</span>
                     </router-link>
                     <router-link to="/blog" class="group flex items-center justify-between py-2 border-b border-ink-surface/10">
                         <span class="text-ink-text group-hover:text-ink-accent transition-colors">ls posts</span>
-                        <span class="text-ink-subtle/20">~/blog</span>
+                        <span class="text-ink-subtle">~/blog</span>
                     </router-link>
                     <router-link to="/projects" class="group flex items-center justify-between py-2 border-b border-ink-surface/10">
                         <span class="text-ink-text group-hover:text-ink-accent transition-colors">ls repos</span>
-                        <span class="text-ink-subtle/20">~/projects</span>
+                        <span class="text-ink-subtle">~/projects</span>
                     </router-link>
                     <router-link to="/now" class="group flex items-center justify-between py-2 border-b border-ink-surface/10">
                         <span class="text-ink-text group-hover:text-ink-accent transition-colors">cat now.md</span>
-                        <span class="text-ink-subtle/20">~/now</span>
+                        <span class="text-ink-subtle">~/now</span>
                     </router-link>
                 </div>
             </div>

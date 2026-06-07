@@ -24,7 +24,7 @@ const isActive = (item) => route.name === item.name;
                 'transition-colors duration-150',
                 isActive(item)
                     ? 'text-ink-text'
-                    : 'text-ink-subtle/50 hover:text-ink-text',
+                    : 'text-ink-subtle hover:text-ink-text',
             ]"
         >
             {{ item.label }}
@@ -34,7 +34,7 @@ const isActive = (item) => route.name === item.name;
             href="https://github.com/lostf1sh"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-ink-subtle/50 hover:text-ink-text transition-colors"
+            class="text-ink-subtle hover:text-ink-text transition-colors"
         >
             github
         </a>
@@ -42,7 +42,7 @@ const isActive = (item) => route.name === item.name;
             href="https://www.instagram.com/kawaiimoli"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-ink-subtle/50 hover:text-ink-text transition-colors"
+            class="text-ink-subtle hover:text-ink-text transition-colors"
         >
             instagram
         </a>

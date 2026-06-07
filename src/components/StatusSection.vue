@@ -70,7 +70,7 @@ const statusClass = computed(() => {
         case "online": return "text-ink-green";
         case "idle": return "text-ink-yellow";
         case "dnd": return "text-ink-red";
-        default: return "text-ink-subtle/50";
+        default: return "text-ink-subtle";
     }
 });
 </script>
@@ -91,7 +91,7 @@ const statusClass = computed(() => {
                 <span class="text-ink-subtle">discord </span>
                 <span class="text-ink-text mr-1">{{ discordUser.username }}</span>
                 <span :class="statusClass">[{{ statusLabel }}]</span>
-                <span v-if="isReconnecting" class="text-ink-subtle/40"> [...] reconnecting</span>
+                <span v-if="isReconnecting" class="text-ink-subtle"> [...] reconnecting</span>
             </div>
 
             <div class="flex items-baseline gap-2 min-w-0">
@@ -104,7 +104,7 @@ const statusClass = computed(() => {
                     v-else-if="showPresenceSkeleton"
                     class="skeleton-pulse h-3 w-40 bg-ink-surface/30 inline-block align-middle"
                 ></span>
-                <span v-else class="text-ink-subtle/40">--</span>
+                <span v-else class="text-ink-subtle">--</span>
             </div>
 
             <div
@@ -119,7 +119,7 @@ const statusClass = computed(() => {
                 <span class="text-ink-subtle flex-shrink-0">{{ editorStatus.name === "Zed" ? "zed" : "code" }}</span>
                 <span class="text-ink-text min-w-0 block truncate">
                     <span v-if="editorStatus.workspace">{{ editorStatus.workspace.toLowerCase() }}</span>
-                    <span v-if="editorStatus.workspace && editorStatus.filename" class="text-ink-subtle/40">/</span>
+                    <span v-if="editorStatus.workspace && editorStatus.filename" class="text-ink-subtle">/</span>
                     <span v-if="editorStatus.filename">{{ editorStatus.filename.toLowerCase() }}</span>
                 </span>
             </div>

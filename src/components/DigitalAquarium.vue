@@ -32,7 +32,7 @@ const createFish = (_, index) => {
         speed: randomBetween(1.2, 4.2),
         direction,
         phase: randomBetween(0, Math.PI * 2),
-        depth: randomBetween(0.28, 0.72),
+        depth: randomBetween(0.62, 0.92),
     };
 };
 
@@ -43,7 +43,7 @@ const createBubble = (_, index) => ({
     speed: randomBetween(4, 12),
     delay: randomBetween(0, 8),
     size: Math.random() > 0.74 ? "o" : ".",
-    opacity: randomBetween(0.12, 0.42),
+    opacity: randomBetween(0.8, 0.95),
 });
 
 const readEnabled = () => {
@@ -202,7 +202,7 @@ onBeforeUnmount(() => {
     overflow: hidden;
     color: rgb(var(--color-subtle));
     font-family: "JetBrains Mono", monospace;
-    opacity: 0.5;
+    opacity: 1;
     mix-blend-mode: screen;
     transition: opacity 0.3s ease;
     mask-image: radial-gradient(circle at 50% 42%, transparent 0 18%, rgb(0 0 0 / 0.2) 38%, black 100%);
@@ -210,7 +210,7 @@ onBeforeUnmount(() => {
 
 [data-theme="light"] .digital-aquarium {
     mix-blend-mode: multiply;
-    opacity: 0.34;
+    opacity: 1;
 }
 
 .digital-aquarium.is-disabled {
@@ -253,7 +253,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 640px) {
     .digital-aquarium {
-        opacity: 0.32;
+        opacity: 1;
     }
 
 }

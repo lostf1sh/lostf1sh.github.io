@@ -98,13 +98,13 @@ const repoContainer = staggerContainer(0.03);
                     class="px-2 py-0.5 text-[10px] border transition-colors cursor-pointer"
                     :class="activeLanguage === lang
                         ? 'bg-ink-text/8 border-ink-text/20 text-ink-text'
-                        : 'bg-transparent border-ink-surface/50 text-ink-subtle/50 hover:text-ink-text hover:border-ink-overlay/40'"
+                        : 'bg-transparent border-ink-surface/50 text-ink-subtle hover:text-ink-text hover:border-ink-overlay/40'"
                 >
                     {{ lang.toLowerCase() }}({{ count }})
                 </button>
             </div>
 
-            <div v-if="loading" class="text-xs text-ink-subtle/40 py-4">loading...</div>
+            <div v-if="loading" class="text-xs text-ink-subtle py-4">loading...</div>
 
             <template v-else>
                 <div v-if="pinnedRepos.length && !activeLanguage" class="tui-panel mb-5">
@@ -121,12 +121,12 @@ const repoContainer = staggerContainer(0.03);
                         >
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-ink-text group-hover:text-ink-accent transition-colors truncate">{{ repo.name }}</span>
-                                <div class="flex items-center gap-3 flex-shrink-0 text-ink-subtle/30">
+                                <div class="flex items-center gap-3 flex-shrink-0 text-ink-subtle">
                                     <span v-if="repo.stargazers_count > 0">★{{ repo.stargazers_count }}</span>
                                     <span v-if="repo.language">{{ repo.language.toLowerCase() }}</span>
                                 </div>
                             </div>
-                            <div class="text-ink-subtle/30 truncate mt-0.5">{{ repo.description || "--" }}</div>
+                            <div class="text-ink-subtle truncate mt-0.5">{{ repo.description || "--" }}</div>
                         </motion.a>
                     </motion.div>
                 </div>
@@ -134,7 +134,7 @@ const repoContainer = staggerContainer(0.03);
                 <div class="tui-panel">
                     <span class="tui-panel-title">{{ activeLanguage ? activeLanguage.toLowerCase() : 'all' }}</span>
 
-                    <div v-if="!filteredRepos.length" class="text-xs text-ink-subtle/40 py-3 pt-2">
+                    <div v-if="!filteredRepos.length" class="text-xs text-ink-subtle py-3 pt-2">
                         (no projects found)
                         <button v-if="activeLanguage" @click="activeLanguage = null" class="text-ink-text ml-2 cursor-pointer">[clear]</button>
                     </div>
@@ -151,12 +151,12 @@ const repoContainer = staggerContainer(0.03);
                         >
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-ink-text group-hover:text-ink-accent transition-colors truncate">{{ repo.name }}</span>
-                                <div class="flex items-center gap-3 flex-shrink-0 text-ink-subtle/30">
+                                <div class="flex items-center gap-3 flex-shrink-0 text-ink-subtle">
                                     <span v-if="repo.stargazers_count > 0">★{{ repo.stargazers_count }}</span>
                                     <span v-if="repo.language">{{ repo.language.toLowerCase() }}</span>
                                 </div>
                             </div>
-                            <div class="text-ink-subtle/30 truncate mt-0.5">{{ repo.description || "--" }}</div>
+                            <div class="text-ink-subtle truncate mt-0.5">{{ repo.description || "--" }}</div>
                         </motion.a>
                     </motion.div>
                 </div>

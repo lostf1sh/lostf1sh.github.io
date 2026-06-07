@@ -33,11 +33,11 @@ const appleMusicUrl = (track) =>
     >
         <span class="tui-panel-title">
             listening
-            <span v-if="revalidating" class="text-ink-subtle/40"> [syncing]</span>
+            <span v-if="revalidating" class="text-ink-subtle"> [syncing]</span>
         </span>
 
         <div class="pt-1">
-            <div v-if="staleFailed && (tracks.length || currentTrack)" class="text-[10px] text-ink-subtle/40 mb-2">
+            <div v-if="staleFailed && (tracks.length || currentTrack)" class="text-[10px] text-ink-subtle mb-2">
                 [cached]
             </div>
 
@@ -53,7 +53,7 @@ const appleMusicUrl = (track) =>
                     <span class="text-ink-green flex-shrink-0">[NOW]</span>
                 </div>
                 <div class="flex items-center justify-between gap-2 mt-0.5">
-                    <span class="text-ink-subtle/40 truncate">
+                    <span class="text-ink-subtle truncate">
                         {{ currentTrack.artist["#text"] }}
                     </span>
                     <span class="provider-links">
@@ -99,7 +99,7 @@ const appleMusicUrl = (track) =>
                         </span>
                     </div>
                     <div class="flex items-center justify-between gap-2 mt-0.5">
-                        <span class="text-ink-subtle/40 truncate">
+                        <span class="text-ink-subtle truncate">
                             {{ track.artist["#text"] }}
                         </span>
                         <span class="provider-links">
@@ -122,7 +122,7 @@ const appleMusicUrl = (track) =>
 }
 
 .provider-links a {
-    color: rgb(var(--color-subtle) / 0.38);
+    color: rgb(var(--color-subtle));
     transition: color 0.12s ease;
 }
 

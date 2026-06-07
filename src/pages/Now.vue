@@ -72,7 +72,7 @@ const headerContainer = staggerContainer(0.06);
             </motion.div>
 
             <div class="tui-panel mb-5">
-                <span class="tui-panel-title">now <span v-if="lastUpdated" class="text-ink-subtle/25">// {{ lastUpdated }}</span></span>
+                <span class="tui-panel-title">now <span v-if="lastUpdated" class="text-ink-subtle">// {{ lastUpdated }}</span></span>
                 <div class="now-prose text-xs text-ink-text/80 leading-relaxed pt-1" v-html="nowHtml"></div>
             </div>
 
@@ -89,7 +89,7 @@ const headerContainer = staggerContainer(0.06);
                             <span class="text-ink-text group-hover:text-ink-accent transition-colors block truncate">
                                 {{ post.title }}
                             </span>
-                            <span class="text-[10px] text-ink-subtle/30">
+                            <span class="text-[10px] text-ink-subtle">
                                 {{ formatBlogDate(post.date) }}
                             </span>
                         </router-link>
@@ -99,7 +99,7 @@ const headerContainer = staggerContainer(0.06);
                 <div class="tui-panel">
                     <span class="tui-panel-title">
                         recent commits
-                        <span v-if="eventsRevalidating" class="text-ink-subtle/25"> [syncing]</span>
+                        <span v-if="eventsRevalidating" class="text-ink-subtle"> [syncing]</span>
                     </span>
 
                     <div v-if="eventsLoading" class="text-xs pt-1 space-y-2">
@@ -107,7 +107,7 @@ const headerContainer = staggerContainer(0.06);
                         <div class="skeleton-pulse h-3 w-40 bg-ink-surface/25"></div>
                     </div>
 
-                    <div v-else-if="!events.length" class="text-xs text-ink-subtle/30 pt-1">(no activity)</div>
+                    <div v-else-if="!events.length" class="text-xs text-ink-subtle pt-1">(no activity)</div>
 
                     <div v-else class="text-xs pt-1">
                         <a
@@ -120,9 +120,9 @@ const headerContainer = staggerContainer(0.06);
                         >
                             <div class="flex items-center justify-between gap-2">
                                 <span class="text-ink-text group-hover:text-ink-accent transition-colors truncate">{{ event.repo }}</span>
-                                <span class="text-[10px] text-ink-subtle/30 flex-shrink-0">{{ formatRelativeTime(event.date) }}</span>
+                                <span class="text-[10px] text-ink-subtle flex-shrink-0">{{ formatRelativeTime(event.date) }}</span>
                             </div>
-                            <span class="text-ink-subtle/35 truncate block mt-0.5">{{ event.message }}</span>
+                            <span class="text-ink-subtle truncate block mt-0.5">{{ event.message }}</span>
                         </a>
                     </div>
                 </div>

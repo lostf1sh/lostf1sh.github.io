@@ -239,7 +239,7 @@ const viewAnimate = { opacity: 1 };
 
             <div class="tui-panel mb-4">
                 <span class="tui-panel-title">writing</span>
-                <div class="pt-1 flex items-center justify-between text-[10px] text-ink-subtle/40 mb-2">
+                <div class="pt-1 flex items-center justify-between text-[10px] text-ink-subtle mb-2">
                     <span>{{ posts.length }} posts // thoughts on code, tools, and systems</span>
                     <div class="flex gap-2">
                         <a href="/rss.xml" class="hover:text-ink-text transition-colors" target="_blank" rel="noopener noreferrer">[rss]</a>
@@ -267,15 +267,15 @@ const viewAnimate = { opacity: 1 };
                                         {{ post.title }}
                                     </div>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-[10px] text-ink-subtle/40">{{ formatDate(post.date) }}</span>
-                                        <span v-if="post.tags.length" class="text-[10px] text-ink-subtle/30">
+                                        <span class="text-[10px] text-ink-subtle">{{ formatDate(post.date) }}</span>
+                                        <span v-if="post.tags.length" class="text-[10px] text-ink-subtle">
                                             <span v-for="(tag, ti) in post.tags" :key="tag">
                                                 {{ tag }}<span v-if="ti < post.tags.length - 1">,</span>
                                             </span>
                                         </span>
                                     </div>
                                 </div>
-                                <span class="text-[10px] text-ink-subtle/20 group-hover:text-ink-subtle transition-colors flex-shrink-0 pt-0.5">
+                                <span class="text-[10px] text-ink-subtle group-hover:text-ink-subtle transition-colors flex-shrink-0 pt-0.5">
                                     →
                                 </span>
                             </div>
@@ -299,19 +299,19 @@ const viewAnimate = { opacity: 1 };
                         <span class="tui-panel-title">meta</span>
                         <div class="flex flex-row md:flex-col gap-3 flex-wrap text-[10px] pt-1">
                             <div>
-                                <div class="text-ink-subtle/40">issue</div>
+                                <div class="text-ink-subtle">issue</div>
                                 <div class="text-ink-text">#{{ currentPostNumber }}</div>
                             </div>
                             <div>
-                                <div class="text-ink-subtle/40">date</div>
+                                <div class="text-ink-subtle">date</div>
                                 <div class="text-ink-text">{{ formatDate(currentPost.date) }}</div>
                             </div>
                             <div>
-                                <div class="text-ink-subtle/40">read</div>
+                                <div class="text-ink-subtle">read</div>
                                 <div class="text-ink-text">~{{ readingTime(currentPost.content) }}m</div>
                             </div>
                             <div v-if="currentPost.tags.length">
-                                <div class="text-ink-subtle/40">tags</div>
+                                <div class="text-ink-subtle">tags</div>
                                 <div class="flex flex-row flex-wrap gap-1 md:flex-col">
                                     <span v-for="tag in currentPost.tags" :key="tag" class="text-ink-subtle">{{ tag }}</span>
                                 </div>
@@ -367,7 +367,7 @@ const viewAnimate = { opacity: 1 };
                                 class="group w-full text-left py-1.5 border-b border-ink-surface/20 last:border-0 cursor-pointer text-xs"
                             >
                                 <div class="text-ink-text group-hover:text-ink-accent transition-colors truncate">{{ post.title }}</div>
-                                <div class="text-[10px] text-ink-subtle/40">{{ formatDate(post.date) }}</div>
+                                <div class="text-[10px] text-ink-subtle">{{ formatDate(post.date) }}</div>
                             </button>
                         </div>
                     </div>

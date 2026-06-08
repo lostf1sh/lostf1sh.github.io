@@ -6,9 +6,12 @@ import BackToTop from "@/components/BackToTop.vue";
 import CustomCursor from "@/components/CustomCursor.vue";
 import CommandPalette from "@/components/CommandPalette.vue";
 import DigitalAquarium from "@/components/DigitalAquarium.vue";
+import AccentAura from "@/components/AccentAura.vue";
+import { startLivingAccent } from "@/services/livingAccent";
 
 const showBackToTop = ref(false);
 let scrollRaf = null;
+let stopLivingAccent = null;
 
 const onScroll = () => {
     if (scrollRaf) return;
@@ -20,16 +23,19 @@ const onScroll = () => {
 
 onMounted(() => {
     window.addEventListener("scroll", onScroll, { passive: true });
+    stopLivingAccent = startLivingAccent();
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener("scroll", onScroll);
     if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    stopLivingAccent?.();
 });
 </script>
 
 <template>
     <DigitalAquarium />
+    <AccentAura />
     <CustomCursor />
     <BootSequence />
     <CommandPalette />

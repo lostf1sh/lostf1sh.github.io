@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { vitality } from "@/services/livingAccent";
 
 const STORAGE_KEY = "moli:aquarium";
 const FISH_GLYPHS = ["<><", "<°)))><", "><(((°>", "><>", "<*)))-{"];
@@ -90,8 +91,10 @@ const tick = (time) => {
     lastTime = time;
 
     if (enabled.value && !reduceMotion.value) {
+        const energy = 0.35 + 0.65 * vitality.value;
+
         fish.value = fish.value.map((item) => {
-            let x = item.x + item.speed * item.direction * delta;
+            let x = item.x + item.speed * item.direction * delta * energy;
             let direction = item.direction;
 
             if (x > 108) {
@@ -106,12 +109,12 @@ const tick = (time) => {
                 ...item,
                 x,
                 direction,
-                phase: item.phase + delta,
+                phase: item.phase + delta * energy,
             };
         });
 
         bubbles.value = bubbles.value.map((bubble) => {
-            const y = bubble.y - bubble.speed * delta;
+            const y = bubble.y - bubble.speed * delta * energy;
             return {
                 ...bubble,
                 y: y < -8 ? 108 : y,
@@ -201,15 +204,14 @@ onBeforeUnmount(() => {
     overflow: hidden;
     color: rgb(var(--color-subtle));
     font-family: "JetBrains Mono", monospace;
-    opacity: 1;
+    opacity: calc(0.4 + 0.6 * var(--vitality, 1));
     mix-blend-mode: screen;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.6s ease;
     mask-image: radial-gradient(circle at 50% 42%, transparent 0 18%, rgb(0 0 0 / 0.2) 38%, black 100%);
 }
 
 [data-theme="light"] .digital-aquarium {
     mix-blend-mode: multiply;
-    opacity: 1;
 }
 
 .digital-aquarium.is-disabled {
@@ -250,10 +252,10 @@ onBeforeUnmount(() => {
     will-change: auto;
 }
 
-@media (max-width: 640px) {
+@media (prefers-reduced-motion: reduce) {
     .digital-aquarium {
-        opacity: 1;
+        transition: none;
     }
-
 }
+
 </style>

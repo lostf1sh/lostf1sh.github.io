@@ -4,13 +4,22 @@ const defaults = {
   url: "https://moli.codes",
 };
 
+let titlePrefix = "";
+let currentTitle = defaults.title;
+
+export const setTitlePrefix = (prefix) => {
+  titlePrefix = prefix || "";
+  document.title = titlePrefix + currentTitle;
+};
+
 export const updateMeta = ({ title, description, url, image } = {}) => {
   const t = title || defaults.title;
   const d = description || defaults.description;
   const u = url || defaults.url;
   const img = image || null;
 
-  document.title = t;
+  currentTitle = t;
+  document.title = titlePrefix + t;
 
   const setContent = (selector, value) => {
     document.querySelector(selector)?.setAttribute("content", value);

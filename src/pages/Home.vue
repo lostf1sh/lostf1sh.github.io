@@ -288,6 +288,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 420px) {
     .nav-gap { display: none; }
+    .kbd-hint { display: none; }
 }
 
 .kbd-hint {

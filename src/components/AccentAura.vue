@@ -36,4 +36,14 @@
 @media (prefers-reduced-transparency: reduce) {
     .accent-aura { display: none; }
 }
+
+@media (max-width: 768px) {
+    .accent-aura {
+        background: radial-gradient(
+            140vw 42vh at 50% -8%,
+            rgb(var(--color-mint) / 0.26),
+            transparent 72%
+        );
+    }
+}
 </style>

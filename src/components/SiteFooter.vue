@@ -16,7 +16,7 @@ const kbHint = computed(() => {
 
 <template>
     <footer
-        class="mt-24 pt-6 border-t border-ink-surface/40 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-sm text-ink-subtle"
+        class="mt-10 pt-6 border-t border-ink-surface/40 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 text-sm text-ink-subtle"
     >
         <div class="flex items-center gap-x-5">
             <a

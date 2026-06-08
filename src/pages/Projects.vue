@@ -17,7 +17,6 @@ if (reposCached?.value?.length) {
     repos.value = reposCached.value;
 }
 const loading = ref(!repos.value.length);
-const activeLanguage = ref(null);
 
 const pinnedSlugs = ["lostf1sh.github.io", "PixelPlayer"];
 const pinnedExternal = ["theovilardo/PixelPlayer"];
@@ -44,34 +43,15 @@ const fetchRepos = async () => {
     }
 };
 
-const languages = computed(() => {
-    const counts = {};
-    repos.value.forEach((r) => {
-        if (r.language) counts[r.language] = (counts[r.language] || 0) + 1;
-    });
-    return Object.entries(counts)
-        .sort((a, b) => b[1] - a[1])
-        .map(([lang, count]) => ({ lang, count }));
-});
-
 const pinnedRepos = computed(() =>
     repos.value.filter((r) => pinnedSlugs.includes(r.name)),
 );
 
-const filteredRepos = computed(() => {
-    let list = repos.value
+const filteredRepos = computed(() =>
+    repos.value
         .filter((r) => !pinnedSlugs.includes(r.name))
-        .sort((a, b) => b.stargazers_count - a.stargazers_count);
-
-    if (activeLanguage.value) {
-        list = list.filter((r) => r.language === activeLanguage.value);
-    }
-    return list;
-});
-
-const toggleLanguage = (lang) => {
-    activeLanguage.value = activeLanguage.value === lang ? null : lang;
-};
+        .sort((a, b) => b.stargazers_count - a.stargazers_count),
+);
 
 onMounted(fetchRepos);
 
@@ -80,7 +60,7 @@ const container = staggerContainer(0.06);
 
 <template>
     <div class="w-full min-h-[100dvh]">
-        <div class="max-w-2xl mx-auto px-6 pt-12 pb-16">
+        <div class="max-w-2xl mx-auto px-6 pt-12 pb-10">
             <SiteNav />
 
             <motion.main :variants="container" initial="hidden" animate="visible" class="mt-12">
@@ -91,20 +71,6 @@ const container = staggerContainer(0.06);
                     open source tools and experiments. mostly small, mostly useful.
                 </motion.p>
 
-                <motion.div v-if="!loading && languages.length" :variants="fadeUp" class="mt-8 flex flex-wrap gap-2">
-                    <button
-                        v-for="{ lang, count } in languages"
-                        :key="lang"
-                        @click="toggleLanguage(lang)"
-                        class="px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer"
-                        :class="activeLanguage === lang
-                            ? 'border-ink-mint/60 text-ink-mint'
-                            : 'border-ink-surface/60 text-ink-subtle hover:text-ink-text hover:border-ink-overlay'"
-                    >
-                        {{ lang.toLowerCase() }} <span class="opacity-60">{{ count }}</span>
-                    </button>
-                </motion.div>
-
                 <div v-if="loading" class="mt-10 space-y-5">
                     <div v-for="i in 5" :key="i" class="space-y-2">
                         <div class="skeleton-pulse h-3.5 bg-ink-surface/30" :style="{ width: ['40%','55%','35%','48%','42%'][i - 1] }"></div>
@@ -113,7 +79,7 @@ const container = staggerContainer(0.06);
                 </div>
 
                 <template v-else>
-                    <motion.section v-if="pinnedRepos.length && !activeLanguage" :variants="fadeUp" class="mt-10">
+                    <motion.section v-if="pinnedRepos.length" :variants="fadeUp" class="mt-10">
                         <h2 class="text-ink-text font-medium mb-1">pinned</h2>
                         <div class="divide-y divide-ink-surface/30">
                             <a
@@ -137,19 +103,10 @@ const container = staggerContainer(0.06);
                     </motion.section>
 
                     <motion.section :variants="fadeUp" class="mt-10">
-                        <h2 class="text-ink-text font-medium mb-1 flex items-center gap-3">
-                            {{ activeLanguage ? activeLanguage.toLowerCase() : "all repositories" }}
-                            <button
-                                v-if="activeLanguage"
-                                @click="activeLanguage = null"
-                                class="text-xs font-normal text-ink-subtle hover:text-ink-mint transition-colors"
-                            >
-                                clear
-                            </button>
-                        </h2>
+                        <h2 class="text-ink-text font-medium mb-1">all repositories</h2>
 
                         <div v-if="!filteredRepos.length" class="text-sm text-ink-subtle py-4">
-                            no projects in this language.
+                            no repositories to show.
                         </div>
 
                         <div v-else class="divide-y divide-ink-surface/30">

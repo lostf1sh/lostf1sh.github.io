@@ -3,7 +3,6 @@ import { nextTick, onBeforeUnmount, onMounted, ref, computed, watch } from "vue"
 import { useRoute, useRouter } from "vue-router";
 import { motion } from "motion-v";
 import "prismjs/themes/prism-tomorrow.css";
-import { renderMarkdown } from "@/utils/markdown";
 import SiteNav from "@/components/SiteNav.vue";
 import SiteFooter from "@/components/SiteFooter.vue";
 import {
@@ -12,18 +11,30 @@ import {
     getRelatedPosts,
     formatDate,
 } from "@/services/blogService";
-import { updateMeta, setJsonLd, removeJsonLd } from "@/utils/seo";
+import { recordView } from "@/services/viewsService";
+import { updateMeta } from "@/utils/seo";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 
+const posts = getAllPosts();
 const view = ref("list");
 const currentPost = ref(null);
-const posts = ref([]);
+const viewCount = ref(null);
+const renderedHtml = ref("");
 const articleContentRef = ref(null);
 const toastMessage = ref("");
 let toastTimeoutId = null;
 let PrismInstance = null;
+let renderMarkdownFn = null;
+
+const renderPostHtml = async (content) => {
+    if (!renderMarkdownFn) {
+        ({ renderMarkdown: renderMarkdownFn } = await import("@/utils/markdown"));
+    }
+    return renderMarkdownFn(content);
+};
 
 const searchQuery = ref("");
+const activeTag = ref("");
 
 const readingProgress = ref(0);
 let rafId = null;
@@ -39,24 +50,47 @@ const updateReadingProgress = () => {
 const route = useRoute();
 const router = useRouter();
 
-const sortedPosts = computed(() => posts.value);
+const asSlug = (value) => (typeof value === "string" ? value : "");
+
+const tagFilters = computed(() => {
+    const counts = new Map();
+    posts.forEach((p) => p.tags.forEach((t) => {
+        const tag = t.toLowerCase();
+        counts.set(tag, (counts.get(tag) || 0) + 1);
+    }));
+    return [...counts.entries()]
+        .filter(([tag, count]) => count > 1 || tag === activeTag.value)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([tag]) => tag);
+});
 
 const filteredPosts = computed(() => {
     const q = searchQuery.value.trim().toLowerCase();
-    if (!q) return posts.value;
-    return posts.value.filter((p) =>
-        `${p.title} ${p.excerpt}`.toLowerCase().includes(q),
-    );
+    return posts.filter((p) => {
+        if (activeTag.value && !p.tags.some((t) => t.toLowerCase() === activeTag.value)) return false;
+        return !q || `${p.title} ${p.excerpt} ${p.tags.join(" ")}`.toLowerCase().includes(q);
+    });
 });
 
-const clearFilters = () => { searchQuery.value = ""; };
+const toggleTag = (tag) => {
+    activeTag.value = activeTag.value === tag ? "" : tag;
+    const nextQuery = { ...route.query };
+    if (activeTag.value) nextQuery.tag = activeTag.value;
+    else delete nextQuery.tag;
+    router.replace({ query: nextQuery });
+};
+
+const clearFilters = () => {
+    searchQuery.value = "";
+    if (activeTag.value) toggleTag(activeTag.value);
+};
 
 const adjacentPosts = computed(() => {
-    if (!currentPost.value || !sortedPosts.value.length) return { prev: null, next: null };
-    const idx = sortedPosts.value.findIndex((p) => p.slug === currentPost.value.slug);
+    if (!currentPost.value) return { prev: null, next: null };
+    const idx = posts.findIndex((p) => p.slug === currentPost.value.slug);
     return {
-        prev: idx < sortedPosts.value.length - 1 ? sortedPosts.value[idx + 1] : null,
-        next: idx > 0 ? sortedPosts.value[idx - 1] : null,
+        prev: idx < posts.length - 1 ? posts[idx + 1] : null,
+        next: idx > 0 ? posts[idx - 1] : null,
     };
 });
 
@@ -65,63 +99,91 @@ const relatedPosts = computed(() => {
     return getRelatedPosts(currentPost.value.slug, 3);
 });
 
-const loadPosts = () => { posts.value = getAllPosts(); };
+const unescapeAttribute = (text) => text
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 
-const openPost = (slug) => {
-    currentPost.value = getPostBySlug(slug);
-    if (currentPost.value) {
-        view.value = "post";
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        const currentRouteSlug = typeof route.params.slug === "string" ? route.params.slug : "";
-        if (currentRouteSlug !== slug || route.query.post) {
-            const nextQuery = { ...route.query };
-            delete nextQuery.post;
-            router.replace({ name: "Blog", params: { slug }, query: nextQuery });
-        }
-        updateMeta({
-            title: `${currentPost.value.title} | moli.codes`,
-            description: currentPost.value.excerpt,
-            url: `https://moli.codes/blog/${slug}`,
-        });
-        setJsonLd("article", {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            headline: currentPost.value.title,
-            description: currentPost.value.excerpt,
-            datePublished: currentPost.value.date,
-            dateModified: currentPost.value.date,
-            author: { "@type": "Person", name: "Moli" },
-            mainEntityOfPage: `https://moli.codes/blog/${slug}`,
-            url: `https://moli.codes/blog/${slug}`,
-        });
-        void highlightCodeBlocks();
-    } else if (route.params.slug || route.query.post) {
-        removeJsonLd("article");
-        router.replace({ name: "Blog", params: { slug: undefined }, query: {} });
+const tocItems = computed(() => {
+    const items = [];
+    const headingRe = /<h([23]) id="([^"]+)" data-heading-text="([^"]*)"/g;
+    let match;
+    while ((match = headingRe.exec(renderedHtml.value))) {
+        items.push({ depth: Number(match[1]), id: match[2], text: unescapeAttribute(match[3]) });
     }
+    if (items.length > 12) {
+        const topLevel = items.filter((item) => item.depth === 2);
+        if (topLevel.length >= 3) return topLevel;
+    }
+    return items;
+});
+
+const showToc = computed(() => tocItems.value.length >= 3);
+
+const scrollToHeading = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    history.replaceState(history.state, "", `#${id}`);
+};
+
+const openPost = async (slug) => {
+    const meta = posts.find((p) => p.slug === slug);
+    if (!meta) {
+        currentPost.value = null;
+        if (route.params.slug || route.query.post) {
+            renderedHtml.value = "";
+            router.replace({ name: "Blog", params: { slug: undefined }, query: {} });
+        }
+        return;
+    }
+
+    currentPost.value = { ...meta, content: "" };
+    renderedHtml.value = "";
+    view.value = "post";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    viewCount.value = null;
+    recordView(slug).then((views) => {
+        if (currentPost.value?.slug === slug) viewCount.value = views;
+    });
+
+    if (asSlug(route.params.slug) !== slug || route.query.post) {
+        const nextQuery = { ...route.query };
+        delete nextQuery.post;
+        router.replace({ name: "Blog", params: { slug }, query: nextQuery });
+    }
+    updateMeta({
+        title: `${meta.title} | moli.codes`,
+        description: meta.excerpt,
+        url: `https://moli.codes/blog/${slug}`,
+        image: `https://moli.codes/og/${slug}.png`,
+    });
+
+    const post = await getPostBySlug(slug);
+    if (!post || currentPost.value?.slug !== slug) return;
+    currentPost.value = post;
+    renderedHtml.value = await renderPostHtml(post.content);
+    void highlightCodeBlocks();
 };
 
 const goBack = ({ skipQueryUpdate = false } = {}) => {
     view.value = "list";
     currentPost.value = null;
+    renderedHtml.value = "";
     window.scrollTo({ top: 0, behavior: "smooth" });
     updateMeta({
         title: "Blog | moli.codes",
         description: "Thoughts on code, tools, and random stuff.",
         url: "https://moli.codes/blog",
     });
-    removeJsonLd("article");
     if (!skipQueryUpdate && (route.params.slug || route.query.post)) {
         const newQuery = { ...route.query };
         delete newQuery.post;
         router.replace({ name: "Blog", params: { slug: undefined }, query: newQuery });
     }
-};
-
-const calculateReadingTime = (text) => {
-    const wordsPerMinute = 200;
-    const words = text.trim().split(/\s+/).length;
-    return Math.ceil(words / wordsPerMinute);
 };
 
 const ensurePostEnhancers = async () => {
@@ -159,19 +221,12 @@ const highlightCodeBlocks = async () => {
     }
 };
 
-const readingTime = (content) => {
-    const text = content.replace(/```[\s\S]*?```/g, '').replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
-    return calculateReadingTime(text);
-};
-
 const progressPercent = computed(() => Math.round(readingProgress.value));
 
 onMounted(() => {
-    loadPosts();
-    const slugFromParam = typeof route.params.slug === "string" ? route.params.slug : "";
-    const slugFromQuery = typeof route.query.post === "string" ? route.query.post : "";
-    if (slugFromParam) openPost(slugFromParam);
-    else if (slugFromQuery) openPost(slugFromQuery);
+    activeTag.value = asSlug(route.query.tag).toLowerCase();
+    const slug = asSlug(route.params.slug) || asSlug(route.query.post);
+    if (slug) openPost(slug);
     window.addEventListener("scroll", updateReadingProgress, { passive: true });
 });
 
@@ -179,7 +234,6 @@ onBeforeUnmount(() => {
     window.removeEventListener("scroll", updateReadingProgress);
     if (rafId) cancelAnimationFrame(rafId);
     if (toastTimeoutId) clearTimeout(toastTimeoutId);
-    removeJsonLd("article");
 });
 
 watch(articleContentRef, (el, _, onCleanup) => {
@@ -192,10 +246,9 @@ watch(articleContentRef, (el, _, onCleanup) => {
 
 watch(
     () => [route.params.slug, route.query.post],
-    (slug, prevSlug) => {
-        const currentSlug = typeof slug[0] === "string" ? slug[0] : typeof slug[1] === "string" ? slug[1] : "";
-        const previousSlug = typeof prevSlug?.[0] === "string" ? prevSlug[0] : typeof prevSlug?.[1] === "string" ? prevSlug[1] : "";
-
+    ([slugParam, postQuery], prev) => {
+        const currentSlug = asSlug(slugParam) || asSlug(postQuery);
+        const previousSlug = asSlug(prev?.[0]) || asSlug(prev?.[1]);
         if (currentSlug && currentSlug !== previousSlug) openPost(currentSlug);
         else if (!currentSlug && view.value === "post") goBack({ skipQueryUpdate: true });
     },
@@ -242,6 +295,19 @@ const listContainer = staggerContainer(0.05);
                         aria-label="Search posts"
                         class="blog-search"
                     />
+                    <div v-if="tagFilters.length" class="mt-4 flex flex-wrap gap-x-3 gap-y-1.5">
+                        <button
+                            v-for="tag in tagFilters"
+                            :key="tag"
+                            type="button"
+                            @click="toggleTag(tag)"
+                            class="text-xs transition-colors cursor-pointer"
+                            :class="activeTag === tag ? 'text-ink-mint' : 'text-ink-subtle hover:text-ink-text'"
+                            :aria-pressed="activeTag === tag"
+                        >
+                            #{{ tag }}
+                        </button>
+                    </div>
                 </motion.div>
 
                 <div v-if="posts.length && !filteredPosts.length" class="mt-8 text-sm text-ink-subtle">
@@ -263,7 +329,9 @@ const listContainer = staggerContainer(0.05);
                             <span class="text-ink-text group-hover:text-ink-mint transition-colors leading-snug">
                                 {{ post.title }}
                             </span>
-                            <time class="text-sm text-ink-subtle flex-shrink-0">{{ formatDate(post.date) }}</time>
+                            <time class="text-sm text-ink-subtle flex-shrink-0">
+                                {{ formatDate(post.date) }}<span class="hidden sm:inline" v-if="post.readingTime"> · {{ post.readingTime }} min</span>
+                            </time>
                         </div>
                     </button>
                 </motion.div>
@@ -279,14 +347,27 @@ const listContainer = staggerContainer(0.05);
                         {{ currentPost.title }}
                     </h1>
                     <div class="mt-3 text-sm text-ink-subtle">
-                        {{ formatDate(currentPost.date) }} · {{ readingTime(currentPost.content) }} min read
+                        {{ formatDate(currentPost.date) }}<template v-if="currentPost.readingTime"> · {{ currentPost.readingTime }} min read</template><template v-if="viewCount !== null"> · {{ viewCount.toLocaleString() }} {{ viewCount === 1 ? "view" : "views" }}</template>
                     </div>
                 </header>
+
+                <nav v-if="showToc" class="mt-8 border-l border-ink-surface pl-4" aria-label="Table of contents">
+                    <div class="text-xs text-ink-subtle/80 mb-2">contents</div>
+                    <ol class="space-y-1">
+                        <li v-for="item in tocItems" :key="item.id" :class="item.depth === 3 ? 'pl-4' : ''">
+                            <a
+                                :href="`#${item.id}`"
+                                @click.prevent="scrollToHeading(item.id)"
+                                class="text-sm text-ink-subtle hover:text-ink-mint transition-colors"
+                            >{{ item.text }}</a>
+                        </li>
+                    </ol>
+                </nav>
 
                 <article
                     ref="articleContentRef"
                     class="prose-blog mt-8"
-                    v-html="renderMarkdown(currentPost.content)"
+                    v-html="renderedHtml"
                 ></article>
 
                 <nav class="mt-14 grid sm:grid-cols-2 gap-4 border-t border-ink-surface/40 pt-6">

@@ -4,7 +4,6 @@ import { computed } from "vue";
 const links = [
     { label: "github", href: "https://github.com/lostf1sh" },
     { label: "instagram", href: "https://www.instagram.com/kawaiimoli" },
-    { label: "rss", href: "/rss.xml" },
 ];
 
 const kbHint = computed(() => {

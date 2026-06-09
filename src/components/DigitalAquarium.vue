@@ -85,32 +85,69 @@ const feedAquarium = () => {
     food.value = [...food.value.slice(-18), ...pellets];
 };
 
+const FRENZY_DURATION = 9000;
+let frenzyUntil = 0;
+
+const frenzyAquarium = () => {
+    feedAquarium();
+    if (reduceMotion.value) return;
+
+    const now = performance.now();
+    frenzyUntil = now + FRENZY_DURATION;
+
+    const guests = Array.from({ length: 10 }, (_, index) => ({
+        ...createFish(undefined, FISH_COUNT + index),
+        id: `guest-${now}-${index}`,
+        speed: randomBetween(6, 12),
+        guest: true,
+    }));
+
+    fish.value = [...fish.value.filter((item) => !item.guest), ...guests];
+};
+
+const KONAMI = ["arrowup", "arrowup", "arrowdown", "arrowdown", "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a"];
+let konamiIndex = 0;
+
+const onKonamiKey = (event) => {
+    const key = event.key?.toLowerCase();
+    if (key === KONAMI[konamiIndex]) konamiIndex += 1;
+    else konamiIndex = key === KONAMI[0] ? 1 : 0;
+
+    if (konamiIndex === KONAMI.length) {
+        konamiIndex = 0;
+        frenzyAquarium();
+    }
+};
+
 const tick = (time) => {
     if (!lastTime) lastTime = time;
     const delta = Math.min((time - lastTime) / 1000, 0.05);
     lastTime = time;
 
     if (enabled.value && !reduceMotion.value) {
-        const energy = 0.35 + 0.65 * vitality.value;
+        const frenzyBoost = time < frenzyUntil ? 2.2 : 1;
+        const energy = (0.35 + 0.65 * vitality.value) * frenzyBoost;
 
-        fish.value = fish.value.map((item) => {
+        fish.value = fish.value.flatMap((item) => {
             let x = item.x + item.speed * item.direction * delta * energy;
             let direction = item.direction;
 
             if (x > 108) {
+                if (item.guest && time >= frenzyUntil) return [];
                 x = -8;
                 direction = 1;
             } else if (x < -8) {
+                if (item.guest && time >= frenzyUntil) return [];
                 x = 108;
                 direction = -1;
             }
 
-            return {
+            return [{
                 ...item,
                 x,
                 direction,
                 phase: item.phase + delta * energy,
-            };
+            }];
         });
 
         bubbles.value = bubbles.value.map((bubble) => {
@@ -149,6 +186,8 @@ onMounted(() => {
 
     window.addEventListener("aquarium:toggle", toggleAquarium);
     window.addEventListener("aquarium:feed", feedAquarium);
+    window.addEventListener("aquarium:frenzy", frenzyAquarium);
+    window.addEventListener("keydown", onKonamiKey);
     rafId = requestAnimationFrame(tick);
 });
 
@@ -157,6 +196,8 @@ onBeforeUnmount(() => {
     reduceMotionQuery?.removeEventListener?.("change", syncReduceMotion);
     window.removeEventListener("aquarium:toggle", toggleAquarium);
     window.removeEventListener("aquarium:feed", feedAquarium);
+    window.removeEventListener("aquarium:frenzy", frenzyAquarium);
+    window.removeEventListener("keydown", onKonamiKey);
 });
 </script>
 
@@ -177,6 +218,7 @@ onBeforeUnmount(() => {
             v-for="item in fish"
             :key="item.id"
             class="aquarium-fish"
+            :class="{ 'is-guest': item.guest }"
             :style="{
                 opacity: item.depth,
                 transform: `translate3d(calc(${item.x}vw - 50%), calc(${item.y + Math.sin(item.phase) * 1.8}vh - 50%), 0) scaleX(${item.direction}) scale(${0.78 + item.depth * 0.42})`,
@@ -233,6 +275,11 @@ onBeforeUnmount(() => {
     color: rgb(var(--color-text));
     font-size: clamp(10px, 1.2vw, 15px);
     text-shadow: 0 0 10px rgb(var(--color-text) / 0.12);
+}
+
+.aquarium-fish.is-guest {
+    color: rgb(var(--color-mint));
+    text-shadow: 0 0 10px rgb(var(--color-mint) / 0.3);
 }
 
 .aquarium-bubble {

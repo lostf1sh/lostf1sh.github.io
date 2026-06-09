@@ -6,3 +6,4 @@ dist/
 CLAUDE.md
 package-lock.json
 test-results/
+.wrangler/

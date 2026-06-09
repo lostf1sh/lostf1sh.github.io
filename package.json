@@ -6,7 +6,7 @@
   "packageManager": "bun@1.3.8",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && bun scripts/og.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -18,9 +18,11 @@
     "vue-router": "4.6.4"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@vitejs/plugin-vue": "6.0.4",
     "autoprefixer": "10.4.24",
     "postcss": "8.5.6",
+    "satori": "^0.26.0",
     "tailwindcss": "3.4.19",
     "vite": "7.3.1"
   }

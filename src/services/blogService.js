@@ -1,59 +1,27 @@
-import { parseFrontmatter } from "@/utils/markdown";
+import { posts as manifest } from "virtual:posts-manifest";
+import { parseFrontmatter } from "@/utils/frontmatter";
 
-const postFiles = import.meta.glob("/posts/*.md", {
-  eager: true,
+const bodyLoaders = import.meta.glob("/posts/*.md", {
   query: "?raw",
   import: "default",
 });
 
-const loadPosts = () => {
-  const posts = [];
-  let id = 1;
+export const getAllPosts = () => manifest;
 
-  Object.entries(postFiles).forEach(([filepath, content]) => {
-    const { frontmatter, content: body } = parseFrontmatter(content);
-    const slug = filepath.split("/").pop().replace(".md", "");
+export const getPostBySlug = async (slug) => {
+  const meta = manifest.find((post) => post.slug === slug);
+  const loadBody = bodyLoaders[`/posts/${slug}.md`];
+  if (!meta || !loadBody) return null;
 
-    posts.push({
-      id: id++,
-      slug,
-      title: frontmatter.title || slug,
-      date: frontmatter.date || new Date().toISOString().split("T")[0],
-      tags: frontmatter.tags || [],
-      excerpt: frontmatter.excerpt || "",
-      content: body.trim(),
-    });
-  });
-
-  return posts;
+  const { content } = parseFrontmatter(await loadBody());
+  return { ...meta, content: content.trim() };
 };
 
-let cache = null;
+const tokenize = (value) =>
+  (value || "").toLowerCase().split(/[^a-z0-9]+/).filter((token) => token.length > 2);
 
-export const getAllPosts = () => {
-  if (!cache) cache = loadPosts();
-  return [...cache].sort((a, b) => new Date(b.date) - new Date(a.date));
-};
-
-export const getPostBySlug = (slug) => {
-  return getAllPosts().find((post) => post.slug === slug);
-};
-
-const tokenize = (value) => {
-  return (value || "")
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length > 2);
-};
-
-const keywordSet = (post) => {
-  const words = [
-    ...tokenize(post.title),
-    ...tokenize(post.excerpt),
-    ...post.tags.map((tag) => tag.toLowerCase()),
-  ];
-  return new Set(words);
-};
+const keywordSet = (post) =>
+  new Set([...tokenize(post.title), ...tokenize(post.excerpt), ...post.tags.map((tag) => tag.toLowerCase())]);
 
 export const getRelatedPosts = (slug, limit = 3) => {
   const allPosts = getAllPosts();
@@ -68,42 +36,23 @@ export const getRelatedPosts = (slug, limit = 3) => {
     .map((post) => {
       const postTags = new Set(post.tags.map((tag) => tag.toLowerCase()));
       const postKeywords = keywordSet(post);
-
-      let sharedTags = 0;
-      currentTags.forEach((tag) => {
-        if (postTags.has(tag)) sharedTags += 1;
-      });
-
-      let sharedKeywords = 0;
-      currentKeywords.forEach((word) => {
-        if (postKeywords.has(word)) sharedKeywords += 1;
-      });
-
-      return {
-        post,
-        score: sharedTags * 5 + sharedKeywords,
-      };
+      const score =
+        [...currentTags].filter((tag) => postTags.has(tag)).length * 5 +
+        [...currentKeywords].filter((word) => postKeywords.has(word)).length;
+      return { post, score };
     })
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return new Date(b.post.date) - new Date(a.post.date);
-    });
+    .sort((a, b) => b.score - a.score || new Date(b.post.date) - new Date(a.post.date));
 
   const withSignal = scored.filter((item) => item.score > 0).slice(0, limit).map((item) => item.post);
   if (withSignal.length >= limit) return withSignal;
 
   const fallback = scored
-    .filter((item) => !withSignal.some((post) => post.slug === item.post.slug))
+    .filter((item) => !withSignal.includes(item.post))
     .slice(0, limit - withSignal.length)
     .map((item) => item.post);
 
   return [...withSignal, ...fallback];
 };
 
-export const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
+export const formatDate = (dateString) =>
+  new Date(dateString).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });

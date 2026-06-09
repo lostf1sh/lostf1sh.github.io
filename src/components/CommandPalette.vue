@@ -96,10 +96,22 @@ const commands = computed(() => {
     ].filter(Boolean);
 });
 
+const hiddenCommands = [
+    {
+        id: "frenzy",
+        label: "release the school",
+        hint: "↑↑↓↓←→←→ba",
+        action: () => {
+            window.dispatchEvent(new CustomEvent("aquarium:frenzy"));
+            closePalette();
+        },
+    },
+];
+
 const filteredCommands = computed(() => {
     const needle = query.value.replace(/^[:/]\s*/, "").trim().toLowerCase();
     if (!needle) return commands.value;
-    return [...commands.value, ...postCommands.value].filter((command) =>
+    return [...commands.value, ...hiddenCommands, ...postCommands.value].filter((command) =>
         `${command.label} ${command.hint}`.toLowerCase().includes(needle),
     );
 });

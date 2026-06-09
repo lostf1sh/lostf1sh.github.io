@@ -2,6 +2,7 @@ const defaults = {
   title: "moli - developer, blog & portfolio",
   description: "moli's personal site: projects, blog posts, live status, music, and developer notes.",
   url: "https://moli.codes",
+  image: "https://moli.codes/og/default.png",
 };
 
 let titlePrefix = "";
@@ -16,7 +17,7 @@ export const updateMeta = ({ title, description, url, image } = {}) => {
   const t = title || defaults.title;
   const d = description || defaults.description;
   const u = url || defaults.url;
-  const img = image || null;
+  const img = image || defaults.image;
 
   currentTitle = t;
   document.title = titlePrefix + t;
@@ -37,38 +38,6 @@ export const updateMeta = ({ title, description, url, image } = {}) => {
   setContent('meta[name="twitter:url"]', u);
   document.querySelector('link[rel="canonical"]')?.setAttribute("href", u);
 
-  const removeMeta = (selector) => {
-    document.querySelector(selector)?.remove();
-  };
-
-  if (img) {
-    setContent('meta[property="og:image"]', img);
-    setContent('meta[name="twitter:image"]', img);
-  } else {
-    removeMeta('meta[property="og:image"]');
-    removeMeta('meta[property="og:image:alt"]');
-    removeMeta('meta[property="og:image:width"]');
-    removeMeta('meta[property="og:image:height"]');
-    removeMeta('meta[name="twitter:image"]');
-    removeMeta('meta[name="twitter:image:alt"]');
-  }
-};
-
-export const setJsonLd = (id, data) => {
-  const scriptId = `jsonld-${id}`;
-  let script = document.getElementById(scriptId);
-
-  if (!script) {
-    script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.id = scriptId;
-    document.head.appendChild(script);
-  }
-
-  script.textContent = JSON.stringify(data);
-};
-
-export const removeJsonLd = (id) => {
-  const script = document.getElementById(`jsonld-${id}`);
-  if (script) script.remove();
+  setContent('meta[property="og:image"]', img);
+  setContent('meta[name="twitter:image"]', img);
 };

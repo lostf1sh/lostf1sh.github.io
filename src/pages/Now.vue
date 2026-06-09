@@ -12,7 +12,8 @@ import {
     readLocalCache,
     writeLocalCache,
 } from "@/utils/apiLocalCache";
-import { parseFrontmatter, renderMarkdown } from "@/utils/markdown";
+import { parseFrontmatter } from "@/utils/frontmatter";
+import { renderMarkdown } from "@/utils/markdown";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 import SiteNav from "@/components/SiteNav.vue";
 import SiteFooter from "@/components/SiteFooter.vue";

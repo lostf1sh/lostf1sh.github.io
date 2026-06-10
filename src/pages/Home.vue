@@ -133,7 +133,7 @@ onBeforeUnmount(() => {
                 </dd>
             </motion.dl>
 
-            <motion.div :variants="fadeUp" class="mt-10">
+            <motion.div :variants="fadeUp" class="mt-10 w-full min-w-0">
                 <EightyEightButtons />
             </motion.div>
 

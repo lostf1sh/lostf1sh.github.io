@@ -36,3 +36,36 @@
         --color-blue: 50 100 160;
     }
 }
+
+/* View Transitions API — soft page change, driven by router.beforeResolve.
+   A previous attempt was removed because the default cross-fade dipped to the
+   dark background mid-transition (both snapshots semi-transparent at once).
+   Fix: keep the OLD frame fully opaque underneath and only fade the NEW frame
+   in over it, with normal blending — so the viewport is always covered by an
+   opaque image and can never reveal the bg. Only runs when supported and when
+   the user hasn't asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        mix-blend-mode: normal;
+    }
+
+    ::view-transition-old(root) {
+        animation: none;
+    }
+
+    ::view-transition-new(root) {
+        animation: vt-in 280ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+}
+
+@keyframes vt-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { nextTick } from "vue";
 import { updateMeta } from "@/utils/seo";
 
 const routes = [
@@ -39,6 +40,15 @@ const routes = [
     },
   },
   {
+    path: "/colophon",
+    name: "Colophon",
+    component: () => import("@/pages/Colophon.vue"),
+    meta: {
+      title: "Colophon | moli",
+      description: "How this site is built — the stack, the live data, and the edge.",
+    },
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/pages/NotFound.vue"),
@@ -63,6 +73,27 @@ router.beforeEach((to, _, next) => {
     url: `https://moli.codes${to.path}`,
   });
   next();
+});
+
+// Cross-fade between pages with the View Transitions API where supported.
+// Skips the initial load and honors prefers-reduced-motion; falls back to an
+// instant swap everywhere else.
+router.beforeResolve((to, from) => {
+  if (
+    typeof document === "undefined" ||
+    typeof document.startViewTransition !== "function" ||
+    !from.matched.length ||
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+  ) {
+    return;
+  }
+
+  return new Promise((resolve) => {
+    document.startViewTransition(async () => {
+      resolve();
+      await nextTick();
+    });
+  });
 });
 
 export default router;

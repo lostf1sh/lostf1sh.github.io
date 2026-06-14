@@ -80,6 +80,7 @@ const commands = computed(() => {
         { id: "blog", label: "writing", hint: "/blog", action: () => go({ name: "Blog" }) },
         { id: "projects", label: "projects", hint: "/projects", action: () => go({ name: "Projects" }) },
         { id: "now", label: "now", hint: "/now", action: () => go({ name: "Now" }) },
+        { id: "colophon", label: "colophon", hint: "/colophon", action: () => go({ name: "Colophon" }) },
         {
             id: "theme",
             label: `switch to ${theme.value === "dark" ? "light" : "dark"} mode`,

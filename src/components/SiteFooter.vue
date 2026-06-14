@@ -35,6 +35,7 @@ const kbHint = computed(() => {
                 <kbd class="footer-kbd">{{ kbHint }}</kbd>
                 search
             </span>
+            <router-link to="/colophon" class="hover:text-ink-mint transition-colors">colophon</router-link>
             <router-link to="/" class="hover:text-ink-mint transition-colors">moli.codes</router-link>
         </div>
     </footer>

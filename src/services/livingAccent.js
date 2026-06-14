@@ -20,6 +20,7 @@ const COOL_HUE = 240;
 const CODING_CHROMA_FACTOR = 0.82;
 const MIN_CHROMA_FACTOR = 0.55;
 const MAX_CHROMA_FACTOR = 1.15;
+const GRAYSCALE_CHROMA_FACTOR = 0.1;
 const DRIFT_MS = 1500;
 const SETTLE_MS = 2000;
 
@@ -71,6 +72,14 @@ const chromaScale = (v) => 0.7 + 0.3 * v;
 
 function musicAccent(album, v) {
   if (!album) return { L: baseline.L, C: baseline.C * chromaScale(v), H: baseline.H };
+  // Black & white cover → light grayish accent instead of JPEG-cast blue/green.
+  if (album.grayscale) {
+    return {
+      L: baseline.L,
+      C: baseline.C * GRAYSCALE_CHROMA_FACTOR * chromaScale(v),
+      H: baseline.H,
+    };
+  }
   const minC = baseline.C * MIN_CHROMA_FACTOR;
   const maxC = baseline.C * MAX_CHROMA_FACTOR;
   return {

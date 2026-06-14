@@ -125,6 +125,13 @@ export function lerpOklch(from, to, t) {
   };
 }
 
+// Mean chroma (over all opaque pixels) below this reads as black & white.
+// B&W album art is usually a *color*-encoded JPEG, so it carries a faint,
+// systematic blue/green cast from the YCbCr pipeline — coherent enough to
+// survive the colored-pixel gate and produce a bogus blue/green accent.
+// Below this floor we flag it grayscale instead. Tune against real covers.
+const GRAYSCALE_MEAN_C = 0.025;
+
 export function extractAccentFromImage(url) {
   return new Promise((resolve) => {
     if (!url || typeof document === "undefined") {
@@ -156,6 +163,7 @@ export function extractAccentFromImage(url) {
         let sumC = 0;
         let sumL = 0;
         let sumW = 0;
+        let sumAllC = 0;
         let colored = 0;
         let total = 0;
 
@@ -164,6 +172,7 @@ export function extractAccentFromImage(url) {
           total++;
 
           const { L, C, H } = rgbToOklch(data[i], data[i + 1], data[i + 2]);
+          sumAllC += C;
           if (C < 0.02) continue;
 
           const lightWindow = Math.max(0, 1 - Math.abs(L - 0.6) / 0.55);
@@ -179,14 +188,16 @@ export function extractAccentFromImage(url) {
           colored++;
         }
 
+        const grayscale = total > 0 && sumAllC / total < GRAYSCALE_MEAN_C;
+
         if (sumW <= 0 || colored < total * 0.05) {
-          resolve(null);
+          resolve(grayscale ? { grayscale: true } : null);
           return;
         }
 
         let H = (Math.atan2(sumSin, sumCos) * 180) / Math.PI;
         if (H < 0) H += 360;
-        resolve({ L: sumL / sumW, C: sumC / sumW, H });
+        resolve({ L: sumL / sumW, C: sumC / sumW, H, grayscale });
       } catch {
         resolve(null);
       }

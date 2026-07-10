@@ -49,6 +49,15 @@ const routes = [
     },
   },
   {
+    path: "/leakage-report",
+    name: "LeakageReport",
+    component: () => import("@/pages/LeakageReport.vue"),
+    meta: {
+      title: "Proprietary Code Leakage Audit | moli",
+      description: "A source and git-history audit of ThePixelMusic, PixelPlayerOSS, and PixelPlayer.",
+    },
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "NotFound",
     component: () => import("@/pages/NotFound.vue"),

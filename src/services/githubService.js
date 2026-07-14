@@ -130,10 +130,44 @@ export const getGitHubContributionUrl = (date) => {
   return `https://github.com/${GITHUB_USERNAME}?tab=overview&from=${date}&to=${date}`;
 };
 
+// The /users/*/events endpoint matches ad-blocker filter lists (EasyPrivacy
+// blocks XHRs containing "/events?"), so commits are fetched via the search
+// API instead, with the events endpoint kept as a fallback.
 export const getRecentEvents = async () => {
     try {
         const response = await fetch(
-            `https://api.github.com/users/${GITHUB_USERNAME}/events?per_page=10`
+            `https://api.github.com/search/commits?q=author:${GITHUB_USERNAME}&sort=author-date&order=desc&per_page=10`
+        );
+
+        if (!response.ok) return getRecentEventsFallback();
+
+        const data = await response.json();
+
+        const seen = new Set();
+        const commits = [];
+        for (const item of data.items || []) {
+            const key = `${item.repository.full_name}:${item.commit.message.split("\n")[0]}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            commits.push({
+                repo: item.repository.name,
+                message: item.commit.message.split("\n")[0],
+                date: item.commit.author?.date || item.commit.committer?.date,
+                repoUrl: item.repository.html_url,
+            });
+            if (commits.length >= 5) break;
+        }
+
+        return commits.length ? commits : getRecentEventsFallback();
+    } catch {
+        return getRecentEventsFallback();
+    }
+};
+
+const getRecentEventsFallback = async () => {
+    try {
+        const response = await fetch(
+            `https://api.github.com/users/${GITHUB_USERNAME}/events/public`
         );
 
         if (!response.ok) return [];

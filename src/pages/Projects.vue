@@ -18,8 +18,8 @@ if (reposCached?.value?.length) {
 }
 const loading = ref(!repos.value.length);
 
-const pinnedSlugs = ["lostf1sh.github.io", "PixelPlayer"];
-const pinnedExternal = ["theovilardo/PixelPlayer"];
+const pinnedSlugs = ["lostf1sh.github.io", "PixelPlayer", "PixelPlayerOSS"];
+const pinnedExternal = ["theovilardo/PixelPlayer", "PixelPlayerHQ/PixelPlayerOSS"];
 
 const fetchRepos = async () => {
     const firstPaint = repos.value.length === 0;

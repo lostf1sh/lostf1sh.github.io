@@ -16,6 +16,7 @@ const cached = readLocalCache(CACHE_KEYS.GITHUB_STATS);
 if (cached?.value) stats.value = { totalRepos: cached.value.totalRepos || 0, totalStars: cached.value.totalStars || 0 };
 
 onMounted(async () => {
+    if (cached?.fresh) return;
     try {
         const { repos, totalRepos } = await getAllReposWithLanguages();
         const totalStars = repos.reduce((s, r) => s + (r.stargazers_count || 0), 0);

@@ -1,6 +1,6 @@
 const GITHUB_USERNAME = "lostf1sh";
 
-export const getAllReposWithLanguages = async () => {
+const fetchAllReposWithLanguages = async () => {
   try {
     const repos = [];
     let page = 1;
@@ -48,6 +48,21 @@ export const getAllReposWithLanguages = async () => {
       totalRepos: 0,
     };
   }
+};
+
+// Shared across callers (ByTheNumbers, Projects) so navigating around the
+// site triggers at most one paginated repo sweep per visit. Failures aren't
+// memoized, so a transient error doesn't stick for the whole session.
+let reposPromise = null;
+
+export const getAllReposWithLanguages = () => {
+  if (!reposPromise) {
+    reposPromise = fetchAllReposWithLanguages().then((result) => {
+      if (!result.totalRepos) reposPromise = null;
+      return result;
+    });
+  }
+  return reposPromise;
 };
 
 export const buildFallbackContributionYear = () => {

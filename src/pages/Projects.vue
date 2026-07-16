@@ -53,7 +53,10 @@ const filteredRepos = computed(() =>
         .sort((a, b) => b.stargazers_count - a.stargazers_count),
 );
 
-onMounted(fetchRepos);
+onMounted(() => {
+    if (reposCached?.fresh && repos.value.length) return;
+    fetchRepos();
+});
 
 const container = staggerContainer(0.06);
 </script>

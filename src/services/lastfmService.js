@@ -52,14 +52,18 @@ export const getTopTracks = async (period = "7day", limit = 6) => {
   }));
 };
 
+let lastFetchAt = 0;
+
 const fetchTracks = async () => {
+  lastFetchAt = Date.now();
   try {
+    // Only the first track is rendered (NowPlaying), so a small page is enough.
     const params = new URLSearchParams({
       method: "user.getrecenttracks",
       user: USER,
       api_key: API_KEY,
       format: "json",
-      limit: 50,
+      limit: 5,
     });
 
     const response = await fetch(`${BASE_URL}?${params}`);
@@ -101,22 +105,25 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     stopPolling();
   } else {
-    fetchTracks();
+    if (Date.now() - lastFetchAt >= 30_000) fetchTracks();
     startPolling();
   }
 });
 
-let lastTrackId = null;
+let lastTrackId = lanyardData.spotify?.track_id ?? null;
 watch(
   () => lanyardData.spotify,
   (spotify) => {
     const trackId = spotify?.track_id ?? null;
     if (trackId !== lastTrackId) {
       lastTrackId = trackId;
-      setTimeout(fetchTracks, 5000);
+      // Skip if a poll just ran; the scrobble is already in that response.
+      setTimeout(() => {
+        if (Date.now() - lastFetchAt >= 30_000) fetchTracks();
+      }, 5000);
     }
   },
 );
 
 fetchTracks();
-startPolling();
+if (!document.hidden) startPolling();

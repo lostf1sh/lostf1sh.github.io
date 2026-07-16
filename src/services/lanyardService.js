@@ -244,11 +244,14 @@ class LanyardService {
   }
 }
 
-hydrateFromSession();
+const hydrated = hydrateFromSession();
 
 const lanyardService = new LanyardService();
 
-void fetchRestPresence();
+// The websocket delivers INIT_STATE within a couple seconds and the
+// first-message guard falls back to REST, so the eager REST fetch is only
+// needed when there is no cached presence to paint from.
+if (!hydrated) void fetchRestPresence();
 lanyardService.connect();
 
 export { lanyardData };

@@ -93,8 +93,8 @@ const fetchContributions = async () => {
 };
 
 onMounted(() => {
-    fetchEvents();
-    fetchContributions();
+    if (!eventsCached?.fresh || !events.value.length) fetchEvents();
+    if (!contribCached?.fresh || !contributions.value.length) fetchContributions();
 });
 
 const container = staggerContainer(0.06);

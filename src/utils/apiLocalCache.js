@@ -1,5 +1,9 @@
 const PREFIX = "f1sh.api.";
 
+// While a cached row is younger than this, components skip revalidation
+// entirely instead of refetching on every mount/navigation.
+export const CACHE_TTL_MS = 10 * 60 * 1000;
+
 export const CACHE_KEYS = {
   GITHUB_REPOS: "github.repos.merged.v1",
   GITHUB_CONTRIBUTIONS: "github.contributions.v1",
@@ -19,7 +23,7 @@ export function readLocalCache(key) {
     const raw = localStorage.getItem(PREFIX + key);
     if (!raw) return null;
     const { v, t } = JSON.parse(raw);
-    return { value: v, storedAt: t };
+    return { value: v, storedAt: t, fresh: Date.now() - t < CACHE_TTL_MS };
   } catch {
     return null;
   }

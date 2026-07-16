@@ -10,6 +10,7 @@ const loading = ref(!tracks.value.length);
 const failed = ref(false);
 
 onMounted(async () => {
+    if (cached?.fresh && tracks.value.length) return;
     try {
         const data = await getTopTracks("7day", 6);
         if (data.length) {

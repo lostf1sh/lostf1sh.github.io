@@ -194,7 +194,7 @@ onBeforeUnmount(() => {
 
 .living dt {
     text-align: right;
-    color: rgb(var(--color-subtle) / 0.75);
+    color: rgb(var(--color-subtle) / 0.9);
     white-space: nowrap;
 }
 

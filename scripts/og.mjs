@@ -118,3 +118,34 @@ await writeFile(
 );
 
 console.log(`og: wrote ${posts.length + 1} cards to dist/og/`);
+
+const SITE = "https://moli.codes";
+const staticRoutes = ["/", "/blog", "/projects", "/now", "/colophon"];
+const urls = [
+  ...staticRoutes.map((route) => ({ loc: `${SITE}${route}` })),
+  ...posts.map((post) => ({ loc: `${SITE}/blog/${post.slug}`, lastmod: new Date(post.date).toISOString().slice(0, 10) })),
+];
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
+  .map(({ loc, lastmod }) => `  <url><loc>${loc}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`)
+  .join("\n")}\n</urlset>\n`;
+await writeFile(path.join(rootDir, "dist", "sitemap.xml"), sitemap);
+
+const llms = `# moli.codes
+
+> Personal site of moli (lostf1sh) — developer from Turkey. Small tools, web experiments, and a blog about what they learn.
+
+## Pages
+
+- [Home](${SITE}/): live status, now playing, quick links
+- [Blog](${SITE}/blog): all posts
+- [Projects](${SITE}/projects): selected work
+- [Now](${SITE}/now): what moli is up to right now
+- [Colophon](${SITE}/colophon): how this site is built
+
+## Posts
+
+${posts.map((post) => `- [${post.title}](${SITE}/blog/${post.slug}): ${post.excerpt}`.trimEnd()).join("\n")}
+`;
+await writeFile(path.join(rootDir, "dist", "llms.txt"), llms);
+
+console.log(`seo: wrote sitemap.xml (${urls.length} urls) and llms.txt`);

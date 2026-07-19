@@ -208,13 +208,12 @@ const react = async (key) => {
 
 const ensurePostEnhancers = async () => {
     if (PrismInstance) return;
-    const [prismModule] = await Promise.all([
-        import("prismjs"),
-        import("prismjs/components/prism-javascript"),
+    // Core must evaluate first: language components reference the global Prism.
+    // Core already bundles markup, css, clike, and javascript.
+    const prismModule = await import("prismjs");
+    await Promise.all([
         import("prismjs/components/prism-python"),
         import("prismjs/components/prism-bash"),
-        import("prismjs/components/prism-css"),
-        import("prismjs/components/prism-markup"),
     ]);
     PrismInstance = prismModule.default;
 };

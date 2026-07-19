@@ -175,7 +175,7 @@ class LanyardService {
         }
       };
 
-      this.ws.onclose = (event) => {
+      this.ws.onclose = () => {
         this.isConnecting = false;
 
         if (this.heartbeat) {
@@ -183,9 +183,13 @@ class LanyardService {
           this.heartbeat = null;
         }
 
-        if (event.code !== 1000 && this.reconnectAttempts < this.maxAttempts) {
+        // Hidden tabs throttle timers until the heartbeat misses and the
+        // server drops us; the visibilitychange handler resumes instead.
+        if (document.hidden) return;
+
+        if (this.reconnectAttempts < this.maxAttempts) {
           this.scheduleReconnect();
-        } else if (this.reconnectAttempts >= this.maxAttempts) {
+        } else {
           isLoading = false;
         }
       };
@@ -240,6 +244,24 @@ class LanyardService {
 const hydrated = hydrateFromSession();
 
 const lanyardService = new LanyardService();
+
+// A backgrounded tab (or a lost network) kills the socket; without these the
+// card silently freezes on the last song until a full reload.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  if (lanyardService.ws?.readyState !== WebSocket.OPEN) {
+    lanyardService.reconnectAttempts = 0;
+    void fetchRestPresence();
+    lanyardService.connect();
+  }
+});
+
+window.addEventListener("online", () => {
+  if (lanyardService.ws?.readyState !== WebSocket.OPEN) {
+    lanyardService.reconnectAttempts = 0;
+    lanyardService.connect();
+  }
+});
 
 // The websocket delivers INIT_STATE within a couple seconds and the
 // first-message guard falls back to REST, so the eager REST fetch is only

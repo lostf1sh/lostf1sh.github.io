@@ -1,36 +1,38 @@
 import { reactive } from "vue";
 import { readSessionCache, writeSessionCache } from "@/utils/apiLocalCache";
 
-const LANYARD_SESSION_KEY = "lanyard.presence.v1";
+const LANYARD_SESSION_KEY = "lanyard.presence.v2";
 const LANYARD_USER_ID = "470904884946796544";
 const REST_URL = `https://api.lanyard.rest/v1/users/${LANYARD_USER_ID}`;
 const FIRST_MESSAGE_MS = 12_000;
 const MAX_SESSION_AGE_MS = 24 * 60 * 60 * 1000;
 
 const lanyardData = reactive({
-  discordUser: null,
   spotify: null,
+  listening: null,
   discordStatus: "offline",
-  discordStatusColor: "text-ink-subtle",
   editorActivity: null,
-  isConnected: false,
-  isLoading: true,
-  presenceUnavailable: false,
-  isReconnecting: false,
-  usingCachedPresence: false,
 });
+
+// Non-reactive: only the connect/fallback flow cares about these.
+let hasPresence = false;
+let isLoading = true;
+
+// Discord proxies external activity art as "mp:external/..." asset keys.
+function activityImageUrl(asset) {
+  if (!asset) return null;
+  if (asset.startsWith("mp:")) {
+    return `https://media.discordapp.net/${asset.slice(3)}`;
+  }
+  if (asset.startsWith("http")) return asset;
+  return null;
+}
 
 function applyPresencePayload(data) {
   if (!data) return;
 
-  if (data.discord_user) {
-    lanyardData.discordUser = {
-      username: data.discord_user.username,
-      discriminator: data.discord_user.discriminator,
-      avatar: data.discord_user.avatar,
-      id: data.discord_user.id,
-    };
-  }
+  hasPresence = true;
+  isLoading = false;
 
   lanyardData.spotify = data.spotify
     ? {
@@ -42,12 +44,23 @@ function applyPresencePayload(data) {
       }
     : null;
 
+  // Any other "Listening to ..." activity (Apple Music, YouTube Music, etc.)
+  const listening = data.activities?.find(
+    (a) => a.type === 2 && a.name !== "Spotify" && a.details,
+  );
+  lanyardData.listening = listening
+    ? {
+        song: listening.details,
+        artist: listening.state || "",
+        source: listening.name,
+        album_art_url: activityImageUrl(listening.assets?.large_image),
+        url: listening.details_url || listening.assets?.large_url || null,
+        timestamps: listening.timestamps || null,
+      }
+    : null;
+
   if (data.discord_status) {
     lanyardData.discordStatus = data.discord_status;
-    lanyardData.discordStatusColor =
-      data.discord_status === "online"
-        ? "text-ink-accent"
-        : "text-ink-subtle";
   }
 
   lanyardData.editorActivity = data.activities?.find(
@@ -60,10 +73,9 @@ function applyPresencePayload(data) {
 
 function persistPresence() {
   writeSessionCache(LANYARD_SESSION_KEY, {
-    discordUser: lanyardData.discordUser,
     spotify: lanyardData.spotify,
+    listening: lanyardData.listening,
     discordStatus: lanyardData.discordStatus,
-    discordStatusColor: lanyardData.discordStatusColor,
     editorActivity: lanyardData.editorActivity,
   });
 }
@@ -74,14 +86,13 @@ function hydrateFromSession() {
   if (Date.now() - row.storedAt > MAX_SESSION_AGE_MS) return false;
 
   const p = row.value;
-  if (p.discordUser) lanyardData.discordUser = p.discordUser;
   lanyardData.spotify = p.spotify ?? null;
+  lanyardData.listening = p.listening ?? null;
   if (p.discordStatus) lanyardData.discordStatus = p.discordStatus;
-  if (p.discordStatusColor) lanyardData.discordStatusColor = p.discordStatusColor;
   lanyardData.editorActivity = p.editorActivity ?? null;
-  lanyardData.usingCachedPresence = true;
-  lanyardData.isLoading = false;
-  return Boolean(p.discordUser);
+  hasPresence = true;
+  isLoading = false;
+  return true;
 }
 
 async function fetchRestPresence() {
@@ -91,10 +102,7 @@ async function fetchRestPresence() {
     const body = await res.json();
     if (!body?.success || !body.data) return false;
     applyPresencePayload(body.data);
-    lanyardData.usingCachedPresence = false;
-    lanyardData.presenceUnavailable = false;
     persistPresence();
-    lanyardData.isLoading = false;
     return true;
   } catch {
     return false;
@@ -122,13 +130,9 @@ class LanyardService {
 
   startFirstMessageGuard() {
     this.clearFirstMessageTimer();
-    this.firstMessageTimer = setTimeout(async () => {
-      if (lanyardData.isLoading || !lanyardData.discordUser) {
-        const ok = await fetchRestPresence();
-        if (!ok && !lanyardData.discordUser) {
-          lanyardData.isLoading = false;
-          lanyardData.presenceUnavailable = true;
-        }
+    this.firstMessageTimer = setTimeout(() => {
+      if (isLoading || !hasPresence) {
+        void fetchRestPresence();
       }
     }, FIRST_MESSAGE_MS);
   }
@@ -142,8 +146,8 @@ class LanyardService {
     }
 
     this.isConnecting = true;
-    if (!lanyardData.discordUser) {
-      lanyardData.isLoading = true;
+    if (!hasPresence) {
+      isLoading = true;
     }
 
     this.startFirstMessageGuard();
@@ -154,8 +158,6 @@ class LanyardService {
       this.ws.onopen = () => {
         this.isConnecting = false;
         this.reconnectAttempts = 0;
-        lanyardData.isConnected = true;
-        lanyardData.isReconnecting = false;
 
         this.ws.send(
           JSON.stringify({
@@ -175,8 +177,6 @@ class LanyardService {
 
       this.ws.onclose = (event) => {
         this.isConnecting = false;
-        lanyardData.isConnected = false;
-        lanyardData.usingCachedPresence = Boolean(lanyardData.discordUser);
 
         if (this.heartbeat) {
           clearInterval(this.heartbeat);
@@ -184,22 +184,18 @@ class LanyardService {
         }
 
         if (event.code !== 1000 && this.reconnectAttempts < this.maxAttempts) {
-          lanyardData.isReconnecting = true;
           this.scheduleReconnect();
         } else if (this.reconnectAttempts >= this.maxAttempts) {
-          lanyardData.isReconnecting = false;
-          lanyardData.presenceUnavailable = !lanyardData.discordUser;
-          lanyardData.isLoading = false;
+          isLoading = false;
         }
       };
 
       this.ws.onerror = () => {
         this.isConnecting = false;
-        lanyardData.isConnected = false;
       };
     } catch (e) {
       this.isConnecting = false;
-      lanyardData.isLoading = false;
+      isLoading = false;
       console.error("Failed to initialize Lanyard socket connection:", e);
       this.scheduleReconnect();
     }
@@ -214,10 +210,7 @@ class LanyardService {
     ) {
       this.clearFirstMessageTimer();
       applyPresencePayload(msg.d);
-      lanyardData.usingCachedPresence = false;
-      lanyardData.presenceUnavailable = false;
       persistPresence();
-      lanyardData.isLoading = false;
     }
   }
 

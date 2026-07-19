@@ -30,7 +30,6 @@ const FAVICON_L = 0.24;
 const FAVICON_C = 0.07;
 const CHROME_THROTTLE_MS = 150;
 
-export const accentMode = ref("idle");
 export const vitality = ref(1);
 
 const reducedMotionMq =
@@ -64,7 +63,7 @@ function vitalityTarget() {
   let v =
     s === "online" ? 0.85 : s === "dnd" ? 0.65 : s === "idle" ? 0.5 : 0.25;
   if (lanyardData.editorActivity) v += 0.1;
-  if (lanyardData.spotify) v += 0.05;
+  if (lanyardData.spotify || lanyardData.listening) v += 0.05;
   return Math.min(1, v);
 }
 
@@ -153,7 +152,7 @@ function animateTo(to, duration) {
 async function update() {
   readBaselines();
 
-  const sp = lanyardData.spotify;
+  const sp = lanyardData.spotify || lanyardData.listening;
   const v = vitalityTarget();
   const myReq = ++reqId;
 
@@ -178,7 +177,6 @@ async function update() {
     accent = { L: baseline.L, C: baseline.C * chromaScale(v), H: baseline.H };
   }
 
-  accentMode.value = mode;
   setTitlePrefix(mode === "music" ? "♪ " : "");
   animateTo(
     { ...gamutClampOklch(accent), aura: AURA[mode], v },
@@ -202,7 +200,7 @@ export function startLivingAccent() {
 
   const stopWatch = watch(
     () => {
-      const s = lanyardData.spotify;
+      const s = lanyardData.spotify || lanyardData.listening;
       return [
         theme.value,
         lanyardData.discordStatus,

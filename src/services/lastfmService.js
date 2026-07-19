@@ -110,11 +110,18 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-let lastTrackId = lanyardData.spotify?.track_id ?? null;
+const presenceTrackKey = () => {
+  const sp = lanyardData.spotify;
+  if (sp) return sp.track_id ?? `${sp.song}|${sp.artist}`;
+  const li = lanyardData.listening;
+  if (li) return `${li.song}|${li.artist}`;
+  return null;
+};
+
+let lastTrackId = presenceTrackKey();
 watch(
-  () => lanyardData.spotify,
-  (spotify) => {
-    const trackId = spotify?.track_id ?? null;
+  presenceTrackKey,
+  (trackId) => {
     if (trackId !== lastTrackId) {
       lastTrackId = trackId;
       // Skip if a poll just ran; the scrobble is already in that response.

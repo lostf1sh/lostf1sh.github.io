@@ -25,6 +25,20 @@ const track = computed(() => {
             end: sp.timestamps?.end ?? null,
         };
     }
+    const li = lanyardData.listening;
+    if (li) {
+        return {
+            title: li.song,
+            artist: li.artist,
+            cover: li.album_art_url || null,
+            url:
+                li.url ||
+                `https://open.spotify.com/search/${encodeURIComponent(`${li.song} ${li.artist}`.trim())}`,
+            live: true,
+            start: li.timestamps?.start ?? null,
+            end: li.timestamps?.end ?? null,
+        };
+    }
     const t = lastfmTracks.value?.[0];
     if (!t) return null;
     const artist = t.artist?.["#text"] || "";

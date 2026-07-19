@@ -2,7 +2,7 @@ const PREFIX = "f1sh.api.";
 
 // While a cached row is younger than this, components skip revalidation
 // entirely instead of refetching on every mount/navigation.
-export const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_TTL_MS = 10 * 60 * 1000;
 
 export const CACHE_KEYS = {
   GITHUB_REPOS: "github.repos.merged.v1",

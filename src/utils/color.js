@@ -81,7 +81,7 @@ export function gamutClampOklch({ L, C, H }) {
   return { L: Lc, C: lo, H };
 }
 
-export function oklchToRgb255(oklch) {
+function oklchToRgb255(oklch) {
   const { L, C, H } = gamutClampOklch(oklch);
   const { a, b } = oklchToOklab(L, C, H);
   const lin = oklabToLinearSrgb(L, a, b);

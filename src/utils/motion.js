@@ -4,7 +4,7 @@ const prefersReducedMotion = () =>
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export const springs = {
+const springs = {
     default: { type: "spring", stiffness: 300, damping: 25 },
 };
 

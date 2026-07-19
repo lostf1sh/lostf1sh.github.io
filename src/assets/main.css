@@ -1,5 +1,50 @@
 @import "./base.css";
 
+/* Redaction (redaction.us) — legibility ladder used by the boot sequence.
+   Higher number = more degraded glyphs. */
+@font-face {
+    font-family: "Redaction";
+    src: url("/fonts/redaction/Redaction-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Redaction 10";
+    src: url("/fonts/redaction/Redaction10-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Redaction 20";
+    src: url("/fonts/redaction/Redaction20-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Redaction 35";
+    src: url("/fonts/redaction/Redaction35-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Redaction 50";
+    src: url("/fonts/redaction/Redaction50-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Redaction 70";
+    src: url("/fonts/redaction/Redaction70-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+@font-face {
+    font-family: "Redaction 100";
+    src: url("/fonts/redaction/Redaction100-Regular.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+
 * {
     box-sizing: border-box;
 }

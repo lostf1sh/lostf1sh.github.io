@@ -79,14 +79,90 @@ const kbHint = computed(() => {
 
 const heroContainer = staggerContainer(0.08);
 
+// Redaction legibility ladder — index 0 is clean, last is fully redacted.
+// Hold on the name walks down the ladder; release walks back up.
+const REDACTION_LADDER = [
+    '"Redaction"',
+    '"Redaction 10"',
+    '"Redaction 20"',
+    '"Redaction 35"',
+    '"Redaction 50"',
+    '"Redaction 70"',
+    '"Redaction 100"',
+];
+const redactStage = ref(0);
+const nameFont = computed(() => `${REDACTION_LADDER[redactStage.value]}, serif`);
+
+let redactTimer = 0;
+
+const stepRedact = (dir, delay) => {
+    window.clearTimeout(redactTimer);
+    const next = redactStage.value + dir;
+    if (next < 0 || next >= REDACTION_LADDER.length) return;
+    redactTimer = window.setTimeout(() => {
+        redactStage.value = next;
+        stepRedact(dir, delay);
+    }, delay);
+};
+
+const startRedact = () => stepRedact(1, 130);
+const stopRedact = () => stepRedact(-1, 100);
+
+// Role line cycles through phrases; each swap degrades into Redaction 100,
+// switches text while unreadable, then resolves back to clean.
+const ROLES = [
+    "developer, turkey",
+    "linux daily driver",
+    "builder of small tools",
+    "terminally curious",
+];
+const roleIndex = ref(0);
+const roleStage = ref(0);
+const roleFont = computed(() => `${REDACTION_LADDER[roleStage.value]}, serif`);
+
+let roleTimer = 0;
+const roleStep = (dir, delay, onEnd) => {
+    const next = roleStage.value + dir;
+    if (next < 0 || next >= REDACTION_LADDER.length) {
+        onEnd?.();
+        return;
+    }
+    roleTimer = window.setTimeout(() => {
+        roleStage.value = next;
+        roleStep(dir, delay, onEnd);
+    }, delay);
+};
+
+const scheduleRoleSwap = () => {
+    roleTimer = window.setTimeout(() => {
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            roleIndex.value = (roleIndex.value + 1) % ROLES.length;
+            scheduleRoleSwap();
+            return;
+        }
+        roleStep(1, 70, () => {
+            roleIndex.value = (roleIndex.value + 1) % ROLES.length;
+            roleStep(-1, 90, scheduleRoleSwap);
+        });
+    }, 4500);
+};
+// Touch has no real hover: pointerleave may never fire, so restore on lift.
+const onNamePointerUp = (e) => {
+    if (e.pointerType !== "mouse") stopRedact();
+};
+
 onMounted(() => {
     markReady("projects");
     markReady("contributions");
     tickAge();
+    REDACTION_LADDER.forEach((f) => document.fonts?.load?.(`1rem ${f}`));
+    scheduleRoleSwap();
 });
 
 onBeforeUnmount(() => {
     if (ageRafId) window.cancelAnimationFrame(ageRafId);
+    window.clearTimeout(redactTimer);
+    window.clearTimeout(roleTimer);
 });
 </script>
 
@@ -98,8 +174,17 @@ onBeforeUnmount(() => {
             initial="hidden"
             animate="visible"
         >
-            <motion.h1 :variants="fadeUp" class="name">moli</motion.h1>
-            <motion.p :variants="fadeUp" class="role">developer, turkey</motion.p>
+            <motion.h1
+                :variants="fadeUp"
+                class="name"
+                :style="{ fontFamily: nameFont }"
+                @pointerenter="startRedact"
+                @pointerleave="stopRedact"
+                @pointercancel="stopRedact"
+                @pointerup="onNamePointerUp"
+                @contextmenu.prevent
+            >moli</motion.h1>
+            <motion.p :variants="fadeUp" class="role" :style="{ fontFamily: roleFont }">{{ ROLES[roleIndex] }}</motion.p>
 
             <motion.p :variants="fadeUp" class="intro">
                 i build small tools, ship web experiments, and write about what i learn.
@@ -159,18 +244,25 @@ onBeforeUnmount(() => {
 }
 
 .name {
-    font-family: "Rowan", serif;
     font-size: clamp(3rem, 9vw, 4.25rem);
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1;
-    letter-spacing: -0.04em;
+    letter-spacing: 0.01em;
     color: rgb(var(--color-text));
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
 }
 
 .role {
     margin-top: 0.85rem;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
     color: rgb(var(--color-subtle));
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .intro {

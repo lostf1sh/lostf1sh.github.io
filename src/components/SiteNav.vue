@@ -13,7 +13,7 @@ const isActive = (item) => route.name === item.name;
 </script>
 
 <template>
-    <header class="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-2">
+    <header class="site-nav flex flex-wrap items-center justify-between gap-x-6 gap-y-2 py-2">
         <router-link
             to="/"
             class="brand text-lg text-ink-text hover:text-ink-mint transition-colors"
@@ -40,6 +40,13 @@ const isActive = (item) => route.name === item.name;
 </template>
 
 <style scoped>
+/* Snapshot the nav separately during view transitions so it holds still
+   while the page content fades; pages without SiteNav fall back to the
+   plain cross-fade. */
+.site-nav {
+    view-transition-name: site-nav;
+}
+
 .brand {
     font-family: "Rowan", serif;
     font-weight: 300;

@@ -28,7 +28,7 @@ const groups = [
         rows: [
             ["satori + resvg", "1200×630 link-preview cards rendered at build time"],
             ["htmlrewriter", "per-post preview meta, injected at the edge"],
-            ["workers kv", "view counts and reactions"],
+            ["workers kv", "view counts"],
         ],
     },
     {

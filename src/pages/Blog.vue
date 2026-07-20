@@ -12,7 +12,6 @@ import {
     formatDate,
 } from "@/services/blogService";
 import { recordView } from "@/services/viewsService";
-import { REACTIONS, getReactions, addReaction, hasReacted } from "@/services/reactionsService";
 import { updateMeta } from "@/utils/seo";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 
@@ -20,8 +19,6 @@ const posts = getAllPosts();
 const view = ref("list");
 const currentPost = ref(null);
 const viewCount = ref(null);
-const reactions = ref(null);
-const reactedKeys = ref(new Set());
 const renderedHtml = ref("");
 const articleContentRef = ref(null);
 const toastMessage = ref("");
@@ -153,14 +150,6 @@ const openPost = async (slug) => {
         if (currentPost.value?.slug === slug) viewCount.value = views;
     });
 
-    reactions.value = null;
-    reactedKeys.value = new Set(
-        REACTIONS.filter((r) => hasReacted(slug, r.key)).map((r) => r.key),
-    );
-    getReactions(slug).then((counts) => {
-        if (currentPost.value?.slug === slug) reactions.value = counts;
-    });
-
     if (asSlug(route.params.slug) !== slug || route.query.post) {
         const nextQuery = { ...route.query };
         delete nextQuery.post;
@@ -195,15 +184,6 @@ const goBack = ({ skipQueryUpdate = false } = {}) => {
         delete newQuery.post;
         router.replace({ name: "Blog", params: { slug: undefined }, query: newQuery });
     }
-};
-
-const react = async (key) => {
-    const slug = currentPost.value?.slug;
-    if (!slug || !reactions.value || reactedKeys.value.has(key)) return;
-    reactedKeys.value = new Set([...reactedKeys.value, key]);
-    reactions.value = { ...reactions.value, [key]: (reactions.value[key] || 0) + 1 };
-    const counts = await addReaction(slug, key);
-    if (counts && currentPost.value?.slug === slug) reactions.value = counts;
 };
 
 const ensurePostEnhancers = async () => {
@@ -389,24 +369,6 @@ const listContainer = staggerContainer(0.05);
                     v-html="renderedHtml"
                 ></article>
 
-                <div v-if="reactions" class="reactions mt-12">
-                    <button
-                        v-for="r in REACTIONS"
-                        :key="r.key"
-                        type="button"
-                        @click="react(r.key)"
-                        :disabled="reactedKeys.has(r.key)"
-                        :aria-pressed="reactedKeys.has(r.key)"
-                        :aria-label="r.label"
-                        :title="r.label"
-                        class="reaction"
-                        :class="{ 'reaction--on': reactedKeys.has(r.key) }"
-                    >
-                        <span class="reaction__emoji">{{ r.emoji }}</span>
-                        <span class="reaction__count">{{ reactions[r.key] || 0 }}</span>
-                    </button>
-                </div>
-
                 <nav class="mt-14 grid sm:grid-cols-2 gap-4 border-t border-ink-surface/40 pt-6">
                     <button
                         v-if="adjacentPosts.prev"
@@ -493,60 +455,6 @@ const listContainer = staggerContainer(0.05);
     .copy-toast {
         animation: none;
     }
-    .reaction {
-        transition: none;
-    }
-    .reaction:active:not(:disabled) {
-        transform: none;
-    }
-}
-
-.reactions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.reaction {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.3rem 0.6rem;
-    border: 1px solid rgb(var(--color-surface));
-    background: transparent;
-    color: rgb(var(--color-subtle));
-    font-size: 0.8125rem;
-    line-height: 1;
-    cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
-}
-
-.reaction:hover:not(:disabled) {
-    color: rgb(var(--color-text));
-    border-color: rgb(var(--color-mint) / 0.5);
-}
-
-.reaction:active:not(:disabled) {
-    transform: scale(0.94);
-}
-
-.reaction--on {
-    color: rgb(var(--color-mint));
-    border-color: rgb(var(--color-mint) / 0.6);
-}
-
-.reaction:disabled {
-    cursor: default;
-}
-
-.reaction__emoji {
-    font-size: 0.95rem;
-}
-
-.reaction__count {
-    font-variant-numeric: tabular-nums;
-    min-width: 0.7rem;
-    text-align: left;
 }
 
 .blog-search {

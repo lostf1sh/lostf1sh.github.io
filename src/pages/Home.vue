@@ -112,8 +112,8 @@ const stopRedact = () => stepRedact(-1, 100);
 // switches text while unreadable, then resolves back to clean.
 const ROLES = [
     "developer, turkey",
-    "linux daily driver",
-    "builder of small tools",
+    "i use arch btw",
+    "continuously shipping",
     "terminally curious",
 ];
 const roleIndex = ref(0);
